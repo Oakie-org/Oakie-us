@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DadaIsland • Prototype Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-purple': '#6C5CE7',
+              'brand-indigo': '#5B4BE1',
+              'brand-dark': '#161629',
+              'brand-gray': '#F4F5FA',
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      iframe {
+        border: 0;
+        border-radius: 48px;
+        width: 393px;
+        height: 852px;
+        box-shadow: 0 40px 100px -60px rgba(90, 70, 233, 0.55);
+        background: white;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-950 bg-[radial-gradient(circle_at_top,_rgba(108,92,231,0.2),_transparent_60%)] font-sans text-brand-dark">
+    <div class="mx-auto max-w-7xl px-6 py-12">
+      <header class="max-w-4xl">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-purple/70">
+          DadaIsland high-fidelity prototype
+        </p>
+        <h1 class="mt-3 text-4xl font-semibold text-white">
+          Student & young builder collaboration, captured in real product flows
+        </h1>
+        <p class="mt-4 text-[15px] text-white/70">
+          Each screen aligns with the onboarding, exploration, collaboration, delivery and proof workflows designed to help students and early-career makers find teams, ship real products, and graduate with tangible evidence.
+        </p>
+      </header>
+
+      <section class="mt-12 grid gap-10 md:grid-cols-2 xl:grid-cols-3">
+        <article class="flex flex-col items-center gap-4">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="home.html" title="Home"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Home</h2>
+            <p class="text-sm text-white/60">Personalized hub with spotlight project, active squads, sprint board and events.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="explore.html" title="Explore"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Explore</h2>
+            <p class="text-sm text-white/60">Smart discovery by city, school, skills, and curated camps for student founders.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="project-detail.html" title="Project detail"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Project detail</h2>
+            <p class="text-sm text-white/60">Full brief with mission, squad roster, deliverables, and milestone timelines.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="task-board.html" title="Task board"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Task board</h2>
+            <p class="text-sm text-white/60">Mobile Kanban tailored to student sprints with proof capture and mentor handoffs.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="messages.html" title="Messages"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Messages</h2>
+            <p class="text-sm text-white/60">Squad chat with proof logging, research highlights, and automation updates.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="create-project.html" title="Create project"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Create project</h2>
+            <p class="text-sm text-white/60">Step-by-step launch pad capturing vision, roles, proof settings, and mentors.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4 md:col-span-2 xl:col-span-1">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="profile.html" title="Profile"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Profile</h2>
+            <p class="text-sm text-white/60">Proof-first identity with highlights, communities, and open-to opportunities.</p>
+          </div>
+        </article>
+        <article class="flex flex-col items-center gap-4 md:col-span-2 xl:col-span-1">
+          <div class="rounded-[56px] bg-white/5 p-3 backdrop-blur">
+            <iframe src="notifications.html" title="Notifications"></iframe>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-white">Activity</h2>
+            <p class="text-sm text-white/60">Proof updates, mentor feedback, event invites, and featured spotlights.</p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DadaIsland • Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-purple': '#6C5CE7',
+              'brand-indigo': '#5B4BE1',
+              'brand-dark': '#161629',
+              'brand-gray': '#F4F5FA',
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <div class="flex min-h-screen items-center justify-center py-8">
+      <div class="relative">
+        <div class="absolute -inset-4 rounded-[52px] bg-gradient-to-r from-brand-purple/30 to-brand-indigo/30 blur-3xl"></div>
+        <div
+          class="relative h-[852px] w-[393px] overflow-hidden rounded-[44px] border border-white/60 bg-white shadow-[0_30px_80px_-40px_rgba(88,63,204,0.45)]"
+        >
+          <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80')] opacity-[0.08]"></div>
+          <div class="absolute inset-0 bg-white/90 backdrop-blur-xl"></div>
+
+          <div class="relative flex h-full flex-col">
+            <header class="px-6 pt-6">
+              <div class="flex items-center justify-between text-[13px] font-semibold text-gray-500">
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                  <i class="fa-solid fa-signal"></i>
+                  <i class="fa-solid fa-wifi"></i>
+                  <i class="fa-solid fa-battery-three-quarters"></i>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-brand-dark">Your island profile</h1>
+                <button class="rounded-2xl bg-brand-purple px-4 py-2 text-[12px] font-semibold text-white shadow-sm">
+                  Share profile
+                </button>
+              </div>
+            </header>
+
+            <main class="relative mt-5 flex-1 overflow-y-auto px-6 pb-28">
+              <section class="rounded-3xl border border-gray-100 bg-white p-5 text-brand-dark shadow-sm">
+                <div class="flex items-center gap-4">
+                  <img
+                    src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80"
+                    alt="Profile"
+                    class="h-20 w-20 rounded-3xl object-cover shadow-lg"
+                  />
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h2 class="text-xl font-semibold">Sierra Chen</h2>
+                      <span class="rounded-xl bg-brand-purple/10 px-3 py-1 text-[11px] font-semibold text-brand-purple">
+                        Available
+                      </span>
+                    </div>
+                    <p class="text-[13px] text-gray-500">
+                      Product design • Fudan University • Building mobility tech for real cities.
+                    </p>
+                    <div class="mt-3 flex flex-wrap gap-2 text-[12px] font-semibold text-brand-dark">
+                      <span class="rounded-2xl bg-brand-gray px-3 py-2">Product strategy</span>
+                      <span class="rounded-2xl bg-brand-gray px-3 py-2">UX Research</span>
+                      <span class="rounded-2xl bg-brand-gray px-3 py-2">SwiftUI basics</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-5 grid grid-cols-3 gap-3 text-center text-[12px] font-semibold">
+                  <div class="rounded-2xl bg-brand-gray px-3 py-3">
+                    <p class="text-[11px] uppercase text-gray-500">Proof</p>
+                    <p class="mt-1 text-lg text-brand-dark">14 wins</p>
+                  </div>
+                  <div class="rounded-2xl bg-brand-gray px-3 py-3">
+                    <p class="text-[11px] uppercase text-gray-500">Teammates</p>
+                    <p class="mt-1 text-lg text-brand-dark">38 peers</p>
+                  </div>
+                  <div class="rounded-2xl bg-brand-gray px-3 py-3">
+                    <p class="text-[11px] uppercase text-gray-500">Mentors</p>
+                    <p class="mt-1 text-lg text-brand-dark">6 allies</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="mt-6 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-[15px] font-semibold text-brand-dark">Highlights & proof</h2>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <button class="rounded-2xl bg-brand-gray px-3 py-2 text-brand-dark">Timeline</button>
+                    <button class="rounded-2xl bg-brand-purple px-3 py-2 text-white">Resume export</button>
+                  </div>
+                </div>
+                <div class="mt-4 space-y-4">
+                  <article class="rounded-2xl border border-white/60 bg-brand-gray/70 p-4">
+                    <div class="flex items-center justify-between text-[12px] font-semibold text-gray-500">
+                      <span>Mar 2024 • Loop</span>
+                      <span class="rounded-xl bg-white px-3 py-1 text-brand-purple">Impact proof</span>
+                    </div>
+                    <h3 class="mt-2 text-[15px] font-semibold text-brand-dark">Shipped onboarding v2 cutting drop-off by 36%</h3>
+                    <p class="mt-2 text-[12px] text-gray-500">
+                      Led user research + flow redesign, collaborated with engineering to release in 2 sprints. Shared at city mobility council.
+                    </p>
+                    <div class="mt-3 flex items-center gap-3 text-[11px] text-gray-500">
+                      <span><i class="fa-solid fa-film mr-1 text-brand-purple"></i> Demo clip</span>
+                      <span><i class="fa-solid fa-chart-line mr-1 text-brand-purple"></i> Metrics tracker</span>
+                    </div>
+                  </article>
+                  <article class="rounded-2xl border border-white/60 bg-brand-gray/70 p-4">
+                    <div class="flex items-center justify-between text-[12px] font-semibold text-gray-500">
+                      <span>Jan 2024 • CitySprint</span>
+                      <span class="rounded-xl bg-white px-3 py-1 text-emerald-600">Awarded</span>
+                    </div>
+                    <h3 class="mt-2 text-[15px] font-semibold text-brand-dark">Won "Mobility for Good" hackathon with real pilots</h3>
+                    <p class="mt-2 text-[12px] text-gray-500">
+                      Prototyped carbon footprint dashboard with open data. Signed 2 pilot schools with alumni sponsors.
+                    </p>
+                    <div class="mt-3 flex items-center gap-3 text-[11px] text-gray-500">
+                      <span><i class="fa-solid fa-medal mr-1 text-emerald-500"></i> Judge quotes</span>
+                      <span><i class="fa-solid fa-link mr-1 text-emerald-500"></i> Project site</span>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="mt-6 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-[15px] font-semibold text-brand-dark">Open to</h2>
+                  <button class="text-[12px] font-semibold text-brand-purple">Edit</button>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2 text-[12px] font-semibold text-brand-dark">
+                  <span class="rounded-2xl bg-brand-purple/10 px-3 py-2 text-brand-purple">
+                    Spring internships
+                  </span>
+                  <span class="rounded-2xl bg-brand-gray px-3 py-2">
+                    Part-time cofounder
+                  </span>
+                  <span class="rounded-2xl bg-brand-gray px-3 py-2">
+                    Mentor pairing
+                  </span>
+                </div>
+                <div class="mt-4 rounded-2xl bg-brand-gray/70 p-4 text-[12px] text-gray-500">
+                  <p>
+                    Tip: keep your availability updated to receive targeted intros from partner companies and campus clubs.
+                  </p>
+                </div>
+              </section>
+
+              <section class="mt-6 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-[15px] font-semibold text-brand-dark">Communities</h2>
+                  <button class="text-[12px] font-semibold text-brand-purple">Discover</button>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3 text-[12px] font-semibold">
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <p class="text-brand-dark">Shanghai Builders HQ</p>
+                    <p class="mt-1 text-[11px] text-gray-500">72 creators • Weekly demos</p>
+                  </div>
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <p class="text-brand-dark">Asia Design Collective</p>
+                    <p class="mt-1 text-[11px] text-gray-500">Mentors from IDEO, Airbnb</p>
+                  </div>
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <p class="text-brand-dark">Fudan Startup Lab</p>
+                    <p class="mt-1 text-[11px] text-gray-500">Access campus labs + grants</p>
+                  </div>
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <p class="text-brand-dark">Women in Product CN</p>
+                    <p class="mt-1 text-[11px] text-gray-500">Mentor office hours</p>
+                  </div>
+                </div>
+              </section>
+            </main>
+
+            <nav
+              class="absolute bottom-0 left-0 right-0 border-t border-white/70 bg-white/90 backdrop-blur-lg"
+            >
+              <div class="flex items-center justify-between px-9 py-4 text-[12px] font-medium text-gray-500">
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-house text-lg"></i>
+                  <span>Home</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-compass text-lg"></i>
+                  <span>Explore</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-solid fa-layer-group text-lg"></i>
+                  <span>Boards</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-message text-lg"></i>
+                  <span>Chat</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-brand-purple">
+                  <i class="fa-solid fa-user text-lg"></i>
+                  <span>Profile</span>
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

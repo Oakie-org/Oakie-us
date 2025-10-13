@@ -1,0 +1,32 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Build outputs
+build/
+out/
+target/
+
+# Gradle
+.gradle/
+
+# IDE metadata
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Docker
+docker/mysql/init/*.sql.backup

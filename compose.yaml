@@ -1,0 +1,71 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: dada-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-dada_island}
+      MYSQL_USER: ${MYSQL_USER:-dada}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ:-UTC}
+    ports:
+      - "${MYSQL_PUBLISH:-3306:3306}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.1.4
+    platform: linux/amd64
+    container_name: dada-rocketmq-namesrv
+    restart: unless-stopped
+    command: sh -c "cd /home/rocketmq/rocketmq-5.1.4/bin && ./mqnamesrv"
+    ports:
+      - "${NAMESRV_PUBLISH:-9876:9876}"
+
+  rocketmq-broker:
+    image: apache/rocketmq:5.1.4
+    platform: linux/amd64
+    container_name: dada-rocketmq-broker
+    restart: unless-stopped
+    depends_on:
+      - rocketmq-namesrv
+    environment:
+      NAMESRV_ADDR: ${NAMESRV_ADDR:-rocketmq-namesrv:9876}
+      JAVA_OPT_EXT: ${BROKER_JAVA_OPT_EXT:-server -Xms256m -Xmx256m -Xmn128m}
+      ROCKETMQ_HOME: /home/rocketmq/rocketmq-5.1.4
+    command: >
+      sh -c "cd /home/rocketmq/rocketmq-5.1.4/bin &&
+      ./mqbroker -n ${NAMESRV_ADDR:-rocketmq-namesrv:9876} -c ../conf/broker.conf"
+    ports:
+      - "${BROKER_PUBLISH_1:-10911:10911}"
+      - "${BROKER_PUBLISH_2:-10909:10909}"
+    volumes:
+      - rocketmq_logs:/home/rocketmq/logs
+      - rocketmq_store:/home/rocketmq/store
+      - ./docker/rocketmq/broker.conf:/home/rocketmq/rocketmq-5.1.4/conf/broker.conf:ro
+
+  rocketmq-dashboard:
+    image: apacherocketmq/rocketmq-dashboard:1.0.0
+    platform: linux/amd64
+    container_name: dada-rocketmq-dashboard
+    restart: unless-stopped
+    depends_on:
+      - rocketmq-namesrv
+    environment:
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=${NAMESRV_ADDR:-rocketmq-namesrv:9876}"
+    ports:
+      - "${DASHBOARD_PUBLISH:-8081:8080}"
+
+volumes:
+  mysql_data:
+  rocketmq_logs:
+  rocketmq_store:

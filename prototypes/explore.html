@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DadaIsland • Explore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-purple': '#6C5CE7',
+              'brand-indigo': '#5B4BE1',
+              'brand-dark': '#161629',
+              'brand-gray': '#F4F5FA',
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <div class="flex min-h-screen items-center justify-center py-8">
+      <div class="relative">
+        <div class="absolute -inset-4 rounded-[52px] bg-gradient-to-r from-brand-purple/30 to-brand-indigo/30 blur-3xl"></div>
+        <div
+          class="relative h-[852px] w-[393px] overflow-hidden rounded-[44px] border border-white/60 bg-white shadow-[0_30px_80px_-40px_rgba(88,63,204,0.45)]"
+        >
+          <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472289065668-ce650ac443d2?auto=format&fit=crop&w=1200&q=80')] opacity-[0.08]"></div>
+          <div class="absolute inset-0 bg-white/90 backdrop-blur-xl"></div>
+
+          <div class="relative flex h-full flex-col">
+            <header class="px-6 pt-6">
+              <div class="flex items-center justify-between text-[13px] font-semibold text-gray-500">
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                  <i class="fa-solid fa-signal"></i>
+                  <i class="fa-solid fa-wifi"></i>
+                  <i class="fa-solid fa-battery-three-quarters"></i>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-brand-dark">Discover teams</h1>
+                <button class="rounded-2xl bg-brand-gray px-4 py-2 text-[13px] font-semibold text-brand-dark">
+                  Shanghai
+                  <i class="fa-solid fa-angle-down ml-1 text-xs"></i>
+                </button>
+              </div>
+              <div class="mt-4 rounded-3xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-magnifying-glass text-brand-purple"></i>
+                  <input
+                    type="text"
+                    placeholder="Search skills, school, startup stage..."
+                    class="w-full bg-transparent text-[14px] font-medium text-brand-dark placeholder:text-gray-400 focus:outline-none"
+                  />
+                  <button class="rounded-2xl bg-brand-purple px-3 py-2 text-xs font-semibold text-white">Go</button>
+                </div>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-2 text-[12px] font-medium">
+                <button class="rounded-2xl bg-brand-purple/10 px-3 py-2 text-brand-purple">
+                  <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
+                  Smart match
+                </button>
+                <button class="rounded-2xl bg-brand-gray px-3 py-2 text-brand-dark">
+                  <i class="fa-solid fa-school mr-1"></i>
+                  Same university
+                </button>
+                <button class="rounded-2xl bg-brand-gray px-3 py-2 text-brand-dark">
+                  <i class="fa-solid fa-city mr-1"></i>
+                  Hangzhou
+                </button>
+                <button class="rounded-2xl bg-brand-gray px-3 py-2 text-brand-dark">
+                  <i class="fa-solid fa-code mr-1"></i>
+                  Swift / Kotlin
+                </button>
+                <button class="rounded-2xl bg-brand-gray px-3 py-2 text-brand-dark">
+                  Remote friendly
+                </button>
+              </div>
+            </header>
+
+            <main class="relative mt-6 flex-1 overflow-y-auto px-6 pb-28">
+              <section>
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold text-brand-dark">
+                    Curated for student founders
+                  </h2>
+                  <button class="text-sm font-medium text-brand-purple">Filters</button>
+                </div>
+                <div class="mt-4 space-y-4">
+                  <article class="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div class="flex gap-4">
+                      <div class="h-28 w-24 overflow-hidden rounded-2xl">
+                        <img
+                          src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=600&q=80"
+                          alt="Campus project"
+                          class="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div class="flex flex-col justify-between">
+                        <div>
+                          <div class="flex items-center gap-2 text-[12px] font-semibold text-brand-purple">
+                            <span>Fudan CS+</span>
+                            <span class="rounded-xl bg-brand-purple/10 px-2 py-1 text-brand-purple">Product launch</span>
+                          </div>
+                          <h3 class="mt-2 text-[16px] font-semibold text-brand-dark">
+                            NightOwl: Club discovery for campus life
+                          </h3>
+                          <p class="mt-1 text-[12px] text-gray-500">
+                            Need: Product designer, Growth PM, Flutter dev
+                          </p>
+                        </div>
+                        <div class="flex items-center gap-4 text-[12px] text-gray-500">
+                          <span><i class="fa-regular fa-clock mr-1 text-brand-purple"></i> Launching in 5 weeks</span>
+                          <span><i class="fa-regular fa-user mr-1 text-brand-purple"></i> 12 mentors onboard</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between">
+                      <div class="flex -space-x-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80"
+                          class="h-10 w-10 rounded-2xl border-2 border-white object-cover"
+                          alt="member"
+                        />
+                        <img
+                          src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80"
+                          class="h-10 w-10 rounded-2xl border-2 border-white object-cover"
+                          alt="member"
+                        />
+                        <img
+                          src="https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?auto=format&fit=crop&w=200&q=80"
+                          class="h-10 w-10 rounded-2xl border-2 border-white object-cover"
+                          alt="member"
+                        />
+                      </div>
+                      <div class="flex gap-3 text-[12px] font-semibold">
+                        <button class="rounded-xl border border-brand-purple/30 px-3 py-2 text-brand-purple">
+                          Preview deck
+                        </button>
+                        <button class="rounded-xl bg-brand-purple px-4 py-2 text-white shadow-sm">
+                          Join waitlist
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div class="flex gap-4">
+                      <div class="h-28 w-24 overflow-hidden rounded-2xl">
+                        <img
+                          src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=600&q=80"
+                          alt="Hackathon"
+                          class="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div class="flex flex-col justify-between">
+                        <div>
+                          <div class="flex items-center gap-2 text-[12px] font-semibold text-emerald-600">
+                            <span>Joint campus hack</span>
+                            <span class="rounded-xl bg-emerald-100 px-2 py-1 text-emerald-700">48h sprint</span>
+                          </div>
+                          <h3 class="mt-2 text-[16px] font-semibold text-brand-dark">
+                            CarbonZero: AI matching for green startups
+                          </h3>
+                          <p class="mt-1 text-[12px] text-gray-500">
+                            Need: Backend engineer, Data viz, Partnerships
+                          </p>
+                        </div>
+                        <div class="flex items-center gap-4 text-[12px] text-gray-500">
+                          <span><i class="fa-solid fa-location-dot mr-1 text-emerald-500"></i> Hybrid • Hangzhou</span>
+                          <span><i class="fa-regular fa-star mr-1 text-emerald-500"></i> 4.9 mentor rating</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between">
+                      <div class="flex -space-x-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80"
+                          class="h-10 w-10 rounded-2xl border-2 border-white object-cover"
+                          alt="member"
+                        />
+                        <img
+                          src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80"
+                          class="h-10 w-10 rounded-2xl border-2 border-white object-cover"
+                          alt="member"
+                        />
+                        <img
+                          src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80"
+                          class="h-10 w-10 rounded-2xl border-2 border-white object-cover"
+                          alt="member"
+                        />
+                      </div>
+                      <div class="flex gap-3 text-[12px] font-semibold">
+                        <button class="rounded-xl border border-emerald-300 px-3 py-2 text-emerald-600">
+                          Mentor roster
+                        </button>
+                        <button class="rounded-xl bg-emerald-500 px-4 py-2 text-white shadow-sm">
+                          Request intro
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="mt-8">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold text-brand-dark">Popular categories</h2>
+                  <button class="text-sm font-medium text-brand-purple">Customize</button>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <div class="flex items-center justify-between text-[12px] font-semibold text-brand-dark">
+                      <span>Mobile apps</span>
+                      <span class="rounded-xl bg-white px-2 py-1 text-brand-purple">68</span>
+                    </div>
+                    <p class="mt-2 text-[13px] text-gray-500">Swift • Flutter • React Native</p>
+                  </div>
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <div class="flex items-center justify-between text-[12px] font-semibold text-brand-dark">
+                      <span>AI builders</span>
+                      <span class="rounded-xl bg-white px-2 py-1 text-brand-purple">74</span>
+                    </div>
+                    <p class="mt-2 text-[13px] text-gray-500">LLM apps • Prompt ops • CV</p>
+                  </div>
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <div class="flex items-center justify-between text-[12px] font-semibold text-brand-dark">
+                      <span>Creator tools</span>
+                      <span class="rounded-xl bg-white px-2 py-1 text-brand-purple">22</span>
+                    </div>
+                    <p class="mt-2 text-[13px] text-gray-500">Web3 • Design systems • Media</p>
+                  </div>
+                  <div class="rounded-3xl bg-brand-gray p-4">
+                    <div class="flex items-center justify-between text-[12px] font-semibold text-brand-dark">
+                      <span>Impact ventures</span>
+                      <span class="rounded-xl bg-white px-2 py-1 text-brand-purple">31</span>
+                    </div>
+                    <p class="mt-2 text-[13px] text-gray-500">Climate • Edtech • Health</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="mt-8 mb-4 rounded-3xl border border-dashed border-brand-purple/40 bg-brand-purple/5 p-4">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-brand-purple shadow-md">
+                    <i class="fa-solid fa-rocket text-xl"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-[15px] font-semibold text-brand-dark">
+                      Launch your own squad in minutes
+                    </h3>
+                    <p class="text-[12px] text-gray-500">
+                      Guided brief templates, auto-suggested teammates, proof-ready timeline.
+                    </p>
+                  </div>
+                </div>
+                <button class="mt-4 w-full rounded-2xl bg-brand-purple py-3 text-[14px] font-semibold text-white shadow-md">
+                  Create project brief
+                </button>
+              </section>
+            </main>
+
+            <nav
+              class="absolute bottom-0 left-0 right-0 border-t border-white/70 bg-white/90 backdrop-blur-lg"
+            >
+              <div class="flex items-center justify-between px-9 py-4 text-[12px] font-medium text-gray-500">
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-house text-lg"></i>
+                  <span>Home</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-brand-purple">
+                  <i class="fa-solid fa-compass text-lg"></i>
+                  <span>Explore</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-solid fa-layer-group text-lg"></i>
+                  <span>Boards</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-message text-lg"></i>
+                  <span>Chat</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-user text-lg"></i>
+                  <span>Profile</span>
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DadaIsland • Messages</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-purple': '#6C5CE7',
+              'brand-indigo': '#5B4BE1',
+              'brand-dark': '#161629',
+              'brand-gray': '#F4F5FA',
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <div class="flex min-h-screen items-center justify-center py-8">
+      <div class="relative">
+        <div class="absolute -inset-4 rounded-[52px] bg-gradient-to-r from-brand-purple/30 to-brand-indigo/30 blur-3xl"></div>
+        <div
+          class="relative h-[852px] w-[393px] overflow-hidden rounded-[44px] border border-white/60 bg-white shadow-[0_30px_80px_-40px_rgba(88,63,204,0.45)]"
+        >
+          <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1200&q=80')] opacity-[0.08]"></div>
+          <div class="absolute inset-0 bg-white/90 backdrop-blur-xl"></div>
+
+          <div class="relative flex h-full flex-col">
+            <header class="px-6 pt-6">
+              <div class="flex items-center justify-between text-[13px] font-semibold text-gray-500">
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                  <i class="fa-solid fa-signal"></i>
+                  <i class="fa-solid fa-wifi"></i>
+                  <i class="fa-solid fa-battery-three-quarters"></i>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center justify-between">
+                <div>
+                  <p class="text-[13px] font-semibold uppercase tracking-[0.22em] text-brand-purple/70">
+                    Squad chats
+                  </p>
+                  <h1 class="text-2xl font-bold text-brand-dark">Messages</h1>
+                </div>
+                <div class="flex gap-2">
+                  <button class="rounded-2xl bg-brand-gray px-4 py-2 text-[13px] font-semibold text-brand-dark">
+                    Inbox
+                  </button>
+                  <button class="rounded-2xl bg-brand-purple px-3 py-2 text-[12px] font-semibold text-white shadow-sm">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <main class="relative mt-5 flex-1 px-2 pb-28">
+              <div class="flex h-full gap-3">
+                <aside class="flex h-full w-40 flex-col rounded-3xl bg-brand-gray/70 p-3">
+                  <div class="flex items-center justify-between text-[11px] font-semibold text-gray-500">
+                    <span>Channels</span>
+                    <button class="text-brand-purple">+</button>
+                  </div>
+                  <div class="mt-3 space-y-2 text-[12px] font-medium">
+                    <button class="relative flex w-full flex-col rounded-2xl bg-white px-3 py-3 text-left text-brand-dark shadow-sm">
+                      <span class="text-[11px] uppercase tracking-[0.18em] text-brand-purple/60">
+                        Loop squad
+                      </span>
+                      <span class="mt-1 font-semibold text-sm">#daily-sync</span>
+                      <span class="mt-1 text-[11px] text-gray-500">You: pushing build...</span>
+                      <span class="absolute right-3 top-3 h-2 w-2 rounded-full bg-brand-purple"></span>
+                    </button>
+                    <button class="flex w-full flex-col rounded-2xl px-3 py-3 text-left text-gray-500 transition hover:bg-white">
+                      <span class="text-[11px] uppercase tracking-[0.18em]">Product</span>
+                      <span class="mt-1 font-semibold text-sm">#user-interviews</span>
+                      <span class="mt-1 text-[11px] text-gray-400">Min · new audio upload</span>
+                    </button>
+                    <button class="flex w-full flex-col rounded-2xl px-3 py-3 text-left text-gray-500 transition hover:bg-white">
+                      <span class="text-[11px] uppercase tracking-[0.18em]">Mentors</span>
+                      <span class="mt-1 font-semibold text-sm">#loop-advisors</span>
+                      <span class="mt-1 text-[11px] text-gray-400">Jasper: shared deck v3</span>
+                    </button>
+                    <button class="flex w-full flex-col rounded-2xl px-3 py-3 text-left text-gray-500 transition hover:bg-white">
+                      <span class="text-[11px] uppercase tracking-[0.18em]">Community</span>
+                      <span class="mt-1 font-semibold text-sm">#founder-lounge</span>
+                      <span class="mt-1 text-[11px] text-gray-400">Liyang: campus meetup photos</span>
+                    </button>
+                  </div>
+                  <div class="mt-auto">
+                    <div class="rounded-2xl bg-white/80 p-3 text-[11px]">
+                      <p class="font-semibold text-brand-dark">Proof recorder</p>
+                      <p class="mt-1 text-gray-500">Drop highlights to auto-generate resume bullets.</p>
+                      <button class="mt-2 w-full rounded-xl bg-brand-purple/10 py-2 font-semibold text-brand-purple">
+                        Start capture
+                      </button>
+                    </div>
+                  </div>
+                </aside>
+
+                <section class="relative flex min-w-[210px] flex-1 flex-col rounded-3xl bg-white">
+                  <div class="flex items-center justify-between border-b border-gray-100 px-4 py-4">
+                    <div>
+                      <h2 class="text-[15px] font-semibold text-brand-dark">#daily-sync</h2>
+                      <p class="text-[11px] text-gray-500">8 members • Standups + blocker busting</p>
+                    </div>
+                    <div class="flex -space-x-2">
+                      <img
+                        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80"
+                        class="h-8 w-8 rounded-2xl border-2 border-white object-cover"
+                        alt="member"
+                      />
+                      <img
+                        src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80"
+                        class="h-8 w-8 rounded-2xl border-2 border-white object-cover"
+                        alt="member"
+                      />
+                      <img
+                        src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=200&q=80"
+                        class="h-8 w-8 rounded-2xl border-2 border-white object-cover"
+                        alt="member"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex-1 overflow-y-auto px-4 py-4">
+                    <div class="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-gray-400">
+                      Wednesday • Sprint 04
+                    </div>
+                    <div class="space-y-4 text-[13px]">
+                      <div class="flex gap-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80"
+                          alt="avatar"
+                          class="mt-1 h-9 w-9 rounded-2xl object-cover"
+                        />
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <p class="font-semibold text-brand-dark">Sierra</p>
+                            <span class="text-[11px] text-gray-400">09:10</span>
+                          </div>
+                          <p class="mt-1 rounded-2xl bg-brand-purple/10 px-3 py-2 text-brand-dark">
+                            🚀 Deployed onboarding v2 to TestFlight. Need quick QA on metro card linking.
+                          </p>
+                        </div>
+                      </div>
+                      <div class="flex gap-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80"
+                          alt="avatar"
+                          class="mt-1 h-9 w-9 rounded-2xl object-cover"
+                        />
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <p class="font-semibold text-brand-dark">Jasper</p>
+                            <span class="text-[11px] text-gray-400">09:15</span>
+                          </div>
+                          <div class="mt-1 space-y-2">
+                            <p class="rounded-2xl bg-brand-gray px-3 py-2">
+                              ✅ Backend checks pass. I’ll QA on-device in 1h.
+                            </p>
+                            <div class="rounded-2xl border border-dashed border-brand-purple/30 bg-brand-purple/5 px-3 py-2 text-[12px] text-brand-purple">
+                              Proof tracker updated: "Shipped onboarding v2" added to your resume deck.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex gap-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80"
+                          alt="avatar"
+                          class="mt-1 h-9 w-9 rounded-2xl object-cover"
+                        />
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <p class="font-semibold text-brand-dark">Min</p>
+                            <span class="text-[11px] text-gray-400">09:17</span>
+                          </div>
+                          <p class="mt-1 rounded-2xl bg-white px-3 py-2 text-brand-dark shadow-sm">
+                            Uploaded 3 user interviews to research hub. Key pain: confusion around bus vs. metro options.
+                          </p>
+                          <div class="mt-2 flex items-start gap-3 rounded-2xl bg-brand-gray p-3">
+                            <img
+                              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80"
+                              alt="interview"
+                              class="h-16 w-16 rounded-2xl object-cover"
+                            />
+                            <div>
+                              <p class="text-[12px] font-semibold text-brand-dark">Interview highlight reel</p>
+                              <p class="text-[11px] text-gray-500">6 clips • 12 annotations • Auto-tagged to roadmap</p>
+                              <button class="mt-2 rounded-xl bg-white px-3 py-1 text-[11px] font-semibold text-brand-purple shadow-sm">
+                                View insights
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?auto=format&fit=crop&w=200&q=80"
+                          alt="avatar"
+                          class="mt-1 h-9 w-9 rounded-2xl object-cover"
+                        />
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <p class="font-semibold text-brand-dark">Loop Bot</p>
+                            <span class="text-[11px] text-gray-400">09:20</span>
+                          </div>
+                          <div class="mt-1 rounded-2xl border border-brand-purple/20 bg-brand-purple/5 px-3 py-2 text-[12px] text-brand-dark">
+                            🔎 Pulling 48h transit delay data for Jing'an campus route. ETA 2 mins.
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-3">
+                        <img
+                          src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=200&q=80"
+                          alt="avatar"
+                          class="mt-1 h-9 w-9 rounded-2xl object-cover"
+                        />
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <p class="font-semibold text-brand-dark">You</p>
+                            <span class="text-[11px] text-gray-400">09:23</span>
+                          </div>
+                          <p class="mt-1 rounded-2xl bg-brand-purple px-3 py-2 text-white shadow-md">
+                            Amazing. Logging this for weekly recap. Min, could you drop quote highlights for the share-out?
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-gray-100 bg-white px-4 py-4">
+                    <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-brand-gray/40 px-3 py-2">
+                      <button class="text-brand-purple">
+                        <i class="fa-solid fa-paperclip"></i>
+                      </button>
+                      <input
+                        type="text"
+                        placeholder="Share update, drop proof, or /command"
+                        class="w-full bg-transparent text-[13px] text-brand-dark placeholder:text-gray-400 focus:outline-none"
+                      />
+                      <button class="rounded-2xl bg-brand-purple px-3 py-2 text-[12px] font-semibold text-white shadow-sm">
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </main>
+
+            <nav
+              class="absolute bottom-0 left-0 right-0 border-t border-white/70 bg-white/90 backdrop-blur-lg"
+            >
+              <div class="flex items-center justify-between px-9 py-4 text-[12px] font-medium text-gray-500">
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-house text-lg"></i>
+                  <span>Home</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-compass text-lg"></i>
+                  <span>Explore</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-solid fa-layer-group text-lg"></i>
+                  <span>Boards</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-brand-purple">
+                  <i class="fa-solid fa-message text-lg"></i>
+                  <span>Chat</span>
+                </button>
+                <button class="flex flex-col items-center gap-1">
+                  <i class="fa-regular fa-user text-lg"></i>
+                  <span>Profile</span>
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

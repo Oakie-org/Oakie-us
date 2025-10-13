@@ -2,7 +2,9 @@
 
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
+    user_id CHAR(36) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    email VARCHAR(255),
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(100) NOT NULL,
     avatar_url VARCHAR(512),
@@ -13,6 +15,8 @@ CREATE TABLE users (
     status ENUM('ACTIVE', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    CONSTRAINT uk_users_user_id UNIQUE (user_id),
+    CONSTRAINT uk_users_phone UNIQUE (phone_number),
     CONSTRAINT uk_users_email UNIQUE (email),
     INDEX idx_users_city_school (city, school),
     INDEX idx_users_status (status)

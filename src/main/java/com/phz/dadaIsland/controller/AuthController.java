@@ -1,5 +1,6 @@
 package com.phz.dadaIsland.controller;
 
+import com.phz.dadaIsland.dto.auth.LoginRequest;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<AuthTokenResponse> login(@RequestBody LoginRequest request) {
+	public ResponseEntity<AuthTokenResponse> login(@RequestBody @Validated LoginRequest request) {
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(authService.login(request));
 	}
 }

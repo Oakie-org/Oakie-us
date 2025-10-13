@@ -25,12 +25,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		var domainUser = userService.findByEmail(username)
+				.or(() -> userService.findByPhoneNumber(username))
 				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 		Collection<? extends GrantedAuthority> authorities = domainUser.getRoles() == null
 				? List.of()
 				: domainUser.getRoles().stream()
 						.map(SimpleGrantedAuthority::new)
 						.toList();
-		return new User(domainUser.getEmail(), domainUser.getPasswordHash(), authorities);
+		String principal = domainUser.getEmail() != null ? domainUser.getEmail() : domainUser.getPhoneNumber();
+		return new User(principal, domainUser.getPasswordHash(), authorities);
 	}
 }

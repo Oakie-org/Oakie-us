@@ -23,6 +23,12 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public Optional<User> findByPhoneNumber(String phoneNumber) {
+		// TODO query user by phone number
+		return Optional.empty();
+	}
+
+	@Override
 	public void updateProfile(User user) {
 		// TODO persist profile updates
 	}

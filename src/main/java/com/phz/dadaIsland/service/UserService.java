@@ -10,5 +10,7 @@ public interface UserService {
 
 	Optional<User> findByEmail(String email);
 
+	Optional<User> findByPhoneNumber(String phoneNumber);
+
 	void updateProfile(User user);
 }

@@ -2,6 +2,17 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.4.10"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("org.flywaydb.flyway") version "9.22.3"
+}
+
+buildscript {
+	dependencies {
+		classpath("com.mysql:mysql-connector-j:8.4.0")
+		classpath("org.flywaydb:flyway-mysql:9.22.3")
+	}
+	repositories {
+		mavenCentral()
+	}
 }
 
 group = "com.phz"
@@ -24,6 +35,14 @@ repositories {
 	mavenCentral()
 }
 
+flyway {
+	url = System.getenv("FLYWAY_URL") ?: "jdbc:mysql://localhost:3306/dada_island?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+	user = System.getenv("FLYWAY_USER") ?: "dada"
+	password = System.getenv("FLYWAY_PASSWORD") ?: "dev_password"
+	locations = arrayOf("filesystem:src/main/resources/db/migration")
+	driver = "com.mysql.cj.jdbc.Driver"
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -31,8 +50,6 @@ dependencies {
 	implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5")
 	implementation("org.apache.rocketmq:rocketmq-spring-boot-starter:2.3.0")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-	implementation("org.flywaydb:flyway-core")
-	implementation("org.flywaydb:flyway-mysql")
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	annotationProcessor("org.projectlombok:lombok")

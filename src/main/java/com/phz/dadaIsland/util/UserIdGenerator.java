@@ -22,7 +22,7 @@ public class UserIdGenerator {
 	private long sequence = 0L;
 
 	public UserIdGenerator(@Value("${app.user-id.node-id:0}") long nodeId,
-			@Value("${app.user-id.epoch-millis:1704067200000}") long customEpochMillis) {
+						   @Value("${app.user-id.epoch-millis:1704067200000}") long customEpochMillis) {
 		if (nodeId < 0 || nodeId > MAX_NODE_ID) {
 			throw new IllegalArgumentException("Node id must be between 0 and " + MAX_NODE_ID);
 		}

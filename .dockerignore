@@ -1,0 +1,10 @@
+.gradle/
+build/
+out/
+.idea/
+.vscode/
+*.iml
+docker/rocketmq/logs/
+docker/rocketmq/store/
+node_modules/
+.DS_Store

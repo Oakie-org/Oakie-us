@@ -14,28 +14,58 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtTokenProvider {
 
-	@Value("${security.jwt.secret-key:change-me}")
+	public enum TokenType {
+		ACCESS,
+		REFRESH
+	}
+
+	private static final String TOKEN_TYPE_CLAIM = "token_type";
+	@Value("${security.jwt.secret-key:sNw4cLuq98ejjEV/oBQ3vqKsA7ZCd7+AjYICCcRFgcg=}")
 	private String secretKey;
 
-	@Value("${security.jwt.expiration-minutes:60}")
-	private long expirationMinutes;
+	@Value("${security.jwt.access-token-minutes:60}")
+	private long accessTokenMinutes;
 
-	public String generateToken(String subject) {
+	@Value("${security.jwt.refresh-token-days:7}")
+	private long refreshTokenDays;
+
+	public String generateAccessToken(String subject, long userPk, String userUid) {
+		return buildToken(subject, userPk, userUid, accessTokenMinutes, ChronoUnit.MINUTES, TokenType.ACCESS);
+	}
+
+	public String generateRefreshToken(String subject, long userPk, String userUid) {
+		return buildToken(subject, userPk, userUid, refreshTokenDays, ChronoUnit.DAYS, TokenType.REFRESH);
+	}
+
+	private String buildToken(String subject, long userPk, String userUid, long amount, ChronoUnit unit, TokenType tokenType) {
 		Instant now = Instant.now();
-		return Jwts.builder()
+		var builder = Jwts.builder()
 				.subject(subject)
 				.issuedAt(Date.from(now))
-				.expiration(Date.from(now.plus(expirationMinutes, ChronoUnit.MINUTES)))
+				.expiration(Date.from(now.plus(amount, unit)))
+				.claim(TOKEN_TYPE_CLAIM, tokenType.name());
+		builder.claim("pid", userPk);
+		if (userUid != null) {
+			builder.claim("uid", userUid);
+		}
+		return builder
 				.signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
 				.compact();
 	}
 
 	public boolean validateToken(String token) {
+		return validateToken(token, null);
+	}
+
+	public boolean validateToken(String token, TokenType expectedType) {
 		try {
-			Jwts.parser()
-					.verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
-					.build()
-					.parseSignedClaims(token);
+			Claims claims = parseClaims(token);
+			if (expectedType != null) {
+				String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+				if (tokenType == null || !expectedType.name().equalsIgnoreCase(tokenType)) {
+					return false;
+				}
+			}
 			return true;
 		} catch (Exception ex) {
 			// TODO add structured logging
@@ -44,11 +74,50 @@ public class JwtTokenProvider {
 	}
 
 	public String extractSubject(String token) {
-		Claims claims = Jwts.parser()
+		Claims claims = parseClaims(token);
+		return claims.getSubject();
+	}
+
+	public Long extractUserPk(String token) {
+		Claims claims = parseClaims(token);
+		Object value = claims.get("pid");
+		if (value instanceof Number number) {
+			return number.longValue();
+		}
+		return null;
+	}
+
+	public String extractUserUid(String token) {
+		Claims claims = parseClaims(token);
+		return claims.get("uid", String.class);
+	}
+
+	public TokenType extractTokenType(String token) {
+		Claims claims = parseClaims(token);
+		String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+		if (tokenType == null) {
+			return null;
+		}
+		try {
+			return TokenType.valueOf(tokenType.toUpperCase());
+		} catch (IllegalArgumentException ex) {
+			return null;
+		}
+	}
+
+	public long getAccessTokenTtlSeconds() {
+		return accessTokenMinutes * 60;
+	}
+
+	public long getRefreshTokenTtlSeconds() {
+		return refreshTokenDays * 24 * 60 * 60;
+	}
+
+	private Claims parseClaims(String token) {
+		return Jwts.parser()
 				.verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
 				.build()
 				.parseSignedClaims(token)
 				.getPayload();
-		return claims.getSubject();
 	}
 }

@@ -15,9 +15,10 @@ public class AuthRefreshToken {
 
 	private Long id;
 	private Long userId;
+	private String userUid;
 	private String tokenHash;
 	private LocalDateTime issuedAt;
 	private LocalDateTime expiresAt;
 	private LocalDateTime revokedAt;
-	private String metadata; // JSON string, parsed where needed
+	private String metadata;
 }

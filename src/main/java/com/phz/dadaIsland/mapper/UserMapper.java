@@ -18,5 +18,6 @@ public interface UserMapper {
 
 	Optional<User> findByPhoneNumber(@Param("phoneNumber") String phoneNumber);
 
+
 	void update(User user);
 }

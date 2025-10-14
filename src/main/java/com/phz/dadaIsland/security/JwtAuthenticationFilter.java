@@ -6,7 +6,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -21,9 +20,9 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider tokenProvider;
-	private final UserDetailsService userDetailsService;
+	private final CustomUserDetailsService userDetailsService;
 
-	public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
+	public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, CustomUserDetailsService userDetailsService) {
 		this.tokenProvider = tokenProvider;
 		this.userDetailsService = userDetailsService;
 	}
@@ -34,15 +33,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
 			String token = bearerToken.substring(7);
-			if (tokenProvider.validateToken(token)) {
-				String email = tokenProvider.extractSubject(token);
-				UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+			if (tokenProvider.validateToken(token, JwtTokenProvider.TokenType.ACCESS)) {
+				Long userPk = tokenProvider.extractUserPk(token);
+				String subject = tokenProvider.extractSubject(token);
+				UserDetails userDetails = resolveUserDetails(userPk, subject);
+				if (userDetails != null) {
+					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+					authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
 			}
 		}
 		filterChain.doFilter(request, response);
+	}
+
+	private UserDetails resolveUserDetails(Long userPk, String subject) {
+		if (userPk != null) {
+			try {
+				return userDetailsService.loadUserById(userPk);
+			} catch (Exception ex) {
+				return null;
+			}
+		}
+		if (StringUtils.hasText(subject)) {
+			try {
+				return userDetailsService.loadUserByUsername(subject);
+			} catch (Exception ex) {
+				return null;
+			}
+		}
+		return null;
 	}
 }

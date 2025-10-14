@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phz.dadaIsland.mapper.AuthRefreshTokenMapper">
+
+	<resultMap id="AuthRefreshTokenResultMap" type="com.phz.dadaIsland.domain.model.AuthRefreshToken">
+		<id property="id" column="id" />
+		<result property="userId" column="user_id" />
+		<result property="userUid" column="user_uid" />
+		<result property="tokenHash" column="token_hash" />
+		<result property="issuedAt" column="issued_at" />
+		<result property="expiresAt" column="expires_at" />
+		<result property="revokedAt" column="revoked_at" />
+		<result property="metadata" column="metadata" />
+	</resultMap>
+
+	<insert id="insert" parameterType="com.phz.dadaIsland.domain.model.AuthRefreshToken" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO auth_refresh_tokens (user_id, user_uid, token_hash, issued_at, expires_at)
+		VALUES (#{userId}, #{userUid}, #{tokenHash}, #{issuedAt}, #{expiresAt})
+	</insert>
+
+	<select id="findActiveByHash" parameterType="map" resultMap="AuthRefreshTokenResultMap">
+		SELECT id,
+		       user_id,
+		       user_uid,
+		       token_hash,
+		       issued_at,
+		       expires_at,
+		       revoked_at,
+		       metadata
+		FROM auth_refresh_tokens
+		WHERE token_hash = #{tokenHash}
+		  AND revoked_at IS NULL
+		  AND expires_at > #{now}
+		LIMIT 1
+	</select>
+
+	<update id="revokeById" parameterType="map">
+		UPDATE auth_refresh_tokens
+		SET revoked_at = #{revokedAt}
+		WHERE id = #{id}
+		  AND revoked_at IS NULL
+	</update>
+</mapper>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phz.dadaIsland.mapper.UserMapper">
+
+	<resultMap id="UserResultMap" type="com.phz.dadaIsland.domain.model.User">
+		<id property="id" column="id" />
+		<result property="userId" column="user_id" />
+		<result property="phoneNumber" column="phone_number" />
+		<result property="email" column="email" />
+		<result property="passwordHash" column="password_hash" />
+		<result property="displayName" column="display_name" />
+		<result property="avatarUrl" column="avatar_url" />
+		<result property="city" column="city" />
+		<result property="school" column="school" />
+		<result property="bio" column="bio" />
+		<result property="roles" column="roles" typeHandler="com.phz.dadaIsland.mybatis.typehandler.JsonStringSetTypeHandler" />
+		<result property="status" column="status" javaType="com.phz.dadaIsland.domain.enums.UserStatus" />
+		<result property="createdAt" column="created_at" />
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<sql id="BaseColumns">
+		id,
+		user_id,
+		phone_number,
+		email,
+		password_hash,
+		display_name,
+		avatar_url,
+		city,
+		school,
+		bio,
+		roles,
+		status,
+		created_at,
+		updated_at
+	</sql>
+
+	<insert id="insert" parameterType="com.phz.dadaIsland.domain.model.User" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO users (
+			user_id,
+			phone_number,
+			email,
+			password_hash,
+			display_name,
+			avatar_url,
+			city,
+			school,
+			bio,
+			roles,
+			status
+		)
+		VALUES (
+			#{userId},
+			#{phoneNumber},
+			#{email},
+			#{passwordHash},
+			#{displayName},
+			#{avatarUrl},
+			#{city},
+			#{school},
+			#{bio},
+			<choose>
+				<when test="roles != null">
+					#{roles, jdbcType=OTHER, typeHandler=com.phz.dadaIsland.mybatis.typehandler.JsonStringSetTypeHandler}
+				</when>
+				<otherwise>
+					JSON_ARRAY()
+				</otherwise>
+			</choose>,
+			<choose>
+				<when test="status != null">
+					#{status}
+				</when>
+				<otherwise>
+					'ACTIVE'
+				</otherwise>
+			</choose>
+		)
+	</insert>
+
+	<select id="findById" resultMap="UserResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM users
+		WHERE id = #{id}
+		LIMIT 1
+	</select>
+
+	<select id="findByEmail" resultMap="UserResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM users
+		WHERE email = #{email}
+		LIMIT 1
+	</select>
+
+	<select id="findByPhoneNumber" resultMap="UserResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM users
+		WHERE phone_number = #{phoneNumber}
+		LIMIT 1
+	</select>
+
+	<update id="update" parameterType="com.phz.dadaIsland.domain.model.User">
+		UPDATE users
+		<set>
+			<if test="phoneNumber != null">
+				phone_number = #{phoneNumber},
+			</if>
+			<if test="email != null">
+				email = #{email},
+			</if>
+			<if test="passwordHash != null">
+				password_hash = #{passwordHash},
+			</if>
+			<if test="displayName != null">
+				display_name = #{displayName},
+			</if>
+			<if test="avatarUrl != null">
+				avatar_url = #{avatarUrl},
+			</if>
+			<if test="city != null">
+				city = #{city},
+			</if>
+			<if test="school != null">
+				school = #{school},
+			</if>
+			<if test="bio != null">
+				bio = #{bio},
+			</if>
+			<if test="roles != null">
+				roles = #{roles, jdbcType=OTHER, typeHandler=com.phz.dadaIsland.mybatis.typehandler.JsonStringSetTypeHandler},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			updated_at = CURRENT_TIMESTAMP(6)
+		</set>
+		WHERE id = #{id}
+	</update>
+
+</mapper>

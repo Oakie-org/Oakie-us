@@ -7,7 +7,6 @@ public record RegisterRequest(
 		@NotBlank(message = "Phone number is required") String phoneNumber,
 		@Email(message = "Email format is invalid") String email,
 		@NotBlank(message = "Password cannot be empty") String password,
-		@NotBlank(message = "Display name is required") String displayName,
-		String city,
-		String school) {
+		String displayName
+		) {
 }

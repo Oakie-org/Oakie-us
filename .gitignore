@@ -30,3 +30,6 @@ target/
 
 # Docker
 docker/mysql/init/*.sql.backup
+docker/rocketmq/logs/
+docker/rocketmq/store/
+.gradle/

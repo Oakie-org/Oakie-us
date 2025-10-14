@@ -27,6 +27,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 		var domainUser = userService.findByEmail(username)
 				.or(() -> userService.findByPhoneNumber(username))
 				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+		return toUserDetails(domainUser);
+	}
+
+	public UserDetails loadUserById(long id) throws UsernameNotFoundException {
+		var domainUser = userService.findById(id)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + id));
+		return toUserDetails(domainUser);
+	}
+
+	private UserDetails toUserDetails(com.phz.dadaIsland.domain.model.User domainUser) {
 		Collection<? extends GrantedAuthority> authorities = domainUser.getRoles() == null
 				? List.of()
 				: domainUser.getRoles().stream()

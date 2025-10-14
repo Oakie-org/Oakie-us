@@ -1,5 +1,6 @@
 package com.phz.dadaIsland.mapper;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -12,9 +13,7 @@ public interface AuthRefreshTokenMapper {
 
 	void insert(AuthRefreshToken token);
 
-	Optional<AuthRefreshToken> findByTokenHash(@Param("tokenHash") String tokenHash);
+	Optional<AuthRefreshToken> findActiveByHash(@Param("tokenHash") String tokenHash, @Param("now") LocalDateTime now);
 
-	void revoke(@Param("tokenHash") String tokenHash);
-
-	void deleteExpired();
+	void revokeById(@Param("id") Long id, @Param("revokedAt") LocalDateTime revokedAt);
 }

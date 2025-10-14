@@ -12,5 +12,6 @@ public interface UserService {
 
 	Optional<User> findByPhoneNumber(String phoneNumber);
 
+
 	void updateProfile(User user);
 }

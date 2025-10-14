@@ -2,7 +2,7 @@
 
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id CHAR(36) NOT NULL,
+    user_id CHAR(15) NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
     email VARCHAR(255),
     password_hash VARCHAR(255) NOT NULL,
@@ -91,6 +91,7 @@ CREATE TABLE contribution_approvals (
 CREATE TABLE auth_refresh_tokens (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
+    user_uid CHAR(15) NOT NULL,
     token_hash CHAR(64) NOT NULL,
     issued_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     expires_at DATETIME(6) NOT NULL,
@@ -98,7 +99,8 @@ CREATE TABLE auth_refresh_tokens (
     metadata JSON NOT NULL DEFAULT (JSON_OBJECT()),
     CONSTRAINT uk_auth_refresh_tokens_hash UNIQUE (token_hash),
     CONSTRAINT fk_auth_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    INDEX idx_auth_refresh_tokens_user_active (user_id, revoked_at)
+    INDEX idx_auth_refresh_tokens_user_active (user_id, revoked_at),
+    INDEX idx_auth_refresh_tokens_uid_issued (user_uid, issued_at)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE tags (

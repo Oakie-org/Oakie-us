@@ -1,5 +1,23 @@
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dada-app
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - rocketmq-broker
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/dada_island?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      MYSQL_USER: ${MYSQL_USER:-dada}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dev_password}
+      ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
+      SERVER_PORT: ${SERVER_PORT:-8082}
+    ports:
+      - "${APP_PUBLISH:-8082:8082}"
+
   mysql:
     image: mysql:8.0
     container_name: dada-mysql
@@ -43,14 +61,14 @@ services:
       JAVA_OPT_EXT: ${BROKER_JAVA_OPT_EXT:-server -Xms256m -Xmx256m -Xmn128m}
       ROCKETMQ_HOME: /home/rocketmq/rocketmq-5.1.4
     command: >
-      sh -c "cd /home/rocketmq/rocketmq-5.1.4/bin &&
+      sh -c "cd /home/rocketmq/rocketmq-5.1.4/bin && \
       ./mqbroker -n ${NAMESRV_ADDR:-rocketmq-namesrv:9876} -c ../conf/broker.conf"
     ports:
       - "${BROKER_PUBLISH_1:-10911:10911}"
       - "${BROKER_PUBLISH_2:-10909:10909}"
     volumes:
-      - rocketmq_logs:/home/rocketmq/logs
-      - rocketmq_store:/home/rocketmq/store
+      - ./docker/rocketmq/logs:/home/rocketmq/logs
+      - ./docker/rocketmq/store:/home/rocketmq/store
       - ./docker/rocketmq/broker.conf:/home/rocketmq/rocketmq-5.1.4/conf/broker.conf:ro
 
   rocketmq-dashboard:
@@ -67,5 +85,3 @@ services:
 
 volumes:
   mysql_data:
-  rocketmq_logs:
-  rocketmq_store:

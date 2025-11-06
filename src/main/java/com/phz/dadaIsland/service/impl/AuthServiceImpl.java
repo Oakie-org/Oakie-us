@@ -3,6 +3,7 @@ package com.phz.dadaIsland.service.impl;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
+import com.phz.dadaIsland.domain.enums.UserStatus;
 import com.phz.dadaIsland.domain.model.AuthRefreshToken;
 import com.phz.dadaIsland.domain.model.User;
 import com.phz.dadaIsland.mapper.AuthRefreshTokenMapper;
@@ -21,6 +22,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Default {@link AuthService} implementation that handles registration, password-based login,
+ * and token refresh by coordinating MyBatis mappers, password hashing, and JWT generation.
+ *
+ * <p>The service centralizes credential validation rules and refresh-token persistence so the
+ * controller layer can remain thin.</p>
+ *
+ * @author Phz
+ * @since 0.0.1
+ */
 @Service
 @Slf4j
 public class AuthServiceImpl implements AuthService {
@@ -38,6 +49,15 @@ public class AuthServiceImpl implements AuthService {
 	private static final String DEFAULT_NICKNAME = "哒哒";
 
 
+    /**
+     * Creates the authentication service with the collaborating infrastructure components.
+     *
+     * @param userMapper mapper for user persistence and lookups
+     * @param userIdGenerator generator for stable public user identifiers
+     * @param passwordEncoder encoder used to hash and verify passwords
+     * @param jwtTokenProvider component responsible for issuing JWT access and refresh tokens
+     * @param authRefreshTokenMapper mapper for refresh-token storage
+     */
     public AuthServiceImpl(UserMapper userMapper,
             UserIdGenerator userIdGenerator,
             PasswordEncoder passwordEncoder,
@@ -51,55 +71,50 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+	/**
+	 * Creates a new user account and returns the initial token pair.
+	 *
+	 * @param request registration payload containing identifiers and password
+	 * @return {@link AuthTokenResponse} representing access and refresh tokens
+	 */
 	@Override
 	@Transactional
 	public AuthTokenResponse register(RegisterRequest request) {
 		validateRegisterRequest(request);
 
-		String phoneNumber = normalize(request.phoneNumber());
+		String phoneNumber = requirePhoneNumber(request.phoneNumber());
 		String email = normalize(request.email());
-		if (email != null && userMapper.findByEmail(email).isPresent()) {
-			log.debug("Email {} is already registered", email);
-			throw new BusinessException("Email is already registered");
-		}
-		if (userMapper.findByPhoneNumber(phoneNumber).isPresent()) {
-			log.debug("Phone number {} is already registered", phoneNumber);
-			throw new BusinessException("Phone number is already registered");
+		ensurePhoneNumberAvailable(phoneNumber);
+		ensureEmailAvailable(email);
 
-		}
-        String normalizedDisplayName = normalize(request.displayName());
-        String displayName = normalizedDisplayName != null ? normalizedDisplayName : DEFAULT_NICKNAME;
-        String passwordHash = passwordEncoder.encode(request.password());
-        String userUid = String.valueOf(userIdGenerator.generate());
+		String displayName = resolveDisplayName(request.displayName());
+		String passwordHash = passwordEncoder.encode(request.password());
+		String userUid = String.valueOf(userIdGenerator.generate());
 
-        User user = User.builder()
-                .userId(userUid)
-                .phoneNumber(phoneNumber)
-                .email(email)
-                .displayName(displayName)
-                .passwordHash(passwordHash)
-                .build();
+		User user = User.builder()
+				.userId(userUid)
+				.phoneNumber(phoneNumber)
+				.email(email)
+				.displayName(displayName)
+				.passwordHash(passwordHash)
+				.build();
 
-        userMapper.insert(user);
+		userMapper.insert(user);
 
-        User persistedUser = userMapper.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new IllegalStateException("Failed to load persisted user for phone: " + phoneNumber));
+		User persistedUser = userMapper.findByPhoneNumber(phoneNumber)
+				.orElseThrow(() -> new IllegalStateException("Failed to load persisted user for phone: " + phoneNumber));
 
-		String subject = email != null ? email : phoneNumber;
-		Long userPk = persistedUser.getId();
-		if (userPk == null) {
-			throw new IllegalStateException("Persisted user must have database id");
-		}
-		String accessToken = jwtTokenProvider.generateAccessToken(subject, userPk, userUid);
-		long accessTtl = jwtTokenProvider.getAccessTokenTtlSeconds();
-		String refreshToken = jwtTokenProvider.generateRefreshToken(subject, userPk, userUid);
-		long refreshTtl = jwtTokenProvider.getRefreshTokenTtlSeconds();
-
-		persistRefreshToken(persistedUser, userUid, refreshToken, refreshTtl);
-
-        return new AuthTokenResponse(accessToken, accessTtl, refreshToken, refreshTtl);
+		return issueTokens(persistedUser, userUid);
     }
 
+    /**
+     * Persists the hashed refresh token issued to the user so future refresh calls can validate it.
+     *
+     * @param user user receiving the refresh token
+     * @param userUid uid claim to attach to the token
+     * @param refreshToken plaintext refresh token
+     * @param refreshTtlSeconds expiration window in seconds
+     */
     private void persistRefreshToken(User user, String userUid, String refreshToken, long refreshTtlSeconds) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiresAt = now.plusSeconds(refreshTtlSeconds);
@@ -112,14 +127,30 @@ public class AuthServiceImpl implements AuthService {
                 .expiresAt(expiresAt)
                 .build();
         authRefreshTokenMapper.insert(entity);
-    }
-
-	@Override
-	public AuthTokenResponse login(LoginRequest request) {
-		// TODO implement login workflow
-		return null;
 	}
 
+	/**
+	 * Authenticates a user by phone number and password and issues a fresh token pair.
+	 *
+	 * @param request login payload containing credentials
+	 * @return {@link AuthTokenResponse} with access and refresh tokens
+	 */
+	@Override
+	@Transactional
+	public AuthTokenResponse login(LoginRequest request) {
+		String phoneNumber = requirePhoneNumber(request.phoneNumber());
+		User user = loadUserByPhoneNumber(phoneNumber);
+		ensureActiveUser(user);
+		verifyPassword(user, request.password());
+		return issueTokens(user, user.getUserId());
+	}
+
+	/**
+	 * Invalidates the provided refresh token and returns a new token pair.
+	 *
+	 * @param request refresh token payload
+	 * @return {@link AuthTokenResponse} with renewed access and refresh tokens
+	 */
 	@Override
 	@Transactional
 	public AuthTokenResponse refreshToken(RefreshTokenRequest request) {
@@ -133,19 +164,146 @@ public class AuthServiceImpl implements AuthService {
 		authRefreshTokenMapper.revokeById(existingToken.getId(), now);
 		User user = userMapper.findById(existingToken.getUserId())
 			.orElseThrow(() -> new BusinessException("Account not found for refresh token"));
-		String subject = user.getEmail() != null ? user.getEmail() : user.getPhoneNumber();
+		return issueTokens(user, existingToken.getUserUid());
+	}
+
+	/**
+	 * Issues access and refresh tokens for the supplied user, persists the refresh-token hash,
+	 * and returns the composed response object.
+	 *
+	 * @param user domain user entity
+	 * @param userUidOverride optional override for the user UID claim
+	 * @return {@link AuthTokenResponse} containing fresh access and refresh tokens
+	 */
+	private AuthTokenResponse issueTokens(User user, String userUidOverride) {
 		Long userPk = user.getId();
 		if (userPk == null) {
 			throw new BusinessException("Account data is invalid");
 		}
-		String accessToken = jwtTokenProvider.generateAccessToken(subject, userPk, existingToken.getUserUid());
+		String userUid = normalize(userUidOverride != null ? userUidOverride : user.getUserId());
+		if (userUid == null) {
+			throw new BusinessException("Account data is invalid");
+		}
+		String subject = resolveSubject(user);
+
+		String accessToken = jwtTokenProvider.generateAccessToken(subject, userPk, userUid);
 		long accessTtl = jwtTokenProvider.getAccessTokenTtlSeconds();
-		String newRefreshToken = jwtTokenProvider.generateRefreshToken(subject, userPk, existingToken.getUserUid());
+		String refreshToken = jwtTokenProvider.generateRefreshToken(subject, userPk, userUid);
 		long refreshTtl = jwtTokenProvider.getRefreshTokenTtlSeconds();
-		persistRefreshToken(user, existingToken.getUserUid(), newRefreshToken, refreshTtl);
-		return new AuthTokenResponse(accessToken, accessTtl, newRefreshToken, refreshTtl);
+
+		persistRefreshToken(user, userUid, refreshToken, refreshTtl);
+		return new AuthTokenResponse(accessToken, accessTtl, refreshToken, refreshTtl);
 	}
 
+	/**
+	 * Determines the string used as the JWT subject claim for the supplied user.
+	 *
+	 * @param user domain user entity
+	 * @return subject value for JWTs
+	 */
+	private String resolveSubject(User user) {
+		String email = normalize(user.getEmail());
+		if (email != null) {
+			return email;
+		}
+		String phoneNumber = normalize(user.getPhoneNumber());
+		if (phoneNumber != null) {
+			return phoneNumber;
+		}
+		throw new BusinessException("Account data is invalid");
+	}
+
+	/**
+	 * Normalizes and validates the provided phone number string.
+	 *
+	 * @param phoneNumber raw phone number input
+	 * @return normalized phone number
+	 */
+	private String requirePhoneNumber(String phoneNumber) {
+		String normalized = normalize(phoneNumber);
+		if (normalized == null) {
+			throw new BusinessException("Phone number is required");
+		}
+		return normalized;
+	}
+
+	/**
+	 * Loads a user entity by phone number or raises a {@link BusinessException} if not found.
+	 *
+	 * @param phoneNumber normalized phone number
+	 * @return matching user entity
+	 */
+	private User loadUserByPhoneNumber(String phoneNumber) {
+		return userMapper.findByPhoneNumber(phoneNumber)
+				.orElseThrow(() -> new BusinessException("Invalid credentials"));
+	}
+
+	/**
+	 * Ensures the user account is in an active state before authentication proceeds.
+	 *
+	 * @param user domain user entity
+	 */
+	private void ensureActiveUser(User user) {
+		if (user.getStatus() != null && user.getStatus() != UserStatus.ACTIVE) {
+			throw new BusinessException("Account is not active");
+		}
+	}
+
+	/**
+	 * Validates the supplied plaintext password against the stored hash.
+	 *
+	 * @param user domain user entity
+	 * @param rawPassword plaintext password to verify
+	 */
+	private void verifyPassword(User user, String rawPassword) {
+		if (rawPassword == null || rawPassword.isBlank() || !passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+			throw new BusinessException("Invalid credentials");
+		}
+	}
+
+	/**
+	 * Computes the persisted display name, falling back to the default nickname when none is supplied.
+	 *
+	 * @param displayName raw display name input
+	 * @return sanitized display name
+	 */
+	private String resolveDisplayName(String displayName) {
+		String normalizedDisplayName = normalize(displayName);
+		return normalizedDisplayName != null ? normalizedDisplayName : DEFAULT_NICKNAME;
+	}
+
+	/**
+	 * Checks for an existing account with the same phone number and raises a {@link BusinessException} if found.
+	 *
+	 * @param phoneNumber normalized phone number
+	 */
+	private void ensurePhoneNumberAvailable(String phoneNumber) {
+		if (phoneNumber == null) {
+			throw new IllegalStateException("Phone number must be provided");
+		}
+		if (userMapper.findByPhoneNumber(phoneNumber).isPresent()) {
+			log.debug("Phone number {} is already registered", phoneNumber);
+			throw new BusinessException("Phone number is already registered");
+		}
+	}
+
+	/**
+	 * Checks for an existing account with the same email and raises a {@link BusinessException} if found.
+	 *
+	 * @param email normalized email address
+	 */
+	private void ensureEmailAvailable(String email) {
+		if (email != null && userMapper.findByEmail(email).isPresent()) {
+			log.debug("Email {} is already registered", email);
+			throw new BusinessException("Email is already registered");
+		}
+	}
+
+	/**
+	 * Performs basic validation against the registration request payload prior to persistence.
+	 *
+	 * @param request registration payload
+	 */
 	private void validateRegisterRequest(RegisterRequest request) {
 		if (request == null) {
 			throw new BusinessException("Register request cannot be null");
@@ -183,6 +341,12 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
+	/**
+	 * Trims and normalizes string inputs, returning {@code null} when blank.
+	 *
+	 * @param value raw string input
+	 * @return trimmed string or {@code null} if blank
+	 */
 	private String normalize(String value) {
 		if (value == null) {
 			return null;

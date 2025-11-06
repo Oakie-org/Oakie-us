@@ -15,9 +15,9 @@ CREATE TABLE users (
     status ENUM('ACTIVE', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT uk_users_user_id UNIQUE (user_id),
-    CONSTRAINT uk_users_phone UNIQUE (phone_number),
-    CONSTRAINT uk_users_email UNIQUE (email),
+    UNIQUE KEY uk_users_user_id (user_id),
+    UNIQUE KEY uk_users_phone (phone_number),
+    UNIQUE KEY uk_users_email (email),
     INDEX idx_users_city_school (city, school),
     INDEX idx_users_status (status)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

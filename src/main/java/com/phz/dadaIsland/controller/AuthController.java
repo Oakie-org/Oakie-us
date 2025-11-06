@@ -16,6 +16,13 @@ import com.phz.dadaIsland.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * REST endpoints for managing user authentication flows such as registration, login,
+ * and token refresh operations.
+ *
+ * @author Phz
+ * @since 0.0.1
+ */
 @Validated
 @RestController
 @RequestMapping("/api/auth")
@@ -24,18 +31,36 @@ public class AuthController {
 
 	private final AuthService authService;
 
+	/**
+	 * Registers a new account and issues the first set of tokens.
+	 *
+	 * @param request validated registration payload
+	 * @return newly minted access and refresh tokens
+	 */
 	@PostMapping("/register")
 	public ResponseEntity<AuthTokenResponse> register(@RequestBody @Validated RegisterRequest request) {
 		AuthTokenResponse response = authService.register(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	/**
+	 * Authenticates an existing account via phone number and password.
+	 *
+	 * @param request validated login payload
+	 * @return access and refresh tokens tied to the authenticated user
+	 */
 	@PostMapping("/login")
 	public ResponseEntity<AuthTokenResponse> login(@RequestBody @Validated LoginRequest request) {
 		AuthTokenResponse response = authService.login(request);
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	/**
+	 * Exchanges a valid refresh token for a new token pair.
+	 *
+	 * @param request refresh token payload
+	 * @return renewed access and refresh tokens
+	 */
 	@PostMapping("/refresh")
 	public ResponseEntity<AuthTokenResponse> refresh(@RequestBody @Validated RefreshTokenRequest request) {
 		AuthTokenResponse response = authService.refreshToken(request);

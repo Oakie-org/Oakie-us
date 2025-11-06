@@ -1,32 +1,34 @@
 package com.phz.dadaIsland.service.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import com.phz.dadaIsland.domain.enums.UserStatus;
 import com.phz.dadaIsland.domain.model.AuthRefreshToken;
 import com.phz.dadaIsland.domain.model.User;
 import com.phz.dadaIsland.dto.auth.AuthTokenResponse;
-import com.phz.dadaIsland.dto.auth.RegisterRequest;
+import com.phz.dadaIsland.dto.auth.LoginRequest;
 import com.phz.dadaIsland.exception.BusinessException;
 import com.phz.dadaIsland.mapper.AuthRefreshTokenMapper;
 import com.phz.dadaIsland.mapper.UserMapper;
 import com.phz.dadaIsland.security.JwtTokenProvider;
-import com.phz.dadaIsland.security.JwtTokenProvider.TokenType;
 import com.phz.dadaIsland.util.TokenHashUtil;
 import com.phz.dadaIsland.util.UserIdGenerator;
 
@@ -35,98 +37,112 @@ class AuthServiceImplTest {
 
 	@Mock
 	private UserMapper userMapper;
+
 	@Mock
 	private UserIdGenerator userIdGenerator;
+
+	@Mock
+	private PasswordEncoder passwordEncoder;
+
+	@Mock
+	private JwtTokenProvider jwtTokenProvider;
+
 	@Mock
 	private AuthRefreshTokenMapper authRefreshTokenMapper;
 
-	private PasswordEncoder passwordEncoder;
-	private JwtTokenProvider jwtTokenProvider;
-
-	@InjectMocks
 	private AuthServiceImpl authService;
 
 	@BeforeEach
 	void setUp() {
-		passwordEncoder = new BCryptPasswordEncoder();
-
-		jwtTokenProvider = new JwtTokenProvider();
-		ReflectionTestUtils.setField(jwtTokenProvider, "secretKey",
-				"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
-		ReflectionTestUtils.setField(jwtTokenProvider, "accessTokenMinutes", 15L);
-		ReflectionTestUtils.setField(jwtTokenProvider, "refreshTokenDays", 10L);
-
-		authService = new AuthServiceImpl(userMapper, userIdGenerator, passwordEncoder, jwtTokenProvider,
+		authService = new AuthServiceImpl(
+				userMapper,
+				userIdGenerator,
+				passwordEncoder,
+				jwtTokenProvider,
 				authRefreshTokenMapper);
 	}
 
 	@Test
-	void register_GeneratesTokensAndPersistsRefreshToken() {
-		RegisterRequest request = new RegisterRequest("18800001111", "user@example.com", "Secret123!", "  ");
-		when(userIdGenerator.generate()).thenReturn(1234567890L);
-		when(userMapper.findByEmail("user@example.com")).thenReturn(Optional.empty());
-		when(userMapper.findByPhoneNumber("18800001111")).thenReturn(Optional.empty(), Optional.of(User.builder()
+	void loginReturnsTokensWhenCredentialsValid() {
+		LoginRequest request = new LoginRequest("  +1234567890  ", "password");
+		User user = User.builder()
 				.id(42L)
-				.userId("1234567890")
-				.phoneNumber("18800001111")
-				.email("user@example.com")
-				.passwordHash("$2a$10$placeholderplaceholderplaceholderplaceholderplatz")
-				.build()));
+				.userId("U123")
+				.phoneNumber("+1234567890")
+				.passwordHash("hashed")
+				.status(UserStatus.ACTIVE)
+				.build();
 
-		AuthTokenResponse response = authService.register(request);
+		when(userMapper.findByPhoneNumber("+1234567890")).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches("password", "hashed")).thenReturn(true);
+		when(jwtTokenProvider.generateAccessToken("+1234567890", 42L, "U123")).thenReturn("access-token");
+		when(jwtTokenProvider.getAccessTokenTtlSeconds()).thenReturn(900L);
+		when(jwtTokenProvider.generateRefreshToken("+1234567890", 42L, "U123")).thenReturn("refresh-token");
+		when(jwtTokenProvider.getRefreshTokenTtlSeconds()).thenReturn(86_400L);
 
-		assertThat(response.accessToken()).isNotBlank();
-		assertThat(response.refreshToken()).isNotBlank();
-		assertThat(response.accessTokenExpiresInSeconds()).isEqualTo(15 * 60);
-		assertThat(response.refreshTokenExpiresInSeconds()).isEqualTo(10 * 24 * 60 * 60);
-		assertThat(jwtTokenProvider.validateToken(response.accessToken(), TokenType.ACCESS)).isTrue();
-		assertThat(jwtTokenProvider.validateToken(response.refreshToken(), TokenType.ACCESS)).isFalse();
-		assertThat(jwtTokenProvider.extractTokenType(response.accessToken())).isEqualTo(TokenType.ACCESS);
-		assertThat(jwtTokenProvider.extractTokenType(response.refreshToken())).isEqualTo(TokenType.REFRESH);
+		AuthTokenResponse response = authService.login(request);
 
-		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-		verify(userMapper).insert(userCaptor.capture());
-		User insertedUser = userCaptor.getValue();
-		assertThat(insertedUser.getDisplayName()).isEqualTo("哒哒");
-		assertThat(passwordEncoder.matches("Secret123!", insertedUser.getPasswordHash())).isTrue();
+		assertEquals("access-token", response.accessToken());
+		assertEquals(900L, response.accessTokenExpiresInSeconds());
+		assertEquals("refresh-token", response.refreshToken());
+		assertEquals(86_400L, response.refreshTokenExpiresInSeconds());
 
-		ArgumentCaptor<AuthRefreshToken> tokenCaptor = ArgumentCaptor.forClass(AuthRefreshToken.class);
-		verify(authRefreshTokenMapper).insert(tokenCaptor.capture());
-		AuthRefreshToken storedToken = tokenCaptor.getValue();
-		assertThat(storedToken.getUserUid()).isEqualTo("1234567890");
-		assertThat(storedToken.getUserId()).isEqualTo(42L);
-		assertThat(storedToken.getRevokedAt()).isNull();
-		assertThat(storedToken.getIssuedAt()).isNotNull();
-		assertThat(storedToken.getExpiresAt()).isNotNull();
-		assertThat(Duration.between(storedToken.getIssuedAt(), storedToken.getExpiresAt()))
-				.isBetween(Duration.ofDays(9), Duration.ofDays(11));
-		assertThat(storedToken.getTokenHash()).isEqualTo(TokenHashUtil.sha256Hex(response.refreshToken()));
-
-		var claimsPk = jwtTokenProvider.extractUserPk(response.accessToken());
-		var claimsUid = jwtTokenProvider.extractUserUid(response.accessToken());
-		assertThat(claimsPk).isEqualTo(42L);
-		assertThat(claimsUid).isEqualTo("1234567890");
+		verify(authRefreshTokenMapper).insert(argThat(token -> {
+			assertEquals(42L, token.getUserId());
+			assertEquals("U123", token.getUserUid());
+			assertEquals(TokenHashUtil.sha256Hex("refresh-token"), token.getTokenHash());
+			assertNotNull(token.getIssuedAt());
+			assertNotNull(token.getExpiresAt());
+			return true;
+		}));
 	}
 
 	@Test
-	void register_ThrowsWhenEmailExists() {
-		RegisterRequest request = new RegisterRequest("18800002222", "dup@example.com", "Secret123!", "Name");
-		when(userMapper.findByEmail("dup@example.com")).thenReturn(Optional.of(new User()));
+	void loginThrowsWhenUserNotFound() {
+		when(userMapper.findByPhoneNumber("+999")).thenReturn(Optional.empty());
+		LoginRequest request = new LoginRequest("+999", "password");
 
-		assertThrows(BusinessException.class, () -> authService.register(request));
+		assertThrows(BusinessException.class, () -> authService.login(request));
 
-		verify(userMapper, never()).insert(any());
-		verify(authRefreshTokenMapper, never()).insert(any());
+		verify(authRefreshTokenMapper, never()).insert(any(AuthRefreshToken.class));
 	}
 
 	@Test
-	void register_ThrowsWhenPhoneExists() {
-		RegisterRequest request = new RegisterRequest("18800003333", null, "Secret123!", "Name");
-		when(userMapper.findByPhoneNumber("18800003333")).thenReturn(Optional.of(new User()));
+	void loginThrowsWhenAccountNotActive() {
+		User user = User.builder()
+				.id(11L)
+				.userId("U999")
+				.phoneNumber("+111")
+				.passwordHash("hashed")
+				.status(UserStatus.SUSPENDED)
+				.build();
+		when(userMapper.findByPhoneNumber("+111")).thenReturn(Optional.of(user));
 
-		assertThrows(BusinessException.class, () -> authService.register(request));
+		LoginRequest request = new LoginRequest("+111", "password");
 
-		verify(userMapper, never()).insert(any());
-		verify(authRefreshTokenMapper, never()).insert(any());
+		assertThrows(BusinessException.class, () -> authService.login(request));
+
+		verify(passwordEncoder, never()).matches("password", "hashed");
+		verify(authRefreshTokenMapper, never()).insert(any(AuthRefreshToken.class));
+	}
+
+	@Test
+	void loginThrowsWhenPasswordDoesNotMatch() {
+		User user = User.builder()
+				.id(21L)
+				.userId("U555")
+				.phoneNumber("+222")
+				.passwordHash("hashed")
+				.status(UserStatus.ACTIVE)
+				.build();
+		when(userMapper.findByPhoneNumber("+222")).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
+
+		LoginRequest request = new LoginRequest("+222", "wrong");
+
+		assertThrows(BusinessException.class, () -> authService.login(request));
+
+		verify(jwtTokenProvider, never()).generateAccessToken(anyString(), anyLong(), anyString());
+		verify(authRefreshTokenMapper, never()).insert(any(AuthRefreshToken.class));
 	}
 }

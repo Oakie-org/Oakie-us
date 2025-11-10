@@ -9,12 +9,17 @@ services:
     depends_on:
       - mysql
       - rocketmq-broker
+      - redis
     environment:
       MYSQL_URL: jdbc:mysql://mysql:3306/dada_island?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       MYSQL_USER: ${MYSQL_USER:-dada}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dev_password}
       ROCKETMQ_NAMESRV: rocketmq-namesrv:9876
       SERVER_PORT: ${SERVER_PORT:-8082}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dada_dev_password}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-redis}
     ports:
       - "${APP_PUBLISH:-8082:8082}"
 
@@ -39,6 +44,24 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  redis:
+    image: redis:7.4.0
+    container_name: dada-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-dada_dev_password} --appendonly yes
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dada_dev_password}
+    ports:
+      - "${REDIS_PUBLISH:-6379:6379}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-dada_dev_password} PING"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   rocketmq-namesrv:
     image: apache/rocketmq:5.1.4
@@ -85,3 +108,4 @@ services:
 
 volumes:
   mysql_data:
+  redis_data:

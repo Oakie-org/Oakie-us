@@ -1,0 +1,33 @@
+spring:
+  config:
+    activate:
+      on-profile: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      timeout: ${REDIS_TIMEOUT:3000ms}
+      client-type: lettuce
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:32}
+          max-idle: ${REDIS_POOL_MAX_IDLE:16}
+          min-idle: ${REDIS_POOL_MIN_IDLE:4}
+          max-wait: ${REDIS_POOL_MAX_WAIT:500ms}
+  cache:
+    type: redis
+    redis:
+      time-to-live: ${CACHE_TTL:PT10M}
+      key-prefix: ${CACHE_PREFIX:dada:}
+
+management:
+  health:
+    redis:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.data.redis: INFO

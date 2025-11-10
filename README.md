@@ -66,12 +66,21 @@
 
 | 类别 | 技术 |
 |------|------|
-| Backend | Java · Spring Boot · MySQL · Redis |
+| Backend | Java · Spring Boot · MySQL |
+| Cache | Redis (planned) |
 | Frontend | React / Vue (待定) |
-| Message Queue | RocketMQ |
+| Message Queue | RocketMQ (future async pipelines) |
 | Auth | Spring Security + JWT |
 | Infra | Docker · Docker Compose |
 | Collaboration | Git · RESTful API · CI/CD |
+
+### Redis vs. RocketMQ — Why Redis First?
+
+- Redis gives immediate wins for current priorities: caching hot project/user data, storing recommendation sets, rate limiting login/OTP flows, and tracking realtime counters without hammering MySQL.
+- RocketMQ shines once we need decoupled, high-volume domain events (e.g., contribution approvals broadcasting to multiple consumers), but operating the outbox plus MQ introduces heavier complexity than we can justify today.
+- We still plan to bring RocketMQ online for durable event pipelines; adopting Redis sooner keeps login and discovery responsive while the core feature set matures.
+
+> TL;DR: adopt Redis first for latency/caching gains; add RocketMQ later when asynchronous workflows become unavoidable.
 
 ---
 

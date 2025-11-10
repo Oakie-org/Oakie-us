@@ -8,6 +8,7 @@
 - **Security pipeline** – Stateless JWT filter, entry point, and custom user details service in place to protect future APIs (`src/main/java/com/phz/dadaIsland/security`).
 - **Domain contracts** – Core DTOs, mappers, enums, and service interfaces defined for projects, contributions, notifications, users, and events.
 - **Product design reference** – High-fidelity mobile prototypes covering discovery, collaboration, messaging, and proof experiences (`prototypes/` gallery).
+- **Auth enhancements** – Login flow, controller responses, documentation, and unit tests implemented, plus clarified Redis-first caching strategy in README.
 
 ## 🚧 In Progress / Open Gaps
 
@@ -21,7 +22,7 @@
 
 ## 🗓️ Next To-Do Items
 
-1. Implement login flow (lookup by email/phone, password verification, token rotation) and return `200 OK` from `AuthController`.
+1. Integrate Redis: add starter/config, establish connection management, and define caching/rate-limiting policies for auth & discovery flows.
 2. Use the security context to derive the current user, and finish project creation/list/detail operations backed by MyBatis.
 3. Flesh out contribution submission, approval, and notification read workflows, publishing domain events through RocketMQ.
 4. Create MyBatis XML mappings for projects, contributions, memberships, tags, skills, and outbox entities.
@@ -29,4 +30,3 @@
 6. Restore meaningful HTTP responses in controllers once service logic is complete.
 7. Add unit/integration tests around auth and project flows; document project structure and local setup in the README.
 8. Provide optional seed scripts under `docker/mysql/init` to bootstrap reference data for development.
-

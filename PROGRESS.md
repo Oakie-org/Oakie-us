@@ -9,6 +9,7 @@
 - **Domain contracts** – Core DTOs, mappers, enums, and service interfaces defined for projects, contributions, notifications, users, and events.
 - **Product design reference** – High-fidelity mobile prototypes covering discovery, collaboration, messaging, and proof experiences (`prototypes/` gallery).
 - **Auth enhancements** – Login flow, controller responses, documentation, and unit tests implemented, plus clarified Redis-first caching strategy in README.
+- **OTP enforcement** – Registration now requires a phone OTP: `sendRegistrationOtp()` rate-limits per phone, persists a Redis token, and `register()` verifies the submitted code before issuing JWTs.
 
 ## 🚧 In Progress / Open Gaps
 
@@ -19,14 +20,17 @@
 - **API responses** – Controllers respond with 501 status codes and static placeholders instead of real data.
 - **Testing & docs** – No automated tests and README stops before the project structure section; onboarding instructions are incomplete.
 - **Dev data** – MySQL init directory is empty; no seed data for tags/users to ease local testing.
+- **OTP delivery channel** – Generated OTPs are only stored server-side; SMS/email integrations (or at least a temporary echo) are required so users can complete registration.
 
 ## 🗓️ Next To-Do Items
 
 1. Integrate Redis: add starter/config, establish connection management, and define caching/rate-limiting policies for auth & discovery flows.
-2. Use the security context to derive the current user, and finish project creation/list/detail operations backed by MyBatis.
-3. Flesh out contribution submission, approval, and notification read workflows, publishing domain events through RocketMQ.
-4. Create MyBatis XML mappings for projects, contributions, memberships, tags, skills, and outbox entities.
-5. Hook the outbox to RocketMQ (poller, publisher implementations, retry logic) to make event delivery functional.
-6. Restore meaningful HTTP responses in controllers once service logic is complete.
-7. Add unit/integration tests around auth and project flows; document project structure and local setup in the README.
-8. Provide optional seed scripts under `docker/mysql/init` to bootstrap reference data for development.
+   - Longer-term: explore moving refresh-token rotation to Redis (or hybrid Redis+MySQL) to reduce DB churn; postponed while we focus on feature delivery.
+2. Wire up OTP delivery: integrate an SMS/email provider (or temporary debug response) so `sendRegistrationOtp()` returns/delivers the generated code.
+3. Use the security context to derive the current user, and finish project creation/list/detail operations backed by MyBatis.
+4. Flesh out contribution submission, approval, and notification read workflows, publishing domain events through RocketMQ.
+5. Create MyBatis XML mappings for projects, contributions, memberships, tags, skills, and outbox entities.
+6. Hook the outbox to RocketMQ (poller, publisher implementations, retry logic) to make event delivery functional.
+7. Restore meaningful HTTP responses in controllers once service logic is complete.
+8. Add unit/integration tests around auth and project flows; document project structure and local setup in the README.
+9. Provide optional seed scripts under `docker/mysql/init` to bootstrap reference data for development.

@@ -1,6 +1,7 @@
 package com.phz.dadaIsland.service.impl;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.regex.Pattern;
 
 import com.phz.dadaIsland.domain.enums.UserStatus;
@@ -12,13 +13,17 @@ import com.phz.dadaIsland.dto.auth.AuthTokenResponse;
 import com.phz.dadaIsland.dto.auth.LoginRequest;
 import com.phz.dadaIsland.dto.auth.RegisterRequest;
 import com.phz.dadaIsland.dto.auth.RefreshTokenRequest;
+import com.phz.dadaIsland.dto.auth.SendOtpRequest;
 import com.phz.dadaIsland.exception.BusinessException;
 import com.phz.dadaIsland.security.JwtTokenProvider;
 import com.phz.dadaIsland.service.AuthService;
+import com.phz.dadaIsland.service.OtpService;
+import com.phz.dadaIsland.service.RateLimiterService;
 import com.phz.dadaIsland.util.TokenHashUtil;
 import com.phz.dadaIsland.util.UserIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +51,17 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthRefreshTokenMapper authRefreshTokenMapper;
+	private final OtpService otpService;
+	private final RateLimiterService rateLimiterService;
 	private static final String DEFAULT_NICKNAME = "哒哒";
+	private static final String LOGIN_RATE_LIMIT_PREFIX = "rl:login:";
+	private static final String OTP_RATE_LIMIT_PREFIX = "rl:otp:";
+	// Rate limiter knobs (configurable through application properties)
+	private final Duration loginRateWindow;
+	private final long loginRateLimit;
+	private final Duration otpTtl;
+	private final Duration otpRateWindow;
+	private final long otpRateLimit;
 
 
     /**
@@ -57,17 +72,38 @@ public class AuthServiceImpl implements AuthService {
      * @param passwordEncoder encoder used to hash and verify passwords
      * @param jwtTokenProvider component responsible for issuing JWT access and refresh tokens
      * @param authRefreshTokenMapper mapper for refresh-token storage
+	 * @param otpService Redis-backed OTP service
+	 * @param rateLimiterService Redis-backed rate limiter
+	 * @param loginRateLimit max login attempts allowed per {@code loginRateWindow}
+	 * @param loginRateWindow sliding window for login attempts
+	 * @param otpRateLimit max OTP requests allowed per {@code otpRateWindow}
+	 * @param otpRateWindow sliding window for OTP requests
+	 * @param otpTtl TTL applied to generated OTP codes
      */
     public AuthServiceImpl(UserMapper userMapper,
             UserIdGenerator userIdGenerator,
             PasswordEncoder passwordEncoder,
             JwtTokenProvider jwtTokenProvider,
-            AuthRefreshTokenMapper authRefreshTokenMapper) {
+            AuthRefreshTokenMapper authRefreshTokenMapper,
+			OtpService otpService,
+			RateLimiterService rateLimiterService,
+			@Value("${security.auth.login-rate-limit:5}") long loginRateLimit,
+			@Value("${security.auth.login-rate-window:PT5M}") Duration loginRateWindow,
+			@Value("${security.auth.otp-rate-limit:1}") long otpRateLimit,
+			@Value("${security.auth.otp-rate-window:PT1M}") Duration otpRateWindow,
+			@Value("${security.auth.otp-ttl:PT5M}") Duration otpTtl) {
         this.userMapper = userMapper;
         this.userIdGenerator = userIdGenerator;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authRefreshTokenMapper = authRefreshTokenMapper;
+		this.otpService = otpService;
+		this.rateLimiterService = rateLimiterService;
+		this.loginRateLimit = loginRateLimit;
+		this.loginRateWindow = loginRateWindow;
+		this.otpRateLimit = otpRateLimit;
+		this.otpRateWindow = otpRateWindow;
+		this.otpTtl = otpTtl;
     }
 
 
@@ -84,8 +120,10 @@ public class AuthServiceImpl implements AuthService {
 
 		String phoneNumber = requirePhoneNumber(request.phoneNumber());
 		String email = normalize(request.email());
+		String otpCode = normalize(request.otpCode());
 		ensurePhoneNumberAvailable(phoneNumber);
 		ensureEmailAvailable(email);
+		otpService.validate(phoneNumber, otpCode);
 
 		String displayName = resolveDisplayName(request.displayName());
 		String passwordHash = passwordEncoder.encode(request.password());
@@ -106,6 +144,19 @@ public class AuthServiceImpl implements AuthService {
 
 		return issueTokens(persistedUser, userUid);
     }
+
+	@Override
+	public void sendRegistrationOtp(SendOtpRequest request) {
+		String phoneNumber = requirePhoneNumber(request.phoneNumber());
+		if (!rateLimiterService.tryConsume(OTP_RATE_LIMIT_PREFIX + phoneNumber, otpRateLimit, otpRateWindow)) {
+			throw new BusinessException("OTP requests are too frequent. Please try again later.");
+		}
+		ensurePhoneNumberAvailable(phoneNumber, true);
+		otpService.generateAndStore(phoneNumber, otpTtl);
+		if (log.isDebugEnabled()) {
+			log.debug("OTP generated for phone {} with TTL {} seconds", maskPhone(phoneNumber), otpTtl.toSeconds());
+		}
+	}
 
     /**
      * Persists the hashed refresh token issued to the user so future refresh calls can validate it.
@@ -139,6 +190,9 @@ public class AuthServiceImpl implements AuthService {
 	@Transactional
 	public AuthTokenResponse login(LoginRequest request) {
 		String phoneNumber = requirePhoneNumber(request.phoneNumber());
+		if (!rateLimiterService.tryConsume(LOGIN_RATE_LIMIT_PREFIX + phoneNumber, loginRateLimit, loginRateWindow)) {
+			throw new BusinessException("Too many login attempts. Please try again later.");
+		}
 		User user = loadUserByPhoneNumber(phoneNumber);
 		ensureActiveUser(user);
 		verifyPassword(user, request.password());
@@ -278,11 +332,18 @@ public class AuthServiceImpl implements AuthService {
 	 * @param phoneNumber normalized phone number
 	 */
 	private void ensurePhoneNumberAvailable(String phoneNumber) {
+		ensurePhoneNumberAvailable(phoneNumber, false);
+	}
+
+	private void ensurePhoneNumberAvailable(String phoneNumber, boolean suppressDisclosure) {
 		if (phoneNumber == null) {
 			throw new IllegalStateException("Phone number must be provided");
 		}
 		if (userMapper.findByPhoneNumber(phoneNumber).isPresent()) {
-			log.debug("Phone number {} is already registered", phoneNumber);
+			log.debug("Phone number {} is already registered", maskPhone(phoneNumber));
+			if (suppressDisclosure) {
+				throw new BusinessException("Unable to process request at this time");
+			}
 			throw new BusinessException("Phone number is already registered");
 		}
 	}
@@ -311,6 +372,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String phoneNumber = normalize(request.phoneNumber());
 		String email = normalize(request.email());
+		String otpCode = normalize(request.otpCode());
 		String displayName = normalize(request.displayName());
 		String password = request.password();
 		if (log.isDebugEnabled()) {
@@ -336,6 +398,10 @@ public class AuthServiceImpl implements AuthService {
 			throw new BusinessException("Password must be at least %d characters long".formatted(MIN_PASSWORD_LENGTH));
 		}
 
+		if (otpCode == null) {
+			throw new BusinessException("OTP code is required");
+		}
+
 		if (displayName != null && displayName.length() > MAX_DISPLAY_NAME_LENGTH) {
 			throw new BusinessException("Display name must be at most %d characters".formatted(MAX_DISPLAY_NAME_LENGTH));
 		}
@@ -353,5 +419,15 @@ public class AuthServiceImpl implements AuthService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private String maskPhone(String phoneNumber) {
+		if (phoneNumber == null || phoneNumber.length() < 4) {
+			return "****";
+		}
+		int prefixLength = Math.min(3, phoneNumber.length() - 2);
+		String prefix = phoneNumber.substring(0, prefixLength);
+		String suffix = phoneNumber.substring(phoneNumber.length() - 2);
+		return prefix + "***" + suffix;
 	}
 }

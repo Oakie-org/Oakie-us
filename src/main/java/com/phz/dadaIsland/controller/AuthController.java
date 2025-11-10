@@ -13,6 +13,7 @@ import com.phz.dadaIsland.dto.auth.LoginRequest;
 import com.phz.dadaIsland.dto.auth.RefreshTokenRequest;
 import com.phz.dadaIsland.dto.auth.RegisterRequest;
 import com.phz.dadaIsland.service.AuthService;
+import com.phz.dadaIsland.dto.auth.SendOtpRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,18 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
 	private final AuthService authService;
+
+	/**
+	 * Issues an OTP to the provided phone number for registration verification.
+	 *
+	 * @param request phone payload
+	 * @return empty response on success
+	 */
+	@PostMapping("/otp/register")
+	public ResponseEntity<Void> sendRegistrationOtp(@RequestBody @Validated SendOtpRequest request) {
+		authService.sendRegistrationOtp(request);
+		return ResponseEntity.accepted().build();
+	}
 
 	/**
 	 * Registers a new account and issues the first set of tokens.

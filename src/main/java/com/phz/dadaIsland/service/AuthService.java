@@ -4,6 +4,7 @@ import com.phz.dadaIsland.dto.auth.AuthTokenResponse;
 import com.phz.dadaIsland.dto.auth.LoginRequest;
 import com.phz.dadaIsland.dto.auth.RefreshTokenRequest;
 import com.phz.dadaIsland.dto.auth.RegisterRequest;
+import com.phz.dadaIsland.dto.auth.SendOtpRequest;
 
 /**
  * Contract for authentication use cases including registration, login, and token refresh.
@@ -21,6 +22,13 @@ public interface AuthService {
 	 * @return access and refresh tokens for the created user
 	 */
 	AuthTokenResponse register(RegisterRequest request);
+
+	/**
+	 * Sends an OTP required for registration.
+	 *
+	 * @param request phone payload
+	 */
+	void sendRegistrationOtp(SendOtpRequest request);
 
 	/**
 	 * Authenticates an existing user with password credentials.

@@ -18,6 +18,7 @@ public record RegisterRequest(
 		@NotBlank(message = "Phone number is required") String phoneNumber,
 		@Email(message = "Email format is invalid") String email,
 		@NotBlank(message = "Password cannot be empty") String password,
+		@NotBlank(message = "OTP code is required") String otpCode,
 		String displayName
 		) {
 }

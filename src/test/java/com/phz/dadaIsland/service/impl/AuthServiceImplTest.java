@@ -7,10 +7,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,10 +28,13 @@ import com.phz.dadaIsland.domain.model.AuthRefreshToken;
 import com.phz.dadaIsland.domain.model.User;
 import com.phz.dadaIsland.dto.auth.AuthTokenResponse;
 import com.phz.dadaIsland.dto.auth.LoginRequest;
+import com.phz.dadaIsland.dto.auth.SendOtpRequest;
 import com.phz.dadaIsland.exception.BusinessException;
 import com.phz.dadaIsland.mapper.AuthRefreshTokenMapper;
 import com.phz.dadaIsland.mapper.UserMapper;
 import com.phz.dadaIsland.security.JwtTokenProvider;
+import com.phz.dadaIsland.service.OtpService;
+import com.phz.dadaIsland.service.RateLimiterService;
 import com.phz.dadaIsland.util.TokenHashUtil;
 import com.phz.dadaIsland.util.UserIdGenerator;
 
@@ -50,6 +56,12 @@ class AuthServiceImplTest {
 	@Mock
 	private AuthRefreshTokenMapper authRefreshTokenMapper;
 
+	@Mock
+	private OtpService otpService;
+
+	@Mock
+	private RateLimiterService rateLimiterService;
+
 	private AuthServiceImpl authService;
 
 	@BeforeEach
@@ -59,7 +71,15 @@ class AuthServiceImplTest {
 				userIdGenerator,
 				passwordEncoder,
 				jwtTokenProvider,
-				authRefreshTokenMapper);
+				authRefreshTokenMapper,
+				otpService,
+				rateLimiterService,
+				5L,
+				Duration.ofMinutes(5),
+				1L,
+				Duration.ofMinutes(1),
+				Duration.ofMinutes(5));
+		when(rateLimiterService.tryConsume(anyString(), anyLong(), any())).thenReturn(true);
 	}
 
 	@Test
@@ -95,6 +115,7 @@ class AuthServiceImplTest {
 			assertNotNull(token.getExpiresAt());
 			return true;
 		}));
+		verify(rateLimiterService).tryConsume(anyString(), anyLong(), any());
 	}
 
 	@Test
@@ -144,5 +165,38 @@ class AuthServiceImplTest {
 
 		verify(jwtTokenProvider, never()).generateAccessToken(anyString(), anyLong(), anyString());
 		verify(authRefreshTokenMapper, never()).insert(any(AuthRefreshToken.class));
+	}
+
+	@Test
+	void loginThrowsWhenRateLimitExceeded() {
+		when(rateLimiterService.tryConsume(anyString(), anyLong(), any())).thenReturn(false);
+		LoginRequest request = new LoginRequest("+321", "secret");
+
+		assertThrows(BusinessException.class, () -> authService.login(request));
+
+		verify(userMapper, never()).findByPhoneNumber("+321");
+	}
+
+	@Test
+	void sendRegistrationOtpSuccess() {
+		when(userMapper.findByPhoneNumber("+555")).thenReturn(Optional.empty());
+		when(otpService.generateAndStore(anyString(), any())).thenReturn("123456");
+		SendOtpRequest request = new SendOtpRequest("+555");
+
+		authService.sendRegistrationOtp(request);
+
+		verify(rateLimiterService, times(1)).tryConsume(anyString(), anyLong(), any());
+		verify(userMapper).findByPhoneNumber("+555");
+		verify(otpService).generateAndStore(eq("+555"), any());
+	}
+
+	@Test
+	void sendRegistrationOtpBlockedWhenRateLimited() {
+		when(rateLimiterService.tryConsume(anyString(), anyLong(), any())).thenReturn(false);
+		SendOtpRequest request = new SendOtpRequest("+666");
+
+		assertThrows(BusinessException.class, () -> authService.sendRegistrationOtp(request));
+
+		verify(otpService, never()).generateAndStore(anyString(), any());
 	}
 }

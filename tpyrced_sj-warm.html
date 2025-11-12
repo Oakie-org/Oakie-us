@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搭搭岛 - 找队友，做真事，从一个点子开始 (沙滩暖色版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beach: {
+                            sand: '#FEF3C7',
+                            coral: '#FB7185',
+                            sunset: '#F97316',
+                            amber: '#F59E0B',
+                            peach: '#FCA5A5',
+                            gold: '#FBBF24',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .mockup-frame {
+            border: 3px solid #e5e7eb;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            min-width: 380px;
+            height: 680px;
+            overflow: hidden;
+        }
+        .mockup-label {
+            background: linear-gradient(135deg, #F97316 0%, #FB7185 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        .island-card {
+            transition: all 0.3s ease;
+        }
+        .island-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(251, 113, 133, 0.3);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #F97316 0%, #FB7185 100%);
+        }
+        .island-gradient {
+            background: linear-gradient(to right, #F97316, #FB7185);
+        }
+        .tag {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-8">
+    
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+            🏝️ 搭搭岛 Mockup Gallery
+        </h1>
+        <p class="text-gray-600 text-lg">找队友，做真事，从一个点子开始 · 沙滩暖色版</p>
+    </div>
+
+    <!-- Mockup Gallery Container -->
+    <div class="flex gap-8 pb-8 no-scrollbar" style="overflow-x: auto;">
+        
+        <!-- Page 1: 首页/Landing Page -->
+        <div class="flex-shrink-0">
+            <div class="mockup-label">01 首页 Landing</div>
+            <div class="mockup-frame">
+                <!-- Navigation -->
+                <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 rounded-full island-gradient flex items-center justify-center text-white text-xl">
+                            🏝️
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">搭搭岛</span>
+                    </div>
+                    <div class="flex gap-4 text-sm font-medium text-gray-600">
+                        <a href="#" class="hover:text-orange-600">发现项目</a>
+                        <a href="#" class="hover:text-orange-600">找队友</a>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600">登录</button>
+                        <button class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg hover:shadow-lg">注册</button>
+                    </div>
+                </div>
+
+                <!-- Hero Section -->
+                <div class="px-6 py-8 text-center">
+                    <div class="mb-4 inline-flex px-4 py-1.5 bg-orange-100 rounded-full text-orange-700 text-xs font-semibold">
+                        ✨ 让想法不再孤单
+                    </div>
+                    <h1 class="text-3xl font-bold mb-3 text-gray-900 leading-tight">
+                        找队友，做真事<br/>从一个点子开始
+                    </h1>
+                    <p class="text-gray-600 text-sm mb-6 max-w-xs mx-auto leading-relaxed">
+                        无论你是创业者、工程师还是设计师，在这里找到志同道合的伙伴，一起把想法变成现实
+                    </p>
+                    <div class="flex gap-3 justify-center mb-8">
+                        <button class="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl">
+                            开始探索 →
+                        </button>
+                        <button class="px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold text-sm border border-gray-200 hover:border-orange-300">
+                            发布项目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="px-6 py-4 bg-gradient-to-br from-orange-50 to-amber-50 border-t border-gray-100">
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-orange-600">1,247</div>
+                            <div class="text-xs text-gray-600">活跃项目</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-pink-600">8,943</div>
+                            <div class="text-xs text-gray-600">创造者</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-amber-600">324</div>
+                            <div class="text-xs text-gray-600">成功落地</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Projects -->
+                <div class="px-6 py-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">🔥 热门项目</h2>
+                        <a href="#" class="text-xs text-orange-600 font-medium">查看全部 →</a>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <!-- Project Card 1 -->
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 island-card">
+                            <div class="flex gap-3">
+                                <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=80&h=80&fit=crop" 
+                                     class="w-16 h-16 rounded-lg object-cover" alt="project">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-semibold text-sm text-gray-900 mb-1">校园二手交易平台</h3>
+                                    <p class="text-xs text-gray-600 mb-2 line-clamp-2">打造大学生专属的可信二手市场，需要前端开发和UI设计师</p>
+                                    <div class="flex gap-1.5 mb-2 flex-wrap">
+                                        <span class="tag">React</span>
+                                        <span class="tag">UI设计</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500">
+                                        <span>👥 3/5人</span>
+                                        <span>📍 北京</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Card 2 -->
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 island-card">
+                            <div class="flex gap-3">
+                                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=80&h=80&fit=crop" 
+                                     class="w-16 h-16 rounded-lg object-cover" alt="project">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-semibold text-sm text-gray-900 mb-1">AI健身助手小程序</h3>
+                                    <p class="text-xs text-gray-600 mb-2 line-clamp-2">用AI帮助用户定制健身计划，寻找算法工程师</p>
+                                    <div class="flex gap-1.5 mb-2 flex-wrap">
+                                        <span class="tag">Python</span>
+                                        <span class="tag">AI/ML</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500">
+                                        <span>👥 2/4人</span>
+                                        <span>📍 上海</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: 发现项目 -->
+        <div class="flex-shrink-0">
+            <div class="mockup-label">02 发现项目 Discover</div>
+            <div class="mockup-frame">
+                <!-- Navigation -->
+                <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full island-gradient flex items-center justify-center text-white text-sm">
+                            🏝️
+                        </div>
+                        <span class="text-lg font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">搭搭岛</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                            <i class="fas fa-bell text-gray-600 text-sm"></i>
+                        </button>
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-400"></div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="px-6 py-4 bg-white border-b border-gray-100">
+                    <div class="relative mb-3">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" placeholder="搜索项目、技能、城市..." 
+                               class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium">全部</button>
+                        <button class="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-medium hover:border-orange-300">技术开发</button>
+                        <button class="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-medium hover:border-orange-300">设计创意</button>
+                        <button class="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-medium hover:border-orange-300">内容运营</button>
+                    </div>
+                </div>
+
+                <!-- Projects Grid -->
+                <div class="px-6 py-4 space-y-3 no-scrollbar" style="height: 520px; overflow-y: auto;">
+                    <!-- Project Card -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=120&fit=crop" 
+                             class="w-full h-24 object-cover" alt="project">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <h3 class="font-bold text-sm text-gray-900">智能学习笔记工具</h3>
+                                <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">招募中</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                                用AI帮助学生整理和复习笔记，目前已有产品原型，需要全栈工程师和UI设计师加入
+                            </p>
+                            <div class="flex gap-1.5 mb-3 flex-wrap">
+                                <span class="tag">Vue.js</span>
+                                <span class="tag">Node.js</span>
+                                <span class="tag">AI</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=32&h=32&fit=crop" 
+                                         class="w-6 h-6 rounded-full" alt="avatar">
+                                    <span class="text-xs text-gray-600 font-medium">张小雨</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>👥 2/5</span>
+                                    <span>📍 杭州</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 2 -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=120&fit=crop" 
+                             class="w-full h-24 object-cover" alt="project">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <h3 class="font-bold text-sm text-gray-900">独立音乐人平台</h3>
+                                <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">招募中</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                                为独立音乐人打造作品展示和社区交流平台，需要前端、后端和运营小伙伴
+                            </p>
+                            <div class="flex gap-1.5 mb-3 flex-wrap">
+                                <span class="tag">React</span>
+                                <span class="tag">设计</span>
+                                <span class="tag">运营</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop" 
+                                         class="w-6 h-6 rounded-full" alt="avatar">
+                                    <span class="text-xs text-gray-600 font-medium">李明</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>👥 3/6</span>
+                                    <span>📍 成都</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 3 -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=120&fit=crop" 
+                             class="w-full h-24 object-cover" alt="project">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <h3 class="font-bold text-sm text-gray-900">心理健康互助社区</h3>
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">进行中</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                                打造年轻人的心理健康支持平台，提供匿名倾诉和专业建议，寻找心理学背景的伙伴
+                            </p>
+                            <div class="flex gap-1.5 mb-3 flex-wrap">
+                                <span class="tag">小程序</span>
+                                <span class="tag">内容运营</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=32&h=32&fit=crop" 
+                                         class="w-6 h-6 rounded-full" alt="avatar">
+                                    <span class="text-xs text-gray-600 font-medium">王心怡</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>👥 4/5</span>
+                                    <span>📍 北京</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: 项目详情 -->
+        <div class="flex-shrink-0">
+            <div class="mockup-label">03 项目详情 Project Detail</div>
+            <div class="mockup-frame">
+                <!-- Header -->
+                <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <button class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                        <i class="fas fa-arrow-left text-gray-600 text-sm"></i>
+                    </button>
+                    <span class="text-sm font-semibold text-gray-700">项目详情</span>
+                    <button class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                        <i class="fas fa-share-alt text-gray-600 text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="no-scrollbar" style="height: 570px; overflow-y: auto;">
+                    <!-- Cover Image -->
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=180&fit=crop" 
+                             class="w-full h-36 object-cover" alt="cover">
+                        <div class="absolute top-3 right-3 px-3 py-1 bg-green-500 text-white rounded-lg text-xs font-semibold">
+                            招募中
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <!-- Title & Creator -->
+                        <h1 class="text-xl font-bold text-gray-900 mb-3">智能学习笔记工具</h1>
+                        <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop" 
+                                 class="w-12 h-12 rounded-full border-2 border-white shadow-md" alt="creator">
+                            <div>
+                                <div class="font-semibold text-sm text-gray-900">张小雨</div>
+                                <div class="text-xs text-gray-500">产品经理 · 浙江大学</div>
+                            </div>
+                            <button class="ml-auto px-4 py-2 bg-orange-50 text-orange-600 rounded-lg text-xs font-semibold hover:bg-orange-100">
+                                + 关注
+                            </button>
+                        </div>
+
+                        <!-- Quick Info -->
+                        <div class="grid grid-cols-3 gap-3 mb-5">
+                            <div class="bg-orange-50 rounded-lg p-3 text-center">
+                                <div class="text-xs text-gray-600 mb-1">团队进度</div>
+                                <div class="text-lg font-bold text-orange-600">2/5人</div>
+                            </div>
+                            <div class="bg-amber-50 rounded-lg p-3 text-center">
+                                <div class="text-xs text-gray-600 mb-1">项目阶段</div>
+                                <div class="text-lg font-bold text-amber-600">MVP</div>
+                            </div>
+                            <div class="bg-pink-50 rounded-lg p-3 text-center">
+                                <div class="text-xs text-gray-600 mb-1">城市</div>
+                                <div class="text-lg font-bold text-pink-600">杭州</div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-5">
+                            <h3 class="text-sm font-bold text-gray-900 mb-2">项目简介</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                我们正在打造一款智能学习笔记工具，通过AI技术帮助学生更高效地整理、复习和记忆知识点。目前已完成产品原型设计和核心功能规划，需要技术和设计伙伴一起将想法落地。
+                            </p>
+                        </div>
+
+                        <!-- Skills Needed -->
+                        <div class="mb-5">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">需要的技能</h3>
+                            <div class="flex gap-2 flex-wrap">
+                                <span class="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium">Vue.js</span>
+                                <span class="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium">Node.js</span>
+                                <span class="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium">UI设计</span>
+                                <span class="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium">AI/ML</span>
+                            </div>
+                        </div>
+
+                        <!-- Open Positions -->
+                        <div class="mb-5">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">招募岗位</h3>
+                            <div class="space-y-2">
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-semibold text-gray-900">前端工程师</span>
+                                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">招募中</span>
+                                    </div>
+                                    <p class="text-xs text-gray-600">负责Web端和移动端界面开发</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-semibold text-gray-900">UI设计师</span>
+                                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">招募中</span>
+                                    </div>
+                                    <p class="text-xs text-gray-600">负责产品界面和交互设计</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Action -->
+                <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4">
+                    <button class="w-full py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl">
+                        申请加入项目
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: 发布项目 -->
+        <div class="flex-shrink-0">
+            <div class="mockup-label">04 发布项目 Create Project</div>
+            <div class="mockup-frame">
+                <!-- Header -->
+                <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <button class="text-sm text-gray-600 font-medium">取消</button>
+                    <span class="text-sm font-semibold text-gray-700">发布项目</span>
+                    <button class="text-sm text-orange-600 font-semibold">完成</button>
+                </div>
+
+                <!-- Form -->
+                <div class="px-6 py-5 no-scrollbar" style="height: 600px; overflow-y: auto;">
+                    <!-- Upload Cover -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">项目封面</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gradient-to-br from-orange-50 to-amber-50 hover:border-orange-400 hover:from-orange-100 hover:to-amber-100 cursor-pointer transition-all">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-orange-400 mb-2"></i>
+                            <p class="text-sm text-gray-600">点击上传封面图片</p>
+                            <p class="text-xs text-gray-400 mt-1">建议尺寸 1200x600</p>
+                        </div>
+                    </div>
+
+                    <!-- Project Name -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">项目名称 *</label>
+                        <input type="text" placeholder="给你的项目起个好听的名字" 
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">项目类别 *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="px-4 py-3 bg-orange-500 text-white rounded-xl text-sm font-medium">
+                                技术开发
+                            </button>
+                            <button class="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-orange-50">
+                                设计创意
+                            </button>
+                            <button class="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-orange-50">
+                                内容运营
+                            </button>
+                            <button class="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-orange-50">
+                                其他
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">项目简介 *</label>
+                        <textarea placeholder="详细描述你的项目愿景、目标和现状..." 
+                                  rows="4"
+                                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">需要的技能</label>
+                        <input type="text" placeholder="输入技能标签，如 React, UI设计..." 
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <div class="flex gap-2 mt-2 flex-wrap">
+                            <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium flex items-center gap-1">
+                                React <i class="fas fa-times cursor-pointer"></i>
+                            </span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium flex items-center gap-1">
+                                Node.js <i class="fas fa-times cursor-pointer"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Team Size -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">团队人数</label>
+                        <input type="number" placeholder="预计需要多少人" 
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">所在城市</label>
+                        <select class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            <option>选择城市</option>
+                            <option>北京</option>
+                            <option>上海</option>
+                            <option>广州</option>
+                            <option>深圳</option>
+                            <option>杭州</option>
+                            <option>成都</option>
+                            <option>远程协作</option>
+                        </select>
+                    </div>
+
+                    <!-- Stage -->
+                    <div class="mb-5">
+                        <label class="text-sm font-semibold text-gray-900 mb-2 block">项目阶段</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="px-3 py-2 bg-orange-500 text-white rounded-lg text-xs font-medium">
+                                想法阶段
+                            </button>
+                            <button class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-orange-50">
+                                MVP开发
+                            </button>
+                            <button class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-orange-50">
+                                已上线
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: 找队友 -->
+        <div class="flex-shrink-0">
+            <div class="mockup-label">05 找队友 Find Teammates</div>
+            <div class="mockup-frame">
+                <!-- Header -->
+                <div class="bg-white border-b border-gray-100 px-6 py-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h1 class="text-lg font-bold text-gray-900">找队友</h1>
+                        <button class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                            <i class="fas fa-sliders-h text-gray-600 text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" placeholder="搜索技能、学校、城市..." 
+                               class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="px-6 py-3 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-100">
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-medium hover:border-orange-300">
+                            <i class="fas fa-code mr-1"></i> 工程师
+                        </button>
+                        <button class="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-medium hover:border-orange-300">
+                            <i class="fas fa-palette mr-1"></i> 设计师
+                        </button>
+                        <button class="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-medium hover:border-orange-300">
+                            <i class="fas fa-bullhorn mr-1"></i> 运营
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Teammates List -->
+                <div class="px-6 py-4 space-y-3 no-scrollbar" style="height: 520px; overflow-y: auto;">
+                    <!-- Teammate Card 1 -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop" 
+                                 class="w-16 h-16 rounded-full border-2 border-white shadow-md" alt="avatar">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-bold text-sm text-gray-900">李明</h3>
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">可组队</span>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-2">全栈工程师 · 清华大学</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>📍 北京</span>
+                                    <span>·</span>
+                                    <span>3年经验</span>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-xs font-semibold hover:bg-orange-100">
+                                约聊
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                            熟悉React、Node.js，有多个全栈项目经验，擅长产品从0到1，寻找有想法的团队一起做点有意思的事情
+                        </p>
+                        <div class="flex gap-1.5 flex-wrap">
+                            <span class="px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs font-medium">React</span>
+                            <span class="px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs font-medium">Node.js</span>
+                            <span class="px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs font-medium">MongoDB</span>
+                        </div>
+                    </div>
+
+                    <!-- Teammate Card 2 -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop" 
+                                 class="w-16 h-16 rounded-full border-2 border-white shadow-md" alt="avatar">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-bold text-sm text-gray-900">王心怡</h3>
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">可组队</span>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-2">UI/UX设计师 · 中央美院</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>📍 北京</span>
+                                    <span>·</span>
+                                    <span>2年经验</span>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-xs font-semibold hover:bg-orange-100">
+                                约聊
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                            专注移动端和Web设计，擅长用户体验优化，有多个B端和C端产品设计经验，希望参与有社会价值的项目
+                        </p>
+                        <div class="flex gap-1.5 flex-wrap">
+                            <span class="px-2 py-1 bg-pink-50 text-pink-700 rounded text-xs font-medium">Figma</span>
+                            <span class="px-2 py-1 bg-pink-50 text-pink-700 rounded text-xs font-medium">UI设计</span>
+                            <span class="px-2 py-1 bg-pink-50 text-pink-700 rounded text-xs font-medium">交互设计</span>
+                        </div>
+                    </div>
+
+                    <!-- Teammate Card 3 -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=64&h=64&fit=crop" 
+                                 class="w-16 h-16 rounded-full border-2 border-white shadow-md" alt="avatar">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-bold text-sm text-gray-900">陈宇航</h3>
+                                    <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">项目中</span>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-2">产品经理 · 复旦大学</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>📍 上海</span>
+                                    <span>·</span>
+                                    <span>4年经验</span>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold">
+                                查看
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                            前互联网大厂产品经理，擅长0-1产品规划和用户增长，目前正在做教育科技相关项目
+                        </p>
+                        <div class="flex gap-1.5 flex-wrap">
+                            <span class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-medium">产品设计</span>
+                            <span class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-medium">用户研究</span>
+                            <span class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-medium">数据分析</span>
+                        </div>
+                    </div>
+
+                    <!-- Teammate Card 4 -->
+                    <div class="bg-white rounded-xl border border-gray-100 island-card p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop" 
+                                 class="w-16 h-16 rounded-full border-2 border-white shadow-md" alt="avatar">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-bold text-sm text-gray-900">林诗雨</h3>
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">可组队</span>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-2">内容运营 · 人民大学</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>📍 北京</span>
+                                    <span>·</span>
+                                    <span>1年经验</span>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-xs font-semibold hover:bg-orange-100">
+                                约聊
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                            擅长新媒体运营和社区运营，有10w+爆款文章经验，希望加入年轻人喜欢的创新项目
+                        </p>
+                        <div class="flex gap-1.5 flex-wrap">
+                            <span class="px-2 py-1 bg-rose-50 text-rose-700 rounded text-xs font-medium">内容创作</span>
+                            <span class="px-2 py-1 bg-rose-50 text-rose-700 rounded text-xs font-medium">社区运营</span>
+                            <span class="px-2 py-1 bg-rose-50 text-rose-700 rounded text-xs font-medium">增长</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 6: 个人主页 -->
+        <div class="flex-shrink-0">
+            <div class="mockup-label">06 个人主页 Profile</div>
+            <div class="mockup-frame">
+                <!-- Header -->
+                <div class="bg-gradient-to-br from-orange-500 to-pink-500 px-6 pt-6 pb-20">
+                    <div class="flex items-center justify-between mb-4">
+                        <button class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center">
+                            <i class="fas fa-arrow-left text-white text-sm"></i>
+                        </button>
+                        <button class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center">
+                            <i class="fas fa-cog text-white text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Profile Card -->
+                <div class="px-6 -mt-16 mb-5">
+                    <div class="bg-white rounded-2xl shadow-xl p-5">
+                        <div class="flex items-start gap-4 mb-4">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" 
+                                 class="w-20 h-20 rounded-full border-4 border-white shadow-lg" alt="avatar">
+                            <div class="flex-1">
+                                <h2 class="text-xl font-bold text-gray-900 mb-1">张小雨</h2>
+                                <p class="text-sm text-gray-600 mb-2">产品经理 · 浙江大学</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>📍 杭州</span>
+                                    <span>·</span>
+                                    <span>2年经验</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                            热爱产品设计和用户研究，相信好产品能改变生活。正在寻找志同道合的伙伴一起创造有价值的东西 🚀
+                        </p>
+                        <div class="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-gray-900">8</div>
+                                <div class="text-xs text-gray-500">参与项目</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-gray-900">142</div>
+                                <div class="text-xs text-gray-500">关注者</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-gray-900">89</div>
+                                <div class="text-xs text-gray-500">关注中</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="px-6 mb-5">
+                    <h3 class="text-sm font-bold text-gray-900 mb-3">技能标签</h3>
+                    <div class="flex gap-2 flex-wrap">
+                        <span class="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium">产品设计</span>
+                        <span class="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">用户研究</span>
+                        <span class="px-3 py-1.5 bg-pink-100 text-pink-700 rounded-lg text-xs font-medium">原型设计</span>
+                        <span class="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-lg text-xs font-medium">Figma</span>
+                        <span class="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-medium">数据分析</span>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div class="px-6 mb-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-gray-900">参与的项目</h3>
+                        <button class="text-xs text-orange-600 font-medium">查看全部</button>
+                    </div>
+                    <div class="space-y-3">
+                        <!-- Project Item -->
+                        <div class="bg-white rounded-xl border border-gray-100 p-3 flex gap-3 island-card">
+                            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=60&h=60&fit=crop" 
+                                 class="w-15 h-15 rounded-lg object-cover" alt="project">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-sm text-gray-900 mb-1">智能学习笔记工具</h4>
+                                <p class="text-xs text-gray-600 mb-2">产品经理 · 创始人</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">进行中</span>
+                                    <span class="text-xs text-gray-500">👥 2/5人</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Item 2 -->
+                        <div class="bg-white rounded-xl border border-gray-100 p-3 flex gap-3 island-card">
+                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=60&h=60&fit=crop" 
+                                 class="w-15 h-15 rounded-lg object-cover" alt="project">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-sm text-gray-900 mb-1">校园活动助手</h4>
+                                <p class="text-xs text-gray-600 mb-2">产品经理</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">已完成</span>
+                                    <span class="text-xs text-gray-500">👥 5/5人</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4">
+                    <div class="flex items-center justify-around">
+                        <button class="flex flex-col items-center gap-1 text-gray-400">
+                            <i class="fas fa-home text-lg"></i>
+                            <span class="text-xs">首页</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-1 text-gray-400">
+                            <i class="fas fa-compass text-lg"></i>
+                            <span class="text-xs">发现</span>
+                        </button>
+                        <button class="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center -mt-6 shadow-lg">
+                            <i class="fas fa-plus text-white text-xl"></i>
+                        </button>
+                        <button class="flex flex-col items-center gap-1 text-gray-400">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="text-xs">消息</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-1 text-orange-500">
+                            <i class="fas fa-user text-lg"></i>
+                            <span class="text-xs">我的</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer Info -->
+    <div class="text-center mt-8 text-gray-600">
+        <p class="text-sm">🏝️ 搭搭岛 - 让想法不再孤单，找队友做真事</p>
+        <p class="text-xs mt-2 text-gray-500">Designed with Tailwind CSS · Images from Unsplash · 沙滩暖色版</p>
+    </div>
+
+</body>
+</html>

@@ -9,6 +9,7 @@ import org.springframework.util.Assert;
 
 import com.phz.dadaIsland.exception.BusinessException;
 import com.phz.dadaIsland.service.OtpService;
+import com.phz.dadaIsland.util.TextUtils;
 
 /**
  * Redis-backed OTP store that generates numeric verification codes.
@@ -45,6 +46,6 @@ public class RedisOtpService implements OtpService {
 
 	private String buildKey(String identifier) {
 		Assert.hasText(identifier, "OTP identifier must not be empty");
-		return KEY_PREFIX + identifier.trim();
+		return KEY_PREFIX + TextUtils.trimToNull(identifier);
 	}
 }

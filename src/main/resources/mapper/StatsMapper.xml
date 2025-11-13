@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phz.dadaIsland.mapper.StatsMapper">
+
+	<select id="countActiveProjects" resultType="long">
+		SELECT COUNT(*)
+		FROM projects
+		WHERE status IN ('PLANNING', 'ACTIVE')
+	</select>
+
+	<select id="countUniqueCreators" resultType="long">
+		SELECT COUNT(DISTINCT owner_id)
+		FROM projects
+	</select>
+
+	<select id="countSuccessfulLaunches" resultType="long">
+		SELECT COUNT(*)
+		FROM projects
+		WHERE status = 'COMPLETED'
+	</select>
+</mapper>

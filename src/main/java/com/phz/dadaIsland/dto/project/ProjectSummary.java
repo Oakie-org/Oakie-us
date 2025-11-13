@@ -15,6 +15,7 @@ public record ProjectSummary(
 		ProjectStatus status,
 		String city,
 		String school,
+		String stage,
 		LocalDateTime updatedAt,
 		Set<String> tags) {
 }

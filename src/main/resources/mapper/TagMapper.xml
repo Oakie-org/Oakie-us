@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phz.dadaIsland.mapper.TagMapper">
+
+	<resultMap id="TagResultMap" type="com.phz.dadaIsland.domain.model.Tag">
+		<id property="id" column="id" />
+		<result property="slug" column="slug" />
+		<result property="label" column="label" />
+		<result property="type" column="type" javaType="com.phz.dadaIsland.domain.enums.TagType" />
+		<result property="description" column="description" />
+		<result property="usageCount" column="usage_count" />
+		<result property="createdAt" column="created_at" />
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<sql id="BaseColumns">
+		id,
+		slug,
+		label,
+		type,
+		description,
+		usage_count,
+		created_at,
+		updated_at
+	</sql>
+
+	<insert id="insert" parameterType="com.phz.dadaIsland.domain.model.Tag" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO tags (slug, label, type, description, usage_count)
+		VALUES (#{slug}, #{label}, #{type}, #{description}, #{usageCount})
+	</insert>
+
+	<select id="findById" parameterType="long" resultMap="TagResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM tags
+		WHERE id = #{id}
+		LIMIT 1
+	</select>
+
+	<select id="findBySlug" parameterType="string" resultMap="TagResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM tags
+		WHERE slug = #{slug}
+		LIMIT 1
+	</select>
+
+	<select id="findAll" resultMap="TagResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM tags
+		ORDER BY created_at DESC
+	</select>
+
+	<select id="findByIds" parameterType="map" resultMap="TagResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM tags
+		WHERE id IN
+		<foreach collection="ids" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</select>
+</mapper>

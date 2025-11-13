@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.phz.dadaIsland.domain.model.Project;
+import com.phz.dadaIsland.dto.project.ProjectSearchCriteria;
 
 @Mapper
 public interface ProjectMapper {
@@ -20,4 +21,8 @@ public interface ProjectMapper {
 	List<Project> findAll();
 
 	void update(Project project);
+
+	List<Project> searchByCriteria(ProjectSearchCriteria criteria);
+
+	long countByCriteria(ProjectSearchCriteria criteria);
 }

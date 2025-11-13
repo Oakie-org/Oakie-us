@@ -27,6 +27,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.phz.dadaIsland.util.TextUtils.trimToNull;
+
 /**
  * Default {@link AuthService} implementation that handles registration, password-based login,
  * and token refresh by coordinating MyBatis mappers, password hashing, and JWT generation.
@@ -119,8 +121,8 @@ public class AuthServiceImpl implements AuthService {
 		validateRegisterRequest(request);
 
 		String phoneNumber = requirePhoneNumber(request.phoneNumber());
-		String email = normalize(request.email());
-		String otpCode = normalize(request.otpCode());
+		String email = trimToNull(request.email());
+		String otpCode = trimToNull(request.otpCode());
 		ensurePhoneNumberAvailable(phoneNumber);
 		ensureEmailAvailable(email);
 		otpService.validate(phoneNumber, otpCode);
@@ -234,7 +236,7 @@ public class AuthServiceImpl implements AuthService {
 		if (userPk == null) {
 			throw new BusinessException("Account data is invalid");
 		}
-		String userUid = normalize(userUidOverride != null ? userUidOverride : user.getUserId());
+		String userUid = trimToNull(userUidOverride != null ? userUidOverride : user.getUserId());
 		if (userUid == null) {
 			throw new BusinessException("Account data is invalid");
 		}
@@ -256,11 +258,11 @@ public class AuthServiceImpl implements AuthService {
 	 * @return subject value for JWTs
 	 */
 	private String resolveSubject(User user) {
-		String email = normalize(user.getEmail());
+		String email = trimToNull(user.getEmail());
 		if (email != null) {
 			return email;
 		}
-		String phoneNumber = normalize(user.getPhoneNumber());
+		String phoneNumber = trimToNull(user.getPhoneNumber());
 		if (phoneNumber != null) {
 			return phoneNumber;
 		}
@@ -274,7 +276,7 @@ public class AuthServiceImpl implements AuthService {
 	 * @return normalized phone number
 	 */
 	private String requirePhoneNumber(String phoneNumber) {
-		String normalized = normalize(phoneNumber);
+		String normalized = trimToNull(phoneNumber);
 		if (normalized == null) {
 			throw new BusinessException("Phone number is required");
 		}
@@ -322,7 +324,7 @@ public class AuthServiceImpl implements AuthService {
 	 * @return sanitized display name
 	 */
 	private String resolveDisplayName(String displayName) {
-		String normalizedDisplayName = normalize(displayName);
+		String normalizedDisplayName = trimToNull(displayName);
 		return normalizedDisplayName != null ? normalizedDisplayName : DEFAULT_NICKNAME;
 	}
 
@@ -370,10 +372,10 @@ public class AuthServiceImpl implements AuthService {
 			throw new BusinessException("Register request cannot be null");
 		}
 
-		String phoneNumber = normalize(request.phoneNumber());
-		String email = normalize(request.email());
-		String otpCode = normalize(request.otpCode());
-		String displayName = normalize(request.displayName());
+		String phoneNumber = trimToNull(request.phoneNumber());
+		String email = trimToNull(request.email());
+		String otpCode = trimToNull(request.otpCode());
+		String displayName = trimToNull(request.displayName());
 		String password = request.password();
 		if (log.isDebugEnabled()) {
 			log.debug("Validating registration for email: {}, phone: {}, displayName: {}", email, phoneNumber, displayName);
@@ -405,20 +407,6 @@ public class AuthServiceImpl implements AuthService {
 		if (displayName != null && displayName.length() > MAX_DISPLAY_NAME_LENGTH) {
 			throw new BusinessException("Display name must be at most %d characters".formatted(MAX_DISPLAY_NAME_LENGTH));
 		}
-	}
-
-	/**
-	 * Trims and normalizes string inputs, returning {@code null} when blank.
-	 *
-	 * @param value raw string input
-	 * @return trimmed string or {@code null} if blank
-	 */
-	private String normalize(String value) {
-		if (value == null) {
-			return null;
-		}
-		String trimmed = value.trim();
-		return trimmed.isEmpty() ? null : trimmed;
 	}
 
 	private String maskPhone(String phoneNumber) {

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phz.dadaIsland.mapper.ProjectMapper">
+
+	<resultMap id="ProjectResultMap" type="com.phz.dadaIsland.domain.model.Project">
+		<id property="id" column="id" />
+		<result property="ownerId" column="owner_id" />
+		<result property="slug" column="slug" />
+		<result property="title" column="title" />
+		<result property="summary" column="summary" />
+		<result property="description" column="description" />
+		<result property="visibility" column="visibility" javaType="com.phz.dadaIsland.domain.enums.ProjectVisibility" />
+		<result property="city" column="city" />
+		<result property="school" column="school" />
+		<result property="status" column="status" javaType="com.phz.dadaIsland.domain.enums.ProjectStatus" />
+		<result property="progressState" column="progress_state" />
+		<result property="startAt" column="start_at" />
+		<result property="endAt" column="end_at" />
+		<result property="createdAt" column="created_at" />
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<sql id="BaseColumns">
+		p.id,
+		p.owner_id,
+		p.slug,
+		p.title,
+		p.summary,
+		p.description,
+		p.visibility,
+		p.city,
+		p.school,
+		p.status,
+		p.progress_state,
+		p.start_at,
+		p.end_at,
+		p.created_at,
+		p.updated_at
+	</sql>
+
+	<insert id="insert" parameterType="com.phz.dadaIsland.domain.model.Project" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO projects (
+			owner_id,
+			slug,
+			title,
+			summary,
+			description,
+			visibility,
+			city,
+			school,
+			status,
+			progress_state,
+			start_at,
+			end_at
+		)
+		VALUES (
+			#{ownerId},
+			#{slug},
+			#{title},
+			#{summary},
+			#{description},
+			#{visibility},
+			#{city},
+			#{school},
+			#{status},
+			#{progressState},
+			#{startAt},
+			#{endAt}
+		)
+	</insert>
+
+	<select id="findById" parameterType="long" resultMap="ProjectResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM projects p
+		WHERE p.id = #{id}
+		LIMIT 1
+	</select>
+
+	<select id="findBySlug" parameterType="string" resultMap="ProjectResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM projects p
+		WHERE p.slug = #{slug}
+		LIMIT 1
+	</select>
+
+	<select id="findAll" resultMap="ProjectResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM projects p
+		ORDER BY p.created_at DESC
+	</select>
+
+	<update id="update" parameterType="com.phz.dadaIsland.domain.model.Project">
+		UPDATE projects
+		<set>
+			<if test="title != null">title = #{title},</if>
+			<if test="summary != null">summary = #{summary},</if>
+			<if test="description != null">description = #{description},</if>
+			<if test="visibility != null">visibility = #{visibility},</if>
+			<if test="city != null">city = #{city},</if>
+			<if test="school != null">school = #{school},</if>
+			<if test="status != null">status = #{status},</if>
+			<if test="progressState != null">progress_state = #{progressState},</if>
+			<if test="startAt != null">start_at = #{startAt},</if>
+			<if test="endAt != null">end_at = #{endAt},</if>
+			updated_at = CURRENT_TIMESTAMP(6)
+		</set>
+		WHERE id = #{id}
+	</update>
+
+	<sql id="FilterJoins">
+		<if test="tagIds != null and tagIds.size() > 0">
+			JOIN project_tags pt_filter ON pt_filter.project_id = p.id
+		</if>
+		<if test="skillTagIds != null and skillTagIds.size() > 0">
+			JOIN project_skill_requirements psr_filter ON psr_filter.project_id = p.id
+		</if>
+	</sql>
+
+	<sql id="FilterWhere">
+		<if test="keyword != null and keyword != ''">
+			AND (
+				p.title LIKE CONCAT('%', #{keyword}, '%')
+				OR p.summary LIKE CONCAT('%', #{keyword}, '%')
+			)
+		</if>
+		<if test="city != null and city != ''">
+			AND p.city = #{city}
+		</if>
+		<if test="school != null and school != ''">
+			AND p.school = #{school}
+		</if>
+		<if test="stage != null and stage != ''">
+			AND p.progress_state = #{stage}
+		</if>
+		<if test="status != null">
+			AND p.status = #{status}
+		</if>
+		<if test="remoteOnly != null and remoteOnly">
+			AND p.city IS NULL
+		</if>
+		<if test="tagIds != null and tagIds.size() > 0">
+			AND pt_filter.tag_id IN
+			<foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+				#{tagId}
+			</foreach>
+		</if>
+		<if test="skillTagIds != null and skillTagIds.size() > 0">
+			AND psr_filter.tag_id IN
+			<foreach collection="skillTagIds" item="skillTagId" open="(" separator="," close=")">
+				#{skillTagId}
+			</foreach>
+		</if>
+	</sql>
+
+	<select id="searchByCriteria" parameterType="com.phz.dadaIsland.dto.project.ProjectSearchCriteria" resultMap="ProjectResultMap">
+		SELECT
+			<include refid="BaseColumns" />
+		FROM projects p
+		<include refid="FilterJoins" />
+		WHERE 1 = 1
+		<include refid="FilterWhere" />
+		GROUP BY p.id
+		<choose>
+			<when test="sort != null and sort.name() == 'OLDEST'">
+				ORDER BY p.updated_at ASC
+			</when>
+			<otherwise>
+				ORDER BY p.updated_at DESC
+			</otherwise>
+		</choose>
+		LIMIT #{pageSize} OFFSET #{offset}
+	</select>
+
+	<select id="countByCriteria" parameterType="com.phz.dadaIsland.dto.project.ProjectSearchCriteria" resultType="long">
+		SELECT COUNT(DISTINCT p.id)
+		FROM projects p
+		<include refid="FilterJoins" />
+		WHERE 1 = 1
+		<include refid="FilterWhere" />
+	</select>
+</mapper>

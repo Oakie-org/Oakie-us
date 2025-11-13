@@ -18,4 +18,6 @@ public interface TagMapper {
 	Optional<Tag> findBySlug(@Param("slug") String slug);
 
 	List<Tag> findAll();
+
+	List<Tag> findByIds(@Param("ids") List<Long> ids);
 }

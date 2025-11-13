@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phz.dadaIsland.mapper.ProjectTagMapper">
+
+	<resultMap id="ProjectTagResultMap" type="com.phz.dadaIsland.domain.model.ProjectTag">
+		<id property="projectId" column="project_id" />
+		<id property="tagId" column="tag_id" />
+		<result property="addedBy" column="added_by" />
+		<result property="addedAt" column="added_at" />
+	</resultMap>
+
+	<insert id="insert" parameterType="com.phz.dadaIsland.domain.model.ProjectTag">
+		INSERT INTO project_tags (project_id, tag_id, added_by, added_at)
+		VALUES (#{projectId}, #{tagId}, #{addedBy}, #{addedAt})
+	</insert>
+
+	<delete id="deleteByProjectId" parameterType="long">
+		DELETE FROM project_tags WHERE project_id = #{projectId}
+	</delete>
+
+	<select id="findByProjectId" parameterType="long" resultMap="ProjectTagResultMap">
+		SELECT project_id, tag_id, added_by, added_at
+		FROM project_tags
+		WHERE project_id = #{projectId}
+	</select>
+
+	<select id="findByProjectIds" parameterType="map" resultMap="ProjectTagResultMap">
+		SELECT project_id, tag_id, added_by, added_at
+		FROM project_tags
+		WHERE project_id IN
+		<foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+			#{projectId}
+		</foreach>
+		ORDER BY project_id ASC, added_at ASC
+	</select>
+</mapper>

@@ -15,4 +15,6 @@ public interface ProjectTagMapper {
 	void deleteByProjectId(@Param("projectId") Long projectId);
 
 	List<ProjectTag> findByProjectId(@Param("projectId") Long projectId);
+
+	List<ProjectTag> findByProjectIds(@Param("projectIds") List<Long> projectIds);
 }

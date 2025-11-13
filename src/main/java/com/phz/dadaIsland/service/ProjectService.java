@@ -1,15 +1,16 @@
 package com.phz.dadaIsland.service;
 
-import java.util.List;
-
 import com.phz.dadaIsland.dto.project.ProjectCreateRequest;
 import com.phz.dadaIsland.dto.project.ProjectSummary;
+import com.phz.dadaIsland.dto.project.ProjectSearchFilters;
+import com.phz.dadaIsland.dto.common.PageRequest;
+import com.phz.dadaIsland.dto.common.PageResponse;
 
 public interface ProjectService {
 
 	void createProject(Long ownerId, ProjectCreateRequest request);
 
-	List<ProjectSummary> listProjects();
+	PageResponse<ProjectSummary> searchProjects(ProjectSearchFilters filters, PageRequest pageRequest);
 
 	ProjectSummary getProject(Long projectId);
 }

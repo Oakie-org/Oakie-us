@@ -85,3 +85,11 @@
 ---
 
 ## 🧩 项目结构 | Project Structure
+
+### ✅ Week 0 Backend Coverage
+
+- `POST /api/auth/*` – phone OTP, register, login, refresh flows backed by Redis rate-limiters and JWT issuance.
+- `GET /api/projects` – discovery feed with keyword/location/stage filters, tag/skill constraints, and page/sort controls returning `{ data, pagination }`.
+- `GET /api/stats/overview` – landing-screen counters served via Redis-cached MySQL aggregates for fast hero metrics.
+
+Shared infrastructure for the above includes reusable paging DTOs, string/list utility helpers, and MyBatis mappers wiring the project/tag domain onto MySQL.

@@ -58,20 +58,9 @@ public class ProjectController {
 			@RequestParam(value = "sort", required = false) String sort,
 			@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "page_size", required = false) Integer pageSize) {
-		ProjectStatus projectStatus = parseStatus(status);
-		ProjectSortOption sortOption = ProjectSortOption.fromNullable(sort);
-		ProjectSearchFilters filters = new ProjectSearchFilters(
-				trimToNull(keyword),
-				trimToNull(city),
-				trimToNull(school),
-				trimToNull(stage),
-				projectStatus,
-				ListUtils.distinctNonNull(tagIds),
-				ListUtils.distinctNonNull(skillTagIds),
-				remoteOnly,
-				sortOption);
-		PageRequest pageRequest = PageRequest.of(page, pageSize);
-		PageResponse<ProjectSummary> response = projectService.searchProjects(filters, pageRequest);
+		PageResponse<ProjectSummary> response = projectService.searchProjects(
+				buildFilters(keyword, city, school, stage, status, tagIds, skillTagIds, remoteOnly, sort),
+				buildPageRequest(page, pageSize));
 		return ResponseEntity.ok(response);
 	}
 
@@ -95,4 +84,29 @@ public class ProjectController {
 		}
 	}
 
+	private ProjectSearchFilters buildFilters(String keyword,
+			String city,
+			String school,
+			String stage,
+			String status,
+			List<Long> tagIds,
+			List<Long> skillTagIds,
+			Boolean remoteOnly,
+			String sort) {
+		ProjectStatus projectStatus = parseStatus(status);
+		return new ProjectSearchFilters(
+				trimToNull(keyword),
+				trimToNull(city),
+				trimToNull(school),
+				trimToNull(stage),
+				projectStatus,
+				ListUtils.distinctNonNull(tagIds),
+				ListUtils.distinctNonNull(skillTagIds),
+				remoteOnly,
+				ProjectSortOption.fromNullable(sort));
+	}
+
+	private PageRequest buildPageRequest(Integer page, Integer pageSize) {
+		return PageRequest.of(page, pageSize);
+	}
 }

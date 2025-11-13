@@ -56,11 +56,7 @@ public class ProjectServiceImpl implements ProjectService {
 			return PageResponse.empty(pageRequest);
 		}
 		List<Project> projects = projectMapper.searchByCriteria(criteria);
-		Map<Long, Set<String>> projectTags = resolveTagLabels(projects);
-		List<ProjectSummary> summaries = projects.stream()
-				.map(project -> toSummary(project, projectTags.getOrDefault(project.getId(), Collections.emptySet())))
-				.toList();
-		return new PageResponse<>(summaries, PaginationMeta.of(pageRequest, total));
+		return assembleSummaries(projects, pageRequest, total);
 	}
 
 	@Override
@@ -69,6 +65,9 @@ public class ProjectServiceImpl implements ProjectService {
 		return null;
 	}
 
+	/**
+	 * Builds the MyBatis criteria object used by both count/search queries from the external filters.
+	 */
 	private ProjectSearchCriteria buildCriteria(ProjectSearchFilters filters, PageRequest pageRequest) {
 		ProjectSearchFilters safeFilters = filters != null ? filters : new ProjectSearchFilters(null, null, null, null,
 				null, null, null, null, null);
@@ -90,6 +89,20 @@ public class ProjectServiceImpl implements ProjectService {
 				.build();
 	}
 
+	/**
+	 * Creates the page response by expanding domain projects into DTOs and attaching pagination metadata.
+	 */
+	private PageResponse<ProjectSummary> assembleSummaries(List<Project> projects, PageRequest pageRequest, long total) {
+		Map<Long, Set<String>> projectTags = resolveTagLabels(projects);
+		List<ProjectSummary> summaries = projects.stream()
+				.map(project -> toSummary(project, projectTags.getOrDefault(project.getId(), Collections.emptySet())))
+				.toList();
+		return new PageResponse<>(summaries, PaginationMeta.of(pageRequest, total));
+	}
+
+	/**
+	 * Loads tags for the provided projects using a batched mapper query and groups labels per project id.
+	 */
 	private Map<Long, Set<String>> resolveTagLabels(List<Project> projects) {
 		if (CollectionUtils.isEmpty(projects)) {
 			return Collections.emptyMap();

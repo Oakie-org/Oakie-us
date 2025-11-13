@@ -45,13 +45,7 @@ public class StatsServiceImpl implements StatsService {
 		if (cached != null) {
 			return cached;
 		}
-		long activeProjects = statsMapper.countActiveProjects();
-		long creators = statsMapper.countUniqueCreators();
-		long successfulLaunches = statsMapper.countSuccessfulLaunches();
-		StatsOverviewResponse response = new StatsOverviewResponse(activeProjects, creators, successfulLaunches,
-				Instant.now());
-		writeToCache(response);
-		return response;
+		return computeAndCacheOverview();
 	}
 
 	private StatsOverviewResponse readFromCache() {
@@ -65,6 +59,19 @@ public class StatsServiceImpl implements StatsService {
 			log.warn("Failed to read stats overview from cache", ex);
 			return null;
 		}
+	}
+
+	/**
+	 * Derives fresh statistics from MySQL and persists the computed snapshot in Redis.
+	 */
+	private StatsOverviewResponse computeAndCacheOverview() {
+		long activeProjects = statsMapper.countActiveProjects();
+		long creators = statsMapper.countUniqueCreators();
+		long successfulLaunches = statsMapper.countSuccessfulLaunches();
+		StatsOverviewResponse response = new StatsOverviewResponse(activeProjects, creators, successfulLaunches,
+				Instant.now());
+		writeToCache(response);
+		return response;
 	}
 
 	private void writeToCache(StatsOverviewResponse response) {

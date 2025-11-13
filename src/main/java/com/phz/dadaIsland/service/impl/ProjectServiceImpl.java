@@ -24,6 +24,7 @@ import com.phz.dadaIsland.dto.project.ProjectSearchCriteria;
 import com.phz.dadaIsland.dto.project.ProjectSearchFilters;
 import com.phz.dadaIsland.dto.project.ProjectSortOption;
 import com.phz.dadaIsland.dto.project.ProjectSummary;
+import com.phz.dadaIsland.exception.BusinessException;
 import com.phz.dadaIsland.mapper.ProjectMapper;
 import com.phz.dadaIsland.mapper.ProjectTagMapper;
 import com.phz.dadaIsland.mapper.TagMapper;
@@ -31,38 +32,77 @@ import com.phz.dadaIsland.service.ProjectService;
 import com.phz.dadaIsland.util.ListUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.phz.dadaIsland.util.TextUtils.trimToNull;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectServiceImpl implements ProjectService {
 
 	private final ProjectMapper projectMapper;
 	private final ProjectTagMapper projectTagMapper;
 	private final TagMapper tagMapper;
 
+	/**
+	 * Validates the incoming payload and fails fast because persistence is not yet implemented.
+	 */
 	@Override
 	public void createProject(Long ownerId, ProjectCreateRequest request) {
-		// TODO persist project and related metadata
+		if (ownerId == null) {
+			throw new BusinessException("Project owner is required");
+		}
+		if (request == null) {
+			throw new BusinessException("Project payload cannot be null");
+		}
+		String title = trimToNull(request.title());
+		if (title == null) {
+			throw new BusinessException("Project title is required");
+		}
+		log.info("Project creation invoked by owner {} for title '{}'; feature not yet implemented", ownerId, title);
+		throw new BusinessException("Project creation is not available yet");
 	}
 
+	/**
+	 * Queries projects matching the supplied filters and wraps database results into a paged DTO.
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public PageResponse<ProjectSummary> searchProjects(ProjectSearchFilters filters, PageRequest pageRequest) {
+		if (pageRequest == null) {
+			throw new BusinessException("Pagination parameters are required");
+		}
+		log.debug("Searching projects with filters {} and page {}", filters, pageRequest);
 		ProjectSearchCriteria criteria = buildCriteria(filters, pageRequest);
 		long total = projectMapper.countByCriteria(criteria);
 		if (total == 0) {
+			log.debug("Project search returned no results for criteria {}", criteria);
 			return PageResponse.empty(pageRequest);
 		}
 		List<Project> projects = projectMapper.searchByCriteria(criteria);
+		log.debug("Project search resolved {} results (pageSize={}, total={})", projects.size(), pageRequest.pageSize(), total);
 		return assembleSummaries(projects, pageRequest, total);
 	}
 
+	/**
+	 * Loads a single project with its tag labels or raises an exception when the id is invalid.
+	 */
 	@Override
+	@Transactional(readOnly = true)
 	public ProjectSummary getProject(Long projectId) {
-		// TODO retrieve project detail
-		return null;
+		if (projectId == null || projectId <= 0) {
+			throw new BusinessException("Project id is required");
+		}
+		log.debug("Fetching project detail for id {}", projectId);
+		Project project = projectMapper.findById(projectId)
+				.orElseThrow(() -> {
+					log.warn("Project {} not found", projectId);
+					return new BusinessException("Project not found");
+				});
+		Map<Long, Set<String>> tagsByProject = resolveTagLabels(List.of(project));
+		Set<String> tags = tagsByProject.getOrDefault(project.getId(), Collections.emptySet());
+		return toSummary(project, tags);
 	}
 
 	/**

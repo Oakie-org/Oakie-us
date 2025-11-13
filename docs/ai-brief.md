@@ -4,6 +4,7 @@
 - Apply SRP, lean on established design patterns, and extend shared modules before creating new ones.
 - Follow industry security/testing standards, reuse tooling already in the repo, and target production-ready logging/perf practices.
 - Favor code reuse + existing helpers (DTOs, mappers, infra) whenever possible to avoid drift.
+- Add contextual logs where they aid debugging instead of leaving silent control paths.
 - Project: DadaIsland connects students and young creators so they can meet teammates, build internet projects, and earn verifiable contribution records.
 
 ## 1. API Essentials

@@ -38,16 +38,26 @@ public class StatsServiceImpl implements StatsService {
 		this.cacheTtl = cacheTtl.isNegative() ? Duration.ofMinutes(2) : cacheTtl;
 	}
 
+	/**
+	 * Returns hero metrics, favoring a Redis snapshot before recomputing from MySQL.
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public StatsOverviewResponse getOverview() {
+		log.debug("Requesting stats overview");
 		StatsOverviewResponse cached = readFromCache();
 		if (cached != null) {
+			log.debug("Serving stats overview from cache");
 			return cached;
 		}
+		log.debug("Stats overview cache miss; computing snapshot");
 		return computeAndCacheOverview();
 	}
 
+	/**
+	 * Attempts to deserialize the cached payload; returns {@code null} on miss or cache error so
+	 * callers can recompute without failing the request.
+	 */
 	private StatsOverviewResponse readFromCache() {
 		try {
 			String cached = redisTemplate.opsForValue().get(CACHE_KEY);
@@ -68,16 +78,21 @@ public class StatsServiceImpl implements StatsService {
 		long activeProjects = statsMapper.countActiveProjects();
 		long creators = statsMapper.countUniqueCreators();
 		long successfulLaunches = statsMapper.countSuccessfulLaunches();
+		log.debug("Computed stats overview: active={}, creators={}, launches={}", activeProjects, creators, successfulLaunches);
 		StatsOverviewResponse response = new StatsOverviewResponse(activeProjects, creators, successfulLaunches,
 				Instant.now());
 		writeToCache(response);
 		return response;
 	}
 
+	/**
+	 * Serializes the computed snapshot into Redis but never fails the caller if caching breaks.
+	 */
 	private void writeToCache(StatsOverviewResponse response) {
 		try {
 			String payload = objectMapper.writeValueAsString(response);
 			redisTemplate.opsForValue().set(CACHE_KEY, payload, cacheTtl);
+			log.debug("Stored stats overview in cache with key {} and ttl {}", CACHE_KEY, cacheTtl);
 		} catch (JsonProcessingException | DataAccessException ex) {
 			log.warn("Failed to write stats overview cache", ex);
 		}

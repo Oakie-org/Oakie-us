@@ -1,4 +1,4 @@
-# DadaIsland API Expectations (Serverless Edition)
+# Oakie API Expectations (Serverless Edition)
 
 ## 1. General Conventions
 - **Base URL**: `/api/v1`

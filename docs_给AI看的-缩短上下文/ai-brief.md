@@ -1,11 +1,11 @@
-# DadaIsland AI Brief
+# Oakie AI Brief
 
 ## Rules & Context
 - **Architecture**: Serverless Microservices using AWS Lambda, Python 3.11+, and FastAPI.
 - **Data**: Amazon DynamoDB (NoSQL) for business data; AWS Cognito for identity management.
 - **Code Style**: Python formatting (Black/Isort), Pydantic for Validation, Type Hints everywhere.
 - **Principles**: Single Responsibility, Stateless Compute, Event-Driven (where applicable).
-- **Project**: DadaIsland connects students and young creators so they can meet teammates, build internet projects, and earn verifiable contribution records.
+- **Project**: Oakie connects students and young creators so they can meet teammates, build internet projects, and earn verifiable contribution records.
 
 ## 1. API Essentials
 - `/api/v1` prefix.

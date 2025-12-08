@@ -1,4 +1,4 @@
-# DadaIsland Serverless Execution Timeline
+# Oakie Serverless Execution Timeline
 
 ## Week 0: Foundation & Core Loops (Current Focus)
 **Goal**: Implement Registration/Login, Project Browsing/Creation, and Personal Homepage.

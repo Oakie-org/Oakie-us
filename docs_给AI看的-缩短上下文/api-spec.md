@@ -10,10 +10,8 @@
 ## 2. Authentication (AWS Cognito Wrapped)
 *Although Cognito is used, we wrap basic flows in our API for frontend consistency if needed, or frontend calls Cognito directly and verifies with Backend.*
 
-- `POST /auth/register`: Signup (handled by Cognito, or proxied).
-- `POST /auth/login`: Signin (proxied to Cognito `ADMIN_INITIATE_AUTH` or standard auth).
-- `POST /auth/refresh`: Refresh Tokens.
-- `GET /auth/me`: getCurrentUser (validates Token).
+- **Frontend Responsibility**: Use AWS SDK (e.g. Amplify) or Hosted UI to handle Register (`signUp`), Login (`initiateAuth`), and Token Refresh.
+- `GET /auth/me`: Get current user profile (Requires valid Bearer Token). Validates Token & fetches profile from DynamoDB.
 
 ## 3. Projects Domain
 - `GET /projects`: Search & List. Filters: `category`, `stage`, `city`.

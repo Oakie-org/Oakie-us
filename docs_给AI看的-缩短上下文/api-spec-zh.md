@@ -10,10 +10,8 @@
 ## 2. 认证与会话 (AWS Cognito 封装)
 *尽管核心使用 Cognito，我们在 API 层做一层轻量封装以保持前端调用习惯，或者由前端直接集成 Cognito SDK，后端负责验签。*
 
-- `POST /auth/register`: 注册 (Cognito 代理).
-- `POST /auth/login`: 登录 (代理至 Cognito `ADMIN_INITIATE_AUTH` 或标准流程).
-- `POST /auth/refresh`: 刷新 Token.
-- `GET /auth/me`: 获取当前用户 (校验 Token 有效性).
+- **前端职责**: 使用 AWS SDK (如 Amplify) 或 Hosted UI 直接处理注册 (`signUp`)、登录 (`initiateAuth`) 和 Token 刷新。
+- `GET /auth/me`: 获取当前用户资料 (需要 Bearer Token). 后端验证 Token 并从 DynamoDB 读取用户信息.
 
 ## 3. 项目 (Projects)
 - `GET /projects`: 搜索与列表. 筛选: `category`, `stage`, `city`.

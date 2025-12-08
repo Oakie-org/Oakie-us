@@ -10,7 +10,7 @@ app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["aut
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to DadaIsland Serverless API"}
+    return {"message": "Welcome to Oakie Serverless API"}
 
 # Handler for AWS Lambda
 handler = Mangum(app)

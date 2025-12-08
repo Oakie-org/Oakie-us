@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Oakie Backend (FastAPI + Lambda + DynamoDB + Cognito)
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: python3.11
+    Architectures:
+      - x86_64
+
+Resources:
+  # -------------------------------------------------------------------------
+  # DynamoDB Table (Users)
+  # -------------------------------------------------------------------------
+  OakieTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Oakie-Users
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # -------------------------------------------------------------------------
+  # Lambda Trigger: Post Confirmation (Sync to DDB)
+  # -------------------------------------------------------------------------
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.triggers.post_confirmation.handler
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Ref OakieTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OakieTable
+
+  # -------------------------------------------------------------------------
+  # Cognito User Pool
+  # -------------------------------------------------------------------------
+  OakieUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: Oakie-UserPool
+      LambdaConfig:
+        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+
+  # -------------------------------------------------------------------------
+  # Cognito User Pool Domain (For Hosted UI)
+  # -------------------------------------------------------------------------
+  OakieUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      # Domain prefix must be unique across AWS region.
+      # Using 'oakie-login-${AWS::AccountId}' to ensure uniqueness.
+      Domain: !Sub oakie-login-${AWS::AccountId}
+      UserPoolId: !Ref OakieUserPool
+
+  # Permission for Cognito to invoke Lambda
+  PostConfirmationInvocationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt PostConfirmationFunction.Arn
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt OakieUserPool.Arn
+
+  # -------------------------------------------------------------------------
+  # Cognito User Pool Client (Public for Web/Mobile)
+  # -------------------------------------------------------------------------
+  OakieUserClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref OakieUserPool
+      ClientName: Oakie-Web
+      GenerateSecret: false # Public client for SPA/Mobile
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - http://localhost:3000/ # For local dev
+        - https://oakie.com/ # Placeholder for production
+      LogoutURLs:
+        - http://localhost:3000/
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+
+  # -------------------------------------------------------------------------
+  # Lambda Function (FastAPI Monolith)
+  # -------------------------------------------------------------------------
+  FastAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.main.handler
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref OakieTable
+          COGNITO_USER_POOL_ID: !Ref OakieUserPool
+          COGNITO_CLIENT_ID: !Ref OakieUserClient
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OakieTable
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+
+  # -------------------------------------------------------------------------
+  # API Gateway (HTTP API)
+  # -------------------------------------------------------------------------
+  OakieApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${OakieUserPool}"
+              audience:
+                - !Ref OakieUserClient
+            IdentitySource: "$request.header.Authorization"
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        AllowHeaders:
+          - "*"
+        AllowOrigins:
+          - "*"
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${OakieApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  UserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref OakieUserPool
+  ClientId:
+    Description: "Cognito App Client ID"
+    Value: !Ref OakieUserClient
+  HostedUIUrl:
+    Description: "Hosted UI Login URL"
+    Value: !Sub "https://${OakieUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com/login?client_id=${OakieUserClient}&response_type=token&scope=email+openid+profile&redirect_uri=http://localhost:3000/"

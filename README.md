@@ -147,6 +147,36 @@ Dada_Island/
 
 ---
 
+## 📅 规划与进度 | Planning & Timeline
+
+> 基于周迭代的开发计划 (Ref: `docs/project-timeline.md`)
+
+- [x] **Week 0: 基础设施与认证 (Foundation & Auth)**
+    - [x] Serverless 架构迁移 (Lambda + FastAPI).
+    - [x] 集成 AWS Cognito (User Pool, Hosted UI).
+    - [x] 实现 PostConfirmation Trigger (同步用户画像到 DynamoDB).
+    - [x] 配置 API Gateway JWT Authorizer.
+    - [x] 实现 `/auth/me` 端点.
+
+- [ ] **Week 0: 核心业务 MVP**
+    - [ ] Project API (`GET /projects`, `POST /projects`).
+    - [ ] User Profile API (`GET /users/{id}`, `PATCH /users/me`).
+    - [ ] S3 图片上传签名 (`/uploads/sign`).
+
+- [ ] **Week 1: 申请与互动 (Interaction)**
+    - [ ] 项目申请流程 (`Apply`, `Approve`, `Reject`).
+    - [ ] 人才库目录 (`Talent Directory`).
+
+- [ ] **Week 2: 社交与消息 (Social)**
+    - [ ] 站内信/私聊 (`Conversations`).
+    - [ ] 活动通知流 (`Activity Feed`).
+
+- [ ] **Week 3: 优化与扩展 (Scale)**
+    - [ ] 搜索优化 (Search).
+    - [ ] 缓存机制 (Caching).
+
+---
+
 ## 🤝 贡献 | Contributing
 
 欢迎提交 Issue 和 Pull Request！

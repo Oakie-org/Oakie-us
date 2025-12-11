@@ -18,9 +18,10 @@
 - **Tokens**: Access/ID Tokens issued by Cognito. API Gateway validates them automatically (`Authorizer`).
 - **Profile Config**: `PostConfirmation` Lambda trigger creates initial user profile in DynamoDB upon registration.
 - **Auth Flow**: 
-  - Frontend prompts login -> Call Backend `/auth/login` (proxies to Cognito) -> Returns Tokens.
-  - Or Frontend validates via Cognito SDK -> Sends Token to Backend.
-  - *Current Decision*: Backend proxy for Login (`/auth/login`) to keep frontend simple or standard OIDC flow.
+  - Frontend interacts directly with AWS Cognito for Registration/Login (Hosted UI or Amplify SDK).
+  - Cognito triggers `PostConfirmation` Lambda to sync User Profile to DynamoDB.
+  - Frontend obtains JWT (Access Token) and sends it in `Authorization` header to Backend.
+  - Backend validates Token via API Gateway Authorizer and reads user data from DynamoDB.
 
 ### Core Domains (FastAPI Routers)
 - `landing`: `/stats/overview` (counters), `/projects/trending`.

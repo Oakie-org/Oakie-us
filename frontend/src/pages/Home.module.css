@@ -1,0 +1,127 @@
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 60vh;
+    gap: var(--spacing-2xl);
+    position: relative;
+}
+
+.heroContent {
+    max-width: 600px;
+    z-index: 10;
+}
+
+.heroTitle {
+    font-size: 4rem;
+    line-height: 1.1;
+    font-weight: var(--font-weight-black);
+    letter-spacing: -0.03em;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-lg);
+}
+
+.highlight {
+    color: var(--color-primary);
+    background: linear-gradient(120deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
+    padding: 0 var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
+.heroSubtitle {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.5;
+}
+
+.heroActions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.heroVisual {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.blob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, var(--color-primary-light) 0%, rgba(255, 255, 255, 0) 70%);
+    filter: blur(40px);
+    z-index: 0;
+    animation: blob-bounce 8s infinite ease-in-out;
+}
+
+@keyframes blob-bounce {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-2xl);
+    padding: var(--spacing-xl);
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+}
+
+.statCard {
+    text-align: center;
+}
+
+.statNumber {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.statLabel {
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .heroTitle {
+        font-size: 2.5rem;
+    }
+
+    .heroActions {
+        justify-content: center;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}

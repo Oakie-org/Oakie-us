@@ -1,14 +1,11 @@
 fastapi
 uvicorn
 mangum
-boto3
+# boto3  <-- Provided by AWS Lambda Runtime
 pydantic
 pydantic-settings
 python-jose[cryptography]
-passlib[bcrypt]
-bcrypt==4.0.1
 python-multipart
-pytest
 requests
 httpx
 email-validator

@@ -10,6 +10,8 @@ export const AppLayout: React.FC = () => {
 
     return (
         <div className={styles.container}>
+            <div className={styles.ambientGlow} />
+            <div className={styles.ambientGlowSecondary} />
             <Sidebar onCreateClick={() => setIsCreateModalOpen(true)} />
             <main className={styles.main}>
                 <div className={styles.contentWrapper}>

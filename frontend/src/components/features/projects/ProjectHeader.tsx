@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Share2, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Share2, MoreHorizontal, Star, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../common/Button';
 import { ProjectTag } from '../../common/ProjectTag';
@@ -10,6 +10,8 @@ interface ProjectHeaderProps {
     description: string;
     imageUrl: string;
     tags: string[];
+    likes: number;
+    follows: number;
 }
 
 export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -17,6 +19,8 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
     description,
     imageUrl,
     tags,
+    likes,
+    follows,
 }) => {
     const navigate = useNavigate();
 
@@ -48,6 +52,17 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
                     <h1 className={styles.title}>{title}</h1>
                     <p className={styles.description}>{description}</p>
 
+                    <div className={styles.statsRow} style={{ display: 'flex', gap: '20px', marginBottom: '20px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4B5563', fontWeight: 500 }}>
+                            <Star size={18} className="text-yellow-500" fill="#EAB308" color="#EAB308" />
+                            <span>{likes} Stars</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4B5563', fontWeight: 500 }}>
+                            <UserPlus size={18} color="#4F46E5" />
+                            <span>{follows} Followers</span>
+                        </div>
+                    </div>
+
                     <div className={styles.tagsRow}>
                         {tags.map((tag) => (
                             <ProjectTag key={tag} label={tag} />
@@ -56,7 +71,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
 
                     <div className={styles.actionButtons}>
                         <Button variant="primary" size="lg" className={styles.actionBtn}>
-                            Join Project
+                            Request to Join
                         </Button>
                         <Button variant="outline" size="lg" className={styles.actionBtn}>
                             Follow

@@ -20,6 +20,7 @@ export interface Project {
     currentMembers: number;
     maxMembers: number;
     likes: number;
+    follows: number;
     category: string;
     uni: string;
     city: string;

@@ -28,6 +28,8 @@ export const ProjectDetail: React.FC = () => {
                     description={project.description}
                     imageUrl={project.imageUrl || project.image || ""}
                     tags={project.tags}
+                    likes={project.likes}
+                    follows={project.follows}
                 />
 
                 <TeamSection

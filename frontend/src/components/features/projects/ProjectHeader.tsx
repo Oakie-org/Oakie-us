@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Share2, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../../common/Button';
 import styles from './ProjectHeader.module.css';
 
 interface ProjectHeaderProps {
@@ -55,12 +56,12 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
                     </div>
 
                     <div className={styles.actionButtons}>
-                        <button className={`${styles.btn} ${styles.btnPrimary}`}>
+                        <Button variant="primary" size="lg" className={styles.actionBtn}>
                             Join Project
-                        </button>
-                        <button className={`${styles.btn} ${styles.btnSecondary}`}>
+                        </Button>
+                        <Button variant="outline" size="lg" className={styles.actionBtn}>
                             Follow
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

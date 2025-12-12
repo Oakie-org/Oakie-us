@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../components/common/Card';
 import { Star, MapPin, X, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { Project } from '../types';
 import styles from './Projects.module.css';
 
 // Mock Data with Images, Members, and Capacity
-const projects = [
+const projects: Project[] = [
     {
         id: 1,
         title: 'EcoTrack',
@@ -239,7 +240,7 @@ export const Projects: React.FC = () => {
                             {/* Footer: Avatar Stack + Progress */}
                             <div className={styles.cardFooter}>
                                 <div className={styles.avatarStack}>
-                                    {project.membersAvatars.slice(0, 4).map((initials, index) => (
+                                    {(project.membersAvatars || []).slice(0, 4).map((initials, index) => (
                                         <div
                                             key={index}
                                             className={styles.stackAvatar}
@@ -249,9 +250,9 @@ export const Projects: React.FC = () => {
                                             {initials}
                                         </div>
                                     ))}
-                                    {project.membersAvatars.length > 4 && (
+                                    {(project.membersAvatars || []).length > 4 && (
                                         <div className={`${styles.stackAvatar} ${styles.moreCount}`}>
-                                            +{project.membersAvatars.length - 4}
+                                            +{(project.membersAvatars || []).length - 4}
                                         </div>
                                     )}
                                 </div>

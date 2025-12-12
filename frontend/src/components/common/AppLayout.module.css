@@ -2,6 +2,10 @@
     display: flex;
     min-height: 100vh;
     background-color: var(--color-surface-secondary);
+    gap: 16px;
+    /* Spacing between sidebar and main content */
+    padding-right: 16px;
+    /* Balance the right side */
 }
 
 .main {

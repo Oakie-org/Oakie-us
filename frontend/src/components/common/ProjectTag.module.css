@@ -1,28 +1,27 @@
 .tag {
     font-size: 0.75rem;
-    padding: 4px 12px;
-    background-color: #EFF6FF;
-    /* Light Blue tint */
-    color: #3B82F6;
-    /* Blue text */
-    border-radius: 99px;
-    /* Full pill */
+    padding: 6px 14px;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius-full);
     font-weight: 600;
     transition: all 0.2s;
     display: inline-flex;
     align-items: center;
     cursor: default;
+    letter-spacing: 0.01em;
 }
 
 .tag::before {
     content: "#";
     margin-right: 2px;
-    opacity: 0.6;
+    opacity: 0.5;
     font-weight: 400;
 }
 
 .tag:hover {
-    background-color: #DBEAFE;
-    color: #2563EB;
+    background-color: rgba(108, 92, 231, 0.15);
+    /* Slightly darker purple tint */
+    color: var(--color-brand-indigo);
     transform: translateY(-1px);
 }

@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 mangum
-boto3
+# boto3  <-- Provided by AWS Lambda Runtime
 pydantic
 pydantic-settings
 python-jose[cryptography]

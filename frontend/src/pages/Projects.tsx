@@ -5,103 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import type { Project } from '../types';
 import styles from './Projects.module.css';
 
-// Mock Data with Images, Members, and Capacity
-const projects: Project[] = [
-    {
-        id: 1,
-        title: 'EcoTrack',
-        description: 'A mobile app for tracking carbon footprint with social features.',
-        tags: ['React Native', 'Node.js', 'Green Tech'],
-        status: 'Recruiting',
-        currentMembers: 3,
-        maxMembers: 5,
-        likes: 45,
-        category: 'Mobile Apps',
-        uni: 'Duke University',
-        city: 'Durham, NC',
-        image: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-        membersAvatars: ['JD', 'AL', 'CK'] // JD is creator
-    },
-    {
-        id: 2,
-        title: 'StudyBuddy AI',
-        description: 'AI-powered study planner for university students.',
-        tags: ['Python', 'AI/ML', 'Education'],
-        status: 'In Progress',
-        currentMembers: 5,
-        maxMembers: 5,
-        likes: 120,
-        category: 'AI/ML',
-        uni: 'Stanford University',
-        city: 'Palo Alto, CA',
-        image: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-        membersAvatars: ['BS', 'AL', 'DK', 'PM', 'TS']
-    },
-    {
-        id: 3,
-        title: 'LocalEat',
-        description: 'Discover local home-cooked meals in your neighborhood.',
-        tags: ['Vue', 'Firebase', 'Food'],
-        status: 'Idea',
-        currentMembers: 1,
-        maxMembers: 4,
-        likes: 23,
-        category: 'Web Development',
-        uni: 'NYU',
-        city: 'New York, NY',
-        image: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-        membersAvatars: ['LE']
-    },
-    {
-        id: 4,
-        title: 'DevCollab',
-        description: 'Real-time code collaboration tool for remote teams.',
-        tags: ['React', 'WebRTC', 'SaaS'],
-        status: 'Recruiting',
-        currentMembers: 2,
-        maxMembers: 6,
-        likes: 89,
-        category: 'Web Development',
-        uni: 'Remote',
-        city: 'Remote',
-        image: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-        membersAvatars: ['DC', 'AB']
-    },
-    {
-        id: 5,
-        title: 'QuantTrader',
-        description: 'High-frequency trading strategy text backtester.',
-        tags: ['Python', 'Finance', 'Pandas'],
-        status: 'Recruiting',
-        currentMembers: 4,
-        maxMembers: 4,
-        likes: 67,
-        category: 'Finance',
-        uni: 'Columbia University',
-        city: 'New York, NY',
-        image: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
-        membersAvatars: ['QT', 'ZA', 'WS', 'ED']
-    },
-    {
-        id: 6,
-        title: 'ArtGallery VR',
-        description: 'Virtual reality art exhibition platform.',
-        tags: ['Unity', 'C#', 'Design'],
-        status: 'Idea',
-        currentMembers: 2,
-        maxMembers: 3,
-        likes: 34,
-        category: 'Design',
-        uni: 'RISD',
-        city: 'Providence, RI',
-        image: 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)',
-        membersAvatars: ['AV', 'CC']
-    },
-];
+import { MOCK_PROJECTS } from '../data/mockProjects';
 
 const CATEGORIES = ['All', 'Web Development', 'Mobile Apps', 'AI/ML', 'Data Science', 'Design', 'Finance', 'Hardware/IoT'];
 const CITIES = ['All', 'Remote', 'New York, NY', 'San Francisco, CA', 'Durham, NC', 'Shanghai, CN', 'London, UK'];
 const UNIVERSITIES = ['All', 'Duke University', 'Stanford University', 'CMU', 'MIT', 'NYU', 'Columbia University'];
+
 
 export const Projects: React.FC = () => {
     const navigate = useNavigate();
@@ -140,7 +49,7 @@ export const Projects: React.FC = () => {
     }, [lastScrollY]);
 
     // Filter Logic
-    const filteredProjects = projects.filter(project => {
+    const filteredProjects = MOCK_PROJECTS.filter(project => {
         const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory;
         const matchesCity = selectedCity === 'All' || project.city === selectedCity;
         const matchesUni = selectedUni === 'All' || project.uni === selectedUni;

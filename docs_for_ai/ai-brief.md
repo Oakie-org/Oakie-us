@@ -26,6 +26,7 @@
 ### Core Domains (FastAPI Routers)
 - `landing`: `/stats/overview` (counters), `/projects/trending`.
 - `projects`: CRUD for Projects (`/projects`). Stored in DynamoDB `Projects` table.
+   - **Features**: Team Management (Roles/Skills), Interactive Timeline (Milestones/Updates).
 - `applications`: Manage join requests. Stored in DynamoDB `Applications` table.
 - `users`: User profiles (`/users/{id}`). Stored in DynamoDB `Users` table (PK = Cognito Sub).
 - `meta`: Enums for frontend forms (Skills, Cities, Stages).

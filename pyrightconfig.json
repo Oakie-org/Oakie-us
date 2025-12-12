@@ -1,0 +1,9 @@
+{
+  "venvPath": "serverless_backend",
+  "venv": "venv",
+  "extraPaths": ["serverless_backend"],
+  "include": ["serverless_backend/app", "serverless_backend/tests"],
+  "exclude": ["**/venv", "**/__pycache__"],
+  "typeCheckingMode": "standard"
+}
+

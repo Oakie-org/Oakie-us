@@ -57,19 +57,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, 
                         </span>
                     </div>
 
-                    {/* Search placeholder from mockup */}
-                    {step === 'selection' && (
-                        <div style={{
-                            background: '#F3F4F6',
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            color: '#9CA3AF',
-                            fontSize: '14px',
-                            width: '200px'
-                        }}>
-                            Search...
-                        </div>
-                    )}
+
 
                     <button className={styles.closeBtn} onClick={onClose}>
                         <X size={24} />

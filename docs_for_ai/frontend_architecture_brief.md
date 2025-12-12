@@ -43,6 +43,9 @@
 3.  **Smart Filter**: Implemented "Hide-on-Scroll-Down / Show-on-Scroll-Up" floating filter bar.
 4.  **Project Detail (Premium)**: Implemented Header, Team, and Timeline sections interactively.
 5.  **Refactor**: Standardized `Button` component and introduced shared TypeScript definitions.
+6.  **Create Project Flow**: Implemented `CreateProjectModal` (Selection -> Form). Integrated with Sidebar.
+7.  **Tags Refactor**: Separated Project `tags` (Content+Tech) from User `skills`. Implemented generic comma-separated input. Redesigned Tag UI (Pill + `#` prefix).
+8.  **Schema Update**: Added `subtitle` (One-sentence intro) to `Project` interface for Explore cards.
 
 ## 5. Context for AI
 -   **Styling**: Use **CSS Modules** for all new components (`[Name].module.css`).

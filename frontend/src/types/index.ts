@@ -13,6 +13,7 @@ export interface Member extends User {
 export interface Project {
     id: number | string;
     title: string;
+    subtitle?: string; // One-sentence summary for Explore cards
     description: string;
     tags: string[];
     status: 'Recruiting' | 'In Progress' | 'Idea' | 'Completed';

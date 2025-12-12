@@ -225,7 +225,7 @@ export const Projects: React.FC = () => {
                         {/* Content Body */}
                         <div className={styles.cardBody}>
                             <h3 className={styles.heroTitle}>{project.title}</h3>
-                            <p className={styles.heroDesc}>{project.description}</p>
+                            <p className={styles.heroDesc}>{project.subtitle || project.description}</p>
 
                             <div className={styles.tagsRow}>
                                 {project.tags.slice(0, 3).map(tag => (

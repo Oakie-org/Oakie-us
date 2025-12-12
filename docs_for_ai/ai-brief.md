@@ -52,7 +52,7 @@
 
 ## 3. Database Schema (DynamoDB NoSQL)
 - **Users Table**: PK=`User#<CognitoSub>`, Attributes: `nickname`, `avatar`, `skills[]`, `bio`.
-- **Projects Table**: PK=`Project#<UUID>`, Attributes: `title`, `status`, `owner_id`, `members[]`.
+- **Projects Table**: PK=`Project#<UUID>`, Attributes: `title`, `subtitle` (short intro), `description`, `tags[]` (Generic: Tech/Content), `status`, `owner_id`, `members[]`.
     - GSI: `OwnerIndex` (query by `owner_id`).
     - GSI: `CategoryIndex` (filter by category).
 - **Applications Table**: PK=`App#<UUID>`, Attributes: `project_id`, `applicant_id`, `status`.

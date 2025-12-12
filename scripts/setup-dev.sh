@@ -47,6 +47,11 @@ echo "Installing backend dependencies..."
 "$VENV_DIR/bin/pip" install --upgrade pip >/dev/null
 "$VENV_DIR/bin/pip" install -r "$BACKEND_DIR/requirements.txt" -r "$BACKEND_DIR/requirements-dev.txt"
 
+if [[ -d "$ROOT_DIR/.git" && -x "$VENV_DIR/bin/pre-commit" ]]; then
+  echo "Installing pre-commit hooks..."
+  (cd "$ROOT_DIR" && "$VENV_DIR/bin/pre-commit" install)
+fi
+
 echo
 echo "==> Frontend (React/Vite)"
 
@@ -71,4 +76,3 @@ echo "    uvicorn app.main:app --reload"
 echo "  Frontend:"
 echo "    cd frontend"
 echo "    npm run dev"
-

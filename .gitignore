@@ -94,3 +94,6 @@ out/
 *.tmp
 temp/
 tmp/
+
+# Achived Java Files
+archived_java_impl/

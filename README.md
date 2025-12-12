@@ -109,6 +109,18 @@ Dada_Island/
 
 ### 本地开发
 
+如果你是刚克隆项目，推荐先运行一键初始化脚本（会创建后端 venv、安装 Python 依赖与前端 node_modules）：
+
+```bash
+./scripts/setup-dev.sh
+```
+
+脚本结束后请手动激活虚拟环境再启动服务：
+```bash
+cd serverless_backend
+source venv/bin/activate
+```
+
 1.  **进入后端目录**:
     ```bash
     cd serverless_backend

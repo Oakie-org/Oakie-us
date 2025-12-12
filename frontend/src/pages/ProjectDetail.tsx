@@ -1,75 +1,85 @@
 import React from 'react';
-import { Button } from '../components/common/Button';
+import { ProjectHeader } from '../components/features/projects/ProjectHeader';
+import { TeamSection } from '../components/features/projects/TeamSection';
+import { ProjectTimeline } from '../components/features/projects/ProjectTimeline';
 import styles from './ProjectDetail.module.css';
+
+// Dummy Data
+const PROJECT_DATA = {
+    title: "EcoTrack",
+    description: "A mobile application gamifying carbon footprint tracking. We believe that by making sustainability social and fun, we can drive real change. The app will track daily activities, calculate carbon scores, and allow friends to compete in weekly eco-challenges.",
+    imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=2613",
+    tags: ["React Native", "Node.js", "Green Tech", "Social"],
+    requiredSkills: ["React Native", "AWS", "UI/UX Design", "Node.js"],
+    members: [
+        {
+            id: "1",
+            name: "Sarah Chen",
+            role: "Project Lead & Frontend",
+            avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256",
+        },
+        {
+            id: "2",
+            name: "Marcus Rodriguez",
+            role: "Backend Architect",
+            avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256",
+        },
+    ],
+    timelinePosts: [
+        {
+            id: "1",
+            title: "Project Kickoff",
+            date: "Sep 15, 2024",
+            type: "milestone" as const,
+            author: { name: "Sarah Chen", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256" },
+            preview: "Officially started the project. Defined core requirements and set up the repository structure.",
+        },
+        {
+            id: "2",
+            title: "Design System V1",
+            date: "Oct 02, 2024",
+            type: "update" as const,
+            author: { name: "Sarah Chen", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256" },
+            preview: "Completed the initial design system including color palette, typography and core component library.",
+        },
+        {
+            id: "3",
+            title: "Alpha Release 0.1",
+            date: "Nov 20, 2024",
+            type: "release" as const,
+            author: { name: "Marcus Rodriguez", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256" },
+            preview: "Deployed the first alpha version to internal testers. Basic auth and tracking features are working.",
+        },
+        {
+            id: "4",
+            title: "User Feedback Loop",
+            date: "Dec 10, 2024",
+            type: "update" as const,
+            author: { name: "Sarah Chen", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256" },
+            preview: "Gathered feedback from 20 alpha testers. Main request is for better social integration features.",
+        },
+    ]
+};
 
 export const ProjectDetail: React.FC = () => {
     return (
-        <div className={styles.container}>
-            {/* Header */}
-            <header className={styles.header}>
-                <div className={styles.headerContent}>
-                    <div className={styles.badge}>Recruiting</div>
-                    <h1 className={styles.title}>EcoTrack</h1>
-                    <p className={styles.subtitle}>A mobile app for tracking carbon footprint with social features.</p>
-                    <div className={styles.tags}>
-                        <span>React Native</span>
-                        <span>Node.js</span>
-                        <span>Green Tech</span>
-                    </div>
-                </div>
-                <div className={styles.headerActions}>
-                    <Button variant="primary">Apply to Join</Button>
-                    <Button variant="outline">Share</Button>
-                </div>
-            </header>
+        <div className={styles.pageContainer}>
+            <div className={styles.mainContent}>
+                <ProjectHeader
+                    title={PROJECT_DATA.title}
+                    description={PROJECT_DATA.description}
+                    imageUrl={PROJECT_DATA.imageUrl}
+                    tags={PROJECT_DATA.tags}
+                />
 
-            {/* Main Content & Timeline */}
-            <div className={styles.layout}>
-                <div className={styles.timelineSection}>
-                    <h2 className={styles.sectionTitle}>Project Timeline</h2>
-                    <div className={styles.timeline}>
-                        <div className={`${styles.step} ${styles.completed}`}>
-                            <div className={styles.stepIndicator}></div>
-                            <div className={styles.stepContent}>
-                                <h3>Concept Phase</h3>
-                                <p>Defining the core idea and gathering initial team.</p>
-                                <span className={styles.date}>Sep 2024</span>
-                            </div>
-                        </div>
-                        <div className={`${styles.step} ${styles.active}`}>
-                            <div className={styles.stepIndicator}></div>
-                            <div className={styles.stepContent}>
-                                <h3>Team Recruitment</h3>
-                                <p>Looking for 2 Backend Developers and 1 UI Designer.</p>
-                                <span className={styles.date}>Current</span>
-                            </div>
-                        </div>
-                        <div className={styles.step}>
-                            <div className={styles.stepIndicator}></div>
-                            <div className={styles.stepContent}>
-                                <h3>MVP Development</h3>
-                                <p>Building the initial prototype for beta testing.</p>
-                                <span className={styles.date}>Upcoming</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <TeamSection
+                    requiredSkills={PROJECT_DATA.requiredSkills}
+                    members={PROJECT_DATA.members}
+                />
 
-                <div className={styles.detailsSection}>
-                    <h2 className={styles.sectionTitle}>About the Project</h2>
-                    <p className={styles.description}>
-                        EcoTrack aims to gamify the experience of reducing personal carbon footprint.
-                        We believe that by making sustainability social and fun, we can drive real change.
-                        The app will track daily activities, calculate carbon score, and allow friends to compete.
-                    </p>
-
-                    <h3 className={styles.subTitle}>Open Roles</h3>
-                    <div className={styles.roleCard}>
-                        <h4>Backend Engineer</h4>
-                        <p>Experience with Node.js and AWS preferred.</p>
-                        <Button variant="secondary" size="sm">View Details</Button>
-                    </div>
-                </div>
+                <ProjectTimeline
+                    posts={PROJECT_DATA.timelinePosts}
+                />
             </div>
         </div>
     );

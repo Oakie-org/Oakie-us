@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../components/common/Card';
 import { Star, MapPin, X, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Projects.module.css';
 
 // Mock Data with Images, Members, and Capacity
@@ -102,6 +103,7 @@ const CITIES = ['All', 'Remote', 'New York, NY', 'San Francisco, CA', 'Durham, N
 const UNIVERSITIES = ['All', 'Duke University', 'Stanford University', 'CMU', 'MIT', 'NYU', 'Columbia University'];
 
 export const Projects: React.FC = () => {
+    const navigate = useNavigate();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedCity, setSelectedCity] = useState('All');
     const [selectedUni, setSelectedUni] = useState('All');
@@ -201,7 +203,11 @@ export const Projects: React.FC = () => {
             {/* Modern Card Grid */}
             <div className={styles.projectGrid}>
                 {filteredProjects.map(project => (
-                    <Card key={project.id} className={styles.modernCard}>
+                    <Card
+                        key={project.id}
+                        className={styles.modernCard}
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                    >
                         {/* Image Background Header */}
                         <div
                             className={styles.cardHero}

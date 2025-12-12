@@ -57,3 +57,4 @@
     - GSI: `CategoryIndex` (filter by category).
 - **Applications Table**: PK=`App#<UUID>`, Attributes: `project_id`, `applicant_id`, `status`.
 - **Single-Table Design Consideration**: May consolidate if access patterns require complex joins, but keeping separate tables is fine for MVP speed.
+

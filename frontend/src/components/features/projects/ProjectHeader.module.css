@@ -99,21 +99,7 @@
     margin-top: var(--spacing-xs);
 }
 
-.tag {
-    padding: 6px 12px;
-    background-color: var(--color-surface-secondary);
-    color: var(--color-text-secondary);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    border: 1px solid transparent;
-    transition: all 0.2s;
-}
 
-.tag:hover {
-    border-color: var(--color-border);
-    background-color: var(--color-surface);
-}
 
 .actionButtons {
     display: flex;

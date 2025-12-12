@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Share2, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../common/Button';
+import { ProjectTag } from '../../common/ProjectTag';
 import styles from './ProjectHeader.module.css';
 
 interface ProjectHeaderProps {
@@ -49,9 +50,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
 
                     <div className={styles.tagsRow}>
                         {tags.map((tag) => (
-                            <span key={tag} className={styles.tag}>
-                                {tag}
-                            </span>
+                            <ProjectTag key={tag} label={tag} />
                         ))}
                     </div>
 

@@ -246,33 +246,7 @@
     gap: 8px;
 }
 
-.miniTag {
-    font-size: 0.75rem;
-    padding: 4px 12px;
-    background-color: #EFF6FF;
-    /* Light Blue tint */
-    color: #3B82F6;
-    /* Blue text */
-    border-radius: 99px;
-    /* Full pill */
-    font-weight: 600;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-}
 
-.miniTag::before {
-    content: "#";
-    margin-right: 2px;
-    opacity: 0.6;
-    font-weight: 400;
-}
-
-.miniTag:hover {
-    background-color: #DBEAFE;
-    color: #2563EB;
-    transform: translateY(-1px);
-}
 
 /* Meta Info */
 .metaRow {

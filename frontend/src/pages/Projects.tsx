@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../components/common/Card';
 import { Star, MapPin, X, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ProjectTag } from '../components/common/ProjectTag';
 import type { Project } from '../types';
 import styles from './Projects.module.css';
 
@@ -138,7 +139,7 @@ export const Projects: React.FC = () => {
 
                             <div className={styles.tagsRow}>
                                 {project.tags.slice(0, 3).map(tag => (
-                                    <span key={tag} className={styles.miniTag}>{tag}</span>
+                                    <ProjectTag key={tag} label={tag} />
                                 ))}
                             </div>
 

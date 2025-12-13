@@ -91,7 +91,9 @@ Week 3:
 
 Stack:
 
-- React (Vite) + TypeScript, CSS Modules, `lucide-react` icons.
+- React (Vite) + TypeScript
+- Styling: TailwindCSS + `shadcn/ui` primitives **plus** CSS Modules for page/layout styles
+- Icons: `lucide-react`
 
 Key files:
 
@@ -101,8 +103,11 @@ Key files:
 
 Style rules:
 
-- Prefer **CSS Modules** (`*.module.css`) for new UI.
+- Prefer `shadcn/ui` primitives in `frontend/src/components/ui/*` for shared UI building blocks (buttons, inputs, cards, select, avatar, etc.).
+- Use **CSS Modules** (`*.module.css`) for page/layout composition and bespoke styling (keep the current “premium & airy” look).
+- When styling shadcn components, prefer existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`, `--spacing-*`) to keep visuals consistent.
 - Keep UI “premium & airy”: large radius (≈24px), soft shadow, glassmorphism, generous spacing.
+- Frontend import alias: `@/*` maps to `frontend/src/*` (use for `@/components/ui/...`).
 
 ## 7) Local dev (fast path)
 
@@ -153,7 +158,7 @@ Typical:
 
 ## 10) Agent working rules (repo-specific)
 
-- Keep changes minimal and aligned with existing patterns (FastAPI routers, CSS Modules, etc.).
+- Keep changes minimal and aligned with existing patterns (FastAPI routers, shadcn primitives + Tailwind, CSS Modules for layouts, etc.).
 - Don’t touch generated folders (`serverless_backend/venv/`, `frontend/node_modules/`, `.aws-sam/`).
 - Avoid `archived_java_impl/` unless explicitly requested.
 - If you change dev workflow, update `README.md` and/or `scripts/setup-dev.sh`.

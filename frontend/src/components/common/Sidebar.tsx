@@ -1,73 +1,118 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
-    LayoutDashboard,
-    Compass,
-    MessageSquare,
-    Users,
-    LogOut,
-    PlusCircle
-} from 'lucide-react';
-import { Button } from './Button';
-import styles from './Sidebar.module.css';
+  Compass,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  PlusCircle,
+  Users,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+import styles from "./Sidebar.module.css";
 
 interface SidebarProps {
-    onCreateClick?: () => void;
+  onCreateClick?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onCreateClick }) => {
-    return (
-        <aside className={styles.sidebar}>
-            {/* Logo Area */}
-            <div className={styles.logoContainer}>
-                <div className={styles.logoIcon}>O</div>
-                <span className={styles.logoText}>Oakie</span>
-            </div>
+  const location = useLocation();
 
-            {/* Navigation */}
-            <nav className={styles.nav}>
-                <div className={styles.sectionLabel}>Discover</div>
-                <NavLink to="/projects" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
-                    <Compass size={20} />
-                    <span>Explore</span>
-                </NavLink>
-                <NavLink to="/community" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
-                    <Users size={20} />
-                    <span>Community</span>
-                </NavLink>
+  const isActive = (href: string) => {
+    if (href === "/projects") return location.pathname.startsWith("/projects");
+    if (href === "/users/1") return location.pathname.startsWith("/users/");
+    return location.pathname === href;
+  };
 
-                <div className={styles.sectionLabel}>Workspace</div>
-                <NavLink to="/dashboard" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
-                    <LayoutDashboard size={20} />
-                    <span>Dashboard</span>
-                </NavLink>
-                <NavLink to="/messages" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
-                    <MessageSquare size={20} />
-                    <span>Messages</span>
-                </NavLink>
-            </nav>
-
-            {/* CTA */}
-            <div className={styles.ctaContainer}>
-                <Button variant="primary" className={styles.createBtn} onClick={onCreateClick}>
-                    <PlusCircle size={18} />
-                    <span>New Project</span>
-                </Button>
-            </div>
-
-            {/* Footer / User */}
-            <div className={styles.footer}>
-                <NavLink to="/users/1" className={styles.userProfile}>
-                    <div className={styles.avatar}>JD</div>
-                    <div className={styles.UserInfo}>
-                        <span className={styles.userName}>John Doe</span>
-                        <span className={styles.userRole}>Creator</span>
-                    </div>
-                </NavLink>
-                <button className={styles.logoutBtn}>
-                    <LogOut size={18} />
-                </button>
-            </div>
-        </aside>
+  const navButtonClass = (href: string) =>
+    cn(
+      styles.navItem,
+      "h-auto w-full justify-start px-[var(--spacing-md)] py-[var(--spacing-sm)]",
+      isActive(href) && styles.active,
     );
+
+  return (
+    <aside className={styles.sidebar}>
+      <div className={styles.logoContainer}>
+        <div className={styles.logoIcon}>O</div>
+        <span className={styles.logoText}>Oakie</span>
+      </div>
+
+      <nav className={styles.nav}>
+        <div className={styles.sectionLabel}>Discover</div>
+        <Button asChild variant="ghost" className={navButtonClass("/projects")}>
+          <Link to="/projects">
+            <Compass size={20} />
+            <span>Explore</span>
+          </Link>
+        </Button>
+        <Button
+          asChild
+          variant="ghost"
+          className={navButtonClass("/community")}
+        >
+          <Link to="/community">
+            <Users size={20} />
+            <span>Community</span>
+          </Link>
+        </Button>
+
+        <div className={styles.sectionLabel}>Workspace</div>
+        <Button
+          asChild
+          variant="ghost"
+          className={navButtonClass("/dashboard")}
+        >
+          <Link to="/dashboard">
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
+          </Link>
+        </Button>
+        <Button asChild variant="ghost" className={navButtonClass("/messages")}>
+          <Link to="/messages">
+            <MessageSquare size={20} />
+            <span>Messages</span>
+          </Link>
+        </Button>
+      </nav>
+
+      <div className={styles.ctaContainer}>
+        <Button
+          variant="default"
+          className={styles.createBtn}
+          onClick={onCreateClick}
+        >
+          <PlusCircle size={18} />
+          <span>New Project</span>
+        </Button>
+      </div>
+
+      <div className={styles.footer}>
+        <Button asChild variant="ghost" className={styles.userProfile}>
+          <Link to="/users/1">
+            <Avatar className={styles.avatar}>
+              <AvatarFallback>JD</AvatarFallback>
+            </Avatar>
+            <div className={styles.UserInfo}>
+              <span className={styles.userName}>John Doe</span>
+              <span className={styles.userRole}>Creator</span>
+            </div>
+          </Link>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn(styles.logoutBtn, "h-auto w-auto")}
+          aria-label="Log out"
+        >
+          <LogOut size={18} />
+        </Button>
+      </div>
+    </aside>
+  );
 };

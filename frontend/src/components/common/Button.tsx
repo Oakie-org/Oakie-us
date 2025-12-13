@@ -1,34 +1,24 @@
-import * as React from "react";
-
-import { Button as UiButton } from "@/components/ui/button";
+import React from "react";
+import styles from "./Button.module.css";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
-  asChild?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
+  children,
   variant = "primary",
   size = "md",
-  className,
+  className = "",
   ...props
 }) => {
-  const mappedVariant: React.ComponentProps<typeof UiButton>["variant"] =
-    variant === "primary"
-      ? "default"
-      : variant === "secondary"
-        ? "secondary"
-        : "outline";
-  const mappedSize: React.ComponentProps<typeof UiButton>["size"] =
-    size === "md" ? "default" : size;
-
   return (
-    <UiButton
-      variant={mappedVariant}
-      size={mappedSize}
-      className={className}
+    <button
+      className={`${styles.button} ${styles[variant]} ${styles[size]} ${className}`}
       {...props}
-    />
+    >
+      {children}
+    </button>
   );
 };

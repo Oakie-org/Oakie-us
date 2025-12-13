@@ -18,9 +18,9 @@
 ### Pages
 
 - **`Projects.tsx` (Explore)**:
-  - **Feature**: Smart Sticky Floating Filter.
-  - **Logic**: Hides on scroll down, shows on scroll up (`useEffect` hook).
-  - **UI**: Rounded "Pill Row", detached from edges, glassmorphism.
+  - **Feature**: "Smart Filter Bar" (Liquid Glass effect).
+  - **Logic**: Hides on scroll down, shows on scroll up. Consolidated Search + Filtering.
+  - **UI**: Floating glass pill (800px max-width) with integrated Search and expandable "Advanced Filter".
 - **`ProjectDetail.tsx`**: Detailed view of a project.
 - **`Profile.tsx`**: User profile with charts and tabs.
 
@@ -29,6 +29,7 @@
 - **`frontend/src/components/ui/*`**: Local shadcn-style primitives (Button, Input, Card, Select, Avatar, Separator, etc.).
   - _Style_: Components are Tailwind-styled but should use the existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`, `--spacing-*`) so the UI stays consistent.
 - **`frontend/src/components/common/ProjectTag.tsx`**: Reusable tag pill used across Explore/Detail.
+- **`frontend/src/components/features/projects/SmartFilterBar.tsx`**: The main filter component containing search, filter toggle, and advanced panel.
 - **`frontend/src/components/features/projects/*`**: Project detail blocks (`ProjectHeader`, `TeamSection`, `ProjectTimeline`) and `CreateProjectModal`.
 
 ### Shared Logic
@@ -57,6 +58,7 @@
 8.  **Schema Update**: Added `subtitle` (One-sentence intro) to `Project` interface for Explore cards.
 9.  **Mock Data Centralization**: Extracted all project data to `src/data/mockProjects.ts`. Enabled dynamic lookup in `ProjectDetail.tsx` (ID-based routing).
 10. **UI Refactor**: Enlarged `CreateProjectModal` (1000x800) and removed legacy search bar. Unified Tags UI with reusable `ProjectTag` component across Explore and Detail pages.
+11. **Smart Filter Refactor**: Replaced generic filter row with `SmartFilterBar`. Features: "Apple-style" liquid glass effect, integrated Search input (removed from global header), and "Advanced Filter" expandable panel for categories/cities/unis.
 
 ## 5. Context for AI
 

@@ -1,6 +1,5 @@
 import React from "react";
-import { Search, Bell } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import styles from "./TopHeader.module.css";
 
@@ -8,13 +7,8 @@ export const TopHeader: React.FC = () => {
   return (
     <header className={styles.header}>
       <div className={styles.actions}>
-        <div className={styles.searchContainer}>
-          <Search className={styles.searchIcon} size={18} />
-          <Input
-            type="text"
-            placeholder="Search..."
-            className={styles.searchInput}
-          />
+        <div className={styles.searchContainer} style={{ display: "none" }}>
+          {/* Search moved to page level */}
         </div>
         <Button
           type="button"

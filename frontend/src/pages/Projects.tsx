@@ -1,19 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Filter, MapPin, Star, X } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ProjectTag } from "@/components/common/ProjectTag";
 import { MOCK_PROJECTS } from "@/data/mockProjects";
+import { SmartFilterBar } from "@/components/features/projects/SmartFilterBar";
 
 import styles from "./Projects.module.css";
 
@@ -34,6 +27,7 @@ const itemVariants = {
 
 export const Projects: React.FC = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedCity, setSelectedCity] = useState("All");
   const [selectedUni, setSelectedUni] = useState("All");
@@ -89,84 +83,36 @@ export const Projects: React.FC = () => {
   }, [lastScrollY]);
 
   const filteredProjects = MOCK_PROJECTS.filter((project) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesCategory =
       selectedCategory === "All" || project.category === selectedCategory;
     const matchesCity = selectedCity === "All" || project.city === selectedCity;
     const matchesUni = selectedUni === "All" || project.uni === selectedUni;
-    return matchesCategory && matchesCity && matchesUni;
+    return matchesSearch && matchesCategory && matchesCity && matchesUni;
   });
 
   return (
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Explore Projects</h1>
 
-      <div
-        className={`${styles.filterRow} ${
-          showFilter ? styles.visible : styles.hidden
-        }`}
-      >
-        <div className={styles.filterLabel}>
-          <Filter size={16} /> Filters
-        </div>
-
-        <div className={styles.filterGroup}>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className={styles.pillsTrigger}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={styles.pillsContent}>
-              {categories.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c === "All" ? "All Categories" : c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className={styles.pillsTrigger}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={styles.pillsContent}>
-              {cities.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c === "All" ? "All Cities" : c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedUni} onValueChange={setSelectedUni}>
-            <SelectTrigger className={styles.pillsTrigger}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={styles.pillsContent}>
-              {universities.map((u) => (
-                <SelectItem key={u} value={u}>
-                  {u === "All" ? "All Universities" : u}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {(selectedCategory !== "All" ||
-          selectedCity !== "All" ||
-          selectedUni !== "All") && (
-          <Button
-            type="button"
-            variant="ghost"
-            className={styles.clearBtn}
-            onClick={() => {
-              setSelectedCategory("All");
-              setSelectedCity("All");
-              setSelectedUni("All");
-            }}
-          >
-            <X size={14} /> Clear
-          </Button>
-        )}
-      </div>
+      <SmartFilterBar
+        show={showFilter}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        selectedCity={selectedCity}
+        onCityChange={setSelectedCity}
+        selectedUni={selectedUni}
+        onUniChange={setSelectedUni}
+        categories={categories}
+        cities={cities}
+        universities={universities}
+      />
 
       <motion.div
         className={styles.projectGrid}

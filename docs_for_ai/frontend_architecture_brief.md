@@ -23,6 +23,12 @@
 - **`Card.tsx`**: Base component for Project Cards.
     -   *Premium Style*: 24px Radius, Soft Shadow, Hover "Bloom".
 -   **`Login.tsx`**: Gradient background, glass card login.
+-   **`ProjectHeader.tsx`**: Split view, Hero Image, Premium Typography.
+-   **`TeamSection.tsx`**: Skill tags and member list with detailed roles.
+-   **`ProjectTimeline.tsx`**: Interactive horizontal scrolling timeline with milestone cards.
+
+### Shared Logic
+-   **`src/types/index.ts`**: Centralized interfaces for `User`, `Project`, `Member`, `TimelinePost`.
 
 ## 3. Design Tokens (`index.css`)
 - **Colors**:
@@ -35,6 +41,13 @@
 1.  **Rebrand**: Renamed to "Oakie".
 2.  **Premium Cards**: Redesigned Project Cards (Avatar Stack with +N badge, Team Progress text).
 3.  **Smart Filter**: Implemented "Hide-on-Scroll-Down / Show-on-Scroll-Up" floating filter bar.
+4.  **Project Detail (Premium)**: Implemented Header, Team, and Timeline sections interactively.
+5.  **Refactor**: Standardized `Button` component and introduced shared TypeScript definitions.
+6.  **Create Project Flow**: Implemented `CreateProjectModal` (Selection -> Form). Integrated with Sidebar.
+7.  **Tags Refactor**: Separated Project `tags` (Content+Tech) from User `skills`. Implemented generic comma-separated input. Redesigned Tag UI (Pill + `#` prefix).
+8.  **Schema Update**: Added `subtitle` (One-sentence intro) to `Project` interface for Explore cards.
+9.  **Mock Data Centralization**: Extracted all project data to `src/data/mockProjects.ts`. Enabled dynamic lookup in `ProjectDetail.tsx` (ID-based routing).
+10. **UI Refactor**: Enlarged `CreateProjectModal` (1000x800) and removed legacy search bar. Unified Tags UI with reusable `ProjectTag` component across Explore and Detail pages.
 
 ## 5. Context for AI
 -   **Styling**: Use **CSS Modules** for all new components (`[Name].module.css`).

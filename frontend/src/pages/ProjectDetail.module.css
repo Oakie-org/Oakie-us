@@ -1,162 +1,44 @@
-.container {
+.pageContainer {
+    min-height: 100vh;
+    background-color: var(--color-background);
+    padding: var(--spacing-lg);
+    padding-bottom: 120px;
+    /* Space for bottom interaction */
+}
+
+.mainContent {
     max-width: 1000px;
     margin: 0 auto;
-    padding: var(--spacing-2xl) var(--spacing-lg);
-}
-
-.header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--spacing-2xl);
-    padding-bottom: var(--spacing-xl);
-    border-bottom: 1px solid var(--color-border);
+    flex-direction: column;
+    gap: var(--spacing-xl);
 }
 
-.badge {
-    display: inline-block;
-    background-color: #ECFDF5;
-    color: #059669;
-    padding: 4px 12px;
-    border-radius: var(--radius-full);
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: var(--spacing-sm);
-}
-
-.title {
-    font-size: 3rem;
-    font-weight: var(--font-weight-black);
-    line-height: 1.1;
-    margin-bottom: var(--spacing-sm);
-}
-
-.subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-md);
-}
-
-.tags {
-    display: flex;
-    gap: var(--spacing-sm);
-}
-
-.tags span {
-    background-color: var(--color-surface-secondary);
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-}
-
-.headerActions {
-    display: flex;
-    gap: var(--spacing-md);
-}
-
-.layout {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: var(--spacing-2xl);
-}
-
-.sectionTitle {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    margin-bottom: var(--spacing-lg);
-}
-
-.timeline {
-    position: relative;
-    padding-left: 20px;
-    border-left: 2px solid var(--color-border);
-}
-
-.step {
-    position: relative;
-    margin-bottom: var(--spacing-xl);
-    padding-left: var(--spacing-lg);
-}
-
-.stepIndicator {
-    position: absolute;
-    left: -27px;
-    top: 0;
-    width: 12px;
-    height: 12px;
-    background-color: white;
-    border: 2px solid var(--color-border);
-    border-radius: 50%;
-    z-index: 2;
-}
-
-.active .stepIndicator {
-    border-color: var(--color-primary);
-    background-color: var(--color-primary);
-    box-shadow: 0 0 0 4px var(--color-primary-light);
-}
-
-.completed .stepIndicator {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-}
-
-.stepContent h3 {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-bold);
-    margin-bottom: 2px;
-}
-
-.stepContent p {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: 4px;
-}
-
-.date {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.description {
-    line-height: 1.7;
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-xl);
-}
-
-.subTitle {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    margin-bottom: var(--spacing-md);
-}
-
-.roleCard {
-    background: var(--color-surface-secondary);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-}
-
-.roleCard h4 {
-    margin-bottom: var(--spacing-xs);
-}
-
-.roleCard p {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-md);
-}
-
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        gap: var(--spacing-lg);
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    .layout {
-        grid-template-columns: 1fr;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
+
+.mainContent>* {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.mainContent>*:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.mainContent>*:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.mainContent>*:nth-child(3) {
+    animation-delay: 0.3s;
 }

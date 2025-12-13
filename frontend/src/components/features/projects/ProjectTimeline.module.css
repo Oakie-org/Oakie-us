@@ -1,0 +1,239 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg) 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--spacing-sm);
+}
+
+.title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.controls {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.controlBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+
+.controlBtn:hover {
+    background-color: var(--color-surface-secondary);
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+}
+
+/* Scrollable Wrapper */
+.timelineWrapper {
+    overflow-x: auto;
+    padding: var(--spacing-xl) var(--spacing-xs);
+    /* Top padding for visual space */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+    /* Mask for fade effect on edges could be added here */
+}
+
+.timelineWrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.timelineTrack {
+    display: flex;
+    gap: var(--spacing-2xl);
+    position: relative;
+    min-width: max-content;
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-xl);
+}
+
+/* Horizontal Line */
+.line {
+    position: absolute;
+    top: 13px;
+    /* Align with node center */
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-border);
+    z-index: 0;
+}
+
+.timelineItem {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 280px;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+/* Date Marker on Line */
+.dateMarker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.node {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--color-surface);
+    border: 4px solid var(--color-primary-light);
+    box-shadow: 0 0 0 2px var(--color-primary);
+    z-index: 2;
+}
+
+.date {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    background-color: var(--color-background);
+    padding: 0 8px;
+    transform: translateY(-50%);
+    /* Adjust to look detached */
+}
+
+/* Post Card */
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    margin-top: var(--spacing-sm);
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary-light);
+}
+
+/* Visual connector from node to card */
+.card::before {
+    content: '';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 16px;
+    background: linear-gradient(to bottom, var(--color-border), transparent);
+    opacity: 0.5;
+}
+
+.cardHeader {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.authorAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.authorName {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.typeTag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+/* Type Colors */
+.milestone {
+    color: #D946EF;
+}
+
+/* Fuchsia */
+.update {
+    color: #3B82F6;
+}
+
+/* Blue */
+.release {
+    color: #10B981;
+}
+
+/* Emerald */
+
+.postTitle {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.4;
+}
+
+.postPreview {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Add Post Button */
+.addPostBtn {
+    width: 100%;
+    height: 100%;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    background-color: var(--color-surface-secondary);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-text-muted);
+    transition: all 0.2s;
+    margin-top: var(--spacing-sm);
+}
+
+.addPostBtn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}

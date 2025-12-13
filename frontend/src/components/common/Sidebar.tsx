@@ -11,7 +11,11 @@ import {
 import { Button } from './Button';
 import styles from './Sidebar.module.css';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+    onCreateClick?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onCreateClick }) => {
     return (
         <aside className={styles.sidebar}>
             {/* Logo Area */}
@@ -45,7 +49,7 @@ export const Sidebar: React.FC = () => {
 
             {/* CTA */}
             <div className={styles.ctaContainer}>
-                <Button variant="primary" className={styles.createBtn}>
+                <Button variant="primary" className={styles.createBtn} onClick={onCreateClick}>
                     <PlusCircle size={18} />
                     <span>New Project</span>
                 </Button>

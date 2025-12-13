@@ -1,19 +1,25 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
   Compass,
-  MessageSquare,
-  Users,
+  LayoutDashboard,
   LogOut,
+  MessageSquare,
   PlusCircle,
+  Users,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
 import styles from "./Sidebar.module.css";
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onCreateClick?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onCreateClick }) => {
   const location = useLocation();
 
   const isActive = (href: string) => {
@@ -22,26 +28,23 @@ export const Sidebar: React.FC = () => {
     return location.pathname === href;
   };
 
+  const navButtonClass = (href: string) =>
+    cn(
+      styles.navItem,
+      "h-auto w-full justify-start px-[var(--spacing-md)] py-[var(--spacing-sm)]",
+      isActive(href) && styles.active,
+    );
+
   return (
     <aside className={styles.sidebar}>
-      {/* Logo Area */}
       <div className={styles.logoContainer}>
         <div className={styles.logoIcon}>O</div>
         <span className={styles.logoText}>Oakie</span>
       </div>
 
-      {/* Navigation */}
       <nav className={styles.nav}>
         <div className={styles.sectionLabel}>Discover</div>
-        <Button
-          asChild
-          variant="ghost"
-          className={cn(
-            styles.navItem,
-            "h-auto w-full justify-start px-[var(--spacing-md)] py-[var(--spacing-sm)]",
-            isActive("/projects") && styles.active,
-          )}
-        >
+        <Button asChild variant="ghost" className={navButtonClass("/projects")}>
           <Link to="/projects">
             <Compass size={20} />
             <span>Explore</span>
@@ -50,11 +53,7 @@ export const Sidebar: React.FC = () => {
         <Button
           asChild
           variant="ghost"
-          className={cn(
-            styles.navItem,
-            "h-auto w-full justify-start px-[var(--spacing-md)] py-[var(--spacing-sm)]",
-            isActive("/community") && styles.active,
-          )}
+          className={navButtonClass("/community")}
         >
           <Link to="/community">
             <Users size={20} />
@@ -66,26 +65,14 @@ export const Sidebar: React.FC = () => {
         <Button
           asChild
           variant="ghost"
-          className={cn(
-            styles.navItem,
-            "h-auto w-full justify-start px-[var(--spacing-md)] py-[var(--spacing-sm)]",
-            isActive("/dashboard") && styles.active,
-          )}
+          className={navButtonClass("/dashboard")}
         >
           <Link to="/dashboard">
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
         </Button>
-        <Button
-          asChild
-          variant="ghost"
-          className={cn(
-            styles.navItem,
-            "h-auto w-full justify-start px-[var(--spacing-md)] py-[var(--spacing-sm)]",
-            isActive("/messages") && styles.active,
-          )}
-        >
+        <Button asChild variant="ghost" className={navButtonClass("/messages")}>
           <Link to="/messages">
             <MessageSquare size={20} />
             <span>Messages</span>
@@ -93,15 +80,17 @@ export const Sidebar: React.FC = () => {
         </Button>
       </nav>
 
-      {/* CTA */}
       <div className={styles.ctaContainer}>
-        <Button variant="default" className={styles.createBtn}>
+        <Button
+          variant="default"
+          className={styles.createBtn}
+          onClick={onCreateClick}
+        >
           <PlusCircle size={18} />
           <span>New Project</span>
         </Button>
       </div>
 
-      {/* Footer / User */}
       <div className={styles.footer}>
         <Button asChild variant="ghost" className={styles.userProfile}>
           <Link to="/users/1">

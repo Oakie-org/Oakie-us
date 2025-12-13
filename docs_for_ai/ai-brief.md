@@ -26,6 +26,7 @@
 ### Core Domains (FastAPI Routers)
 - `landing`: `/stats/overview` (counters), `/projects/trending`.
 - `projects`: CRUD for Projects (`/projects`). Stored in DynamoDB `Projects` table.
+   - **Features**: Team Management (Roles/Skills), Interactive Timeline (Milestones/Updates).
 - `applications`: Manage join requests. Stored in DynamoDB `Applications` table.
 - `users`: User profiles (`/users/{id}`). Stored in DynamoDB `Users` table (PK = Cognito Sub).
 - `meta`: Enums for frontend forms (Skills, Cities, Stages).
@@ -51,8 +52,9 @@
 
 ## 3. Database Schema (DynamoDB NoSQL)
 - **Users Table**: PK=`User#<CognitoSub>`, Attributes: `nickname`, `avatar`, `skills[]`, `bio`.
-- **Projects Table**: PK=`Project#<UUID>`, Attributes: `title`, `status`, `owner_id`, `members[]`.
+- **Projects Table**: PK=`Project#<UUID>`, Attributes: `title`, `subtitle` (short intro), `description`, `tags[]` (Generic: Tech/Content), `status`, `owner_id`, `members[]`.
     - GSI: `OwnerIndex` (query by `owner_id`).
     - GSI: `CategoryIndex` (filter by category).
 - **Applications Table**: PK=`App#<UUID>`, Attributes: `project_id`, `applicant_id`, `status`.
 - **Single-Table Design Consideration**: May consolidate if access patterns require complex joins, but keeping separate tables is fine for MVP speed.
+

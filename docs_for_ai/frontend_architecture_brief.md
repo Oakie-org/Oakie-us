@@ -26,9 +26,15 @@
 
 ### UI Components
 
-- **`frontend/src/components/ui/*`**: Local shadcn-style primitives (Button, Input, Card, Select, Avatar, etc.).
-  - _Style_: Components are Tailwind-styled but should use the existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`) so the UI stays consistent.
-- **`Login.tsx`**: Gradient background, glass card login.
+- **`frontend/src/components/ui/*`**: Local shadcn-style primitives (Button, Input, Card, Select, Avatar, Separator, etc.).
+  - _Style_: Components are Tailwind-styled but should use the existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`, `--spacing-*`) so the UI stays consistent.
+- **`frontend/src/components/common/ProjectTag.tsx`**: Reusable tag pill used across Explore/Detail.
+- **`frontend/src/components/features/projects/*`**: Project detail blocks (`ProjectHeader`, `TeamSection`, `ProjectTimeline`) and `CreateProjectModal`.
+
+### Shared Logic
+
+- **`frontend/src/types/index.ts`**: Centralized interfaces for `User`, `Project`, `Member`, `TimelinePost`.
+- **`frontend/src/data/mockProjects.ts`**: Centralized mock data for Explore + Detail pages.
 
 ## 3. Design Tokens (`index.css`)
 
@@ -44,6 +50,13 @@
 1.  **Rebrand**: Renamed to "Oakie".
 2.  **Premium Cards**: Redesigned Project Cards (Avatar Stack with +N badge, Team Progress text).
 3.  **Smart Filter**: Implemented "Hide-on-Scroll-Down / Show-on-Scroll-Up" floating filter bar.
+4.  **Project Detail (Premium)**: Implemented Header, Team, and Timeline sections interactively.
+5.  **Refactor**: Standardized `Button` component and introduced shared TypeScript definitions.
+6.  **Create Project Flow**: Implemented `CreateProjectModal` (Selection -> Form). Integrated with Sidebar.
+7.  **Tags Refactor**: Separated Project `tags` (Content+Tech) from User `skills`. Implemented generic comma-separated input. Redesigned Tag UI (Pill + `#` prefix).
+8.  **Schema Update**: Added `subtitle` (One-sentence intro) to `Project` interface for Explore cards.
+9.  **Mock Data Centralization**: Extracted all project data to `src/data/mockProjects.ts`. Enabled dynamic lookup in `ProjectDetail.tsx` (ID-based routing).
+10. **UI Refactor**: Enlarged `CreateProjectModal` (1000x800) and removed legacy search bar. Unified Tags UI with reusable `ProjectTag` component across Explore and Detail pages.
 
 ## 5. Context for AI
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card } from "../components/common/Card";
+import { Card } from "@/components/ui/card";
 import { Star, MapPin, X, Filter } from "lucide-react";
 import {
   Select,

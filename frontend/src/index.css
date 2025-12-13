@@ -55,6 +55,7 @@
   --shadow-sm: 0 2px 4px rgba(148, 163, 184, 0.1);
   --shadow-md: 0 8px 16px -4px rgba(108, 92, 231, 0.12);
   --shadow-lg: 0 20px 40px -12px rgba(108, 92, 231, 0.15);
+  --shadow-2xl: 0 30px 70px -20px rgba(0, 0, 0, 0.18);
   --shadow-brand-glow: 0 10px 40px -10px rgba(108, 92, 231, 0.5);
 }
 

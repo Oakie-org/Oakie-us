@@ -1,14 +1,17 @@
 import React from "react";
 import {
   ArrowLeft,
-  Share2,
   MoreHorizontal,
+  Share2,
   Star,
   UserPlus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+import { ProjectTag } from "@/components/common/ProjectTag";
 import { Button } from "@/components/ui/button";
-import { ProjectTag } from "../../common/ProjectTag";
+import { cn } from "@/lib/utils";
+
 import styles from "./ProjectHeader.module.css";
 
 interface ProjectHeaderProps {
@@ -34,16 +37,35 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
     <div className={styles.container}>
       {/* Navigation & Actions */}
       <div className={styles.topBar}>
-        <button className={styles.iconButton} onClick={() => navigate(-1)}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={styles.iconButton}
+          aria-label="Back"
+          onClick={() => navigate(-1)}
+        >
           <ArrowLeft size={20} />
-        </button>
+        </Button>
         <div className={styles.actions}>
-          <button className={styles.iconButton}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={styles.iconButton}
+            aria-label="Share"
+          >
             <Share2 size={20} />
-          </button>
-          <button className={styles.iconButton}>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={styles.iconButton}
+            aria-label="More"
+          >
             <MoreHorizontal size={20} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -105,10 +127,18 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           </div>
 
           <div className={styles.actionButtons}>
-            <Button variant="default" size="lg" className={styles.actionBtn}>
+            <Button
+              type="button"
+              variant="ghost"
+              className={cn(styles.btn, styles.btnPrimary)}
+            >
               Request to Join
             </Button>
-            <Button variant="outline" size="lg" className={styles.actionBtn}>
+            <Button
+              type="button"
+              variant="ghost"
+              className={cn(styles.btn, styles.btnSecondary)}
+            >
               Follow
             </Button>
           </div>

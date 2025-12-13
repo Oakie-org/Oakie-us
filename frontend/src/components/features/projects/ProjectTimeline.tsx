@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Calendar, ChevronRight, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import styles from "./ProjectTimeline.module.css";
 
 interface TimelinePost {
@@ -36,12 +37,26 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ posts }) => {
       <div className={styles.header}>
         <h3 className={styles.title}>Project Timeline</h3>
         <div className={styles.controls}>
-          <button className={styles.controlBtn} onClick={() => scroll("left")}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={styles.controlBtn}
+            aria-label="Scroll left"
+            onClick={() => scroll("left")}
+          >
             <ChevronLeft size={20} />
-          </button>
-          <button className={styles.controlBtn} onClick={() => scroll("right")}>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={styles.controlBtn}
+            aria-label="Scroll right"
+            onClick={() => scroll("right")}
+          >
             <ChevronRight size={20} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -87,10 +102,10 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ posts }) => {
               <div className={styles.node} />
               <span className={styles.date}>Next</span>
             </div>
-            <button className={styles.addPostBtn}>
+            <Button type="button" variant="ghost" className={styles.addPostBtn}>
               <Calendar size={24} />
               <span>Add Update</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

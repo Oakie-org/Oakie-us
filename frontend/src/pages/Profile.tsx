@@ -127,15 +127,17 @@ export const Profile: React.FC = () => {
           <div className={styles.tabs}>
             {["Recruiting", "In Progress", "Completed", "Activities"].map(
               (tab) => (
-                <button
+                <Button
                   key={tab}
+                  type="button"
+                  variant="ghost"
                   className={`${styles.tab} ${
                     activeTab === tab ? styles.activeTab : ""
-                  }`}
+                  } h-auto rounded-none bg-transparent p-0 shadow-none hover:bg-transparent`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab}
-                </button>
+                </Button>
               ),
             )}
           </div>

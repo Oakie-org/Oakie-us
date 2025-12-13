@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Filter, MapPin, Star, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Select,
@@ -152,7 +153,9 @@ export const Projects: React.FC = () => {
         {(selectedCategory !== "All" ||
           selectedCity !== "All" ||
           selectedUni !== "All") && (
-          <button
+          <Button
+            type="button"
+            variant="ghost"
             className={styles.clearBtn}
             onClick={() => {
               setSelectedCategory("All");
@@ -161,7 +164,7 @@ export const Projects: React.FC = () => {
             }}
           >
             <X size={14} /> Clear
-          </button>
+          </Button>
         )}
       </div>
 

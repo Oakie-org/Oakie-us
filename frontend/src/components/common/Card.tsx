@@ -1,16 +1,10 @@
-import React from 'react';
-import styles from './Card.module.css';
+import * as React from "react";
 
-interface CardProps {
-    children: React.ReactNode;
-    className?: string;
-    onClick?: () => void;
-}
+import { Card as UiCard } from "@/components/ui/card";
 
-export const Card: React.FC<CardProps> = ({ children, className = '', onClick }) => {
-    return (
-        <div className={`${styles.card} ${className}`} onClick={onClick}>
-            {children}
-        </div>
-    );
+export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  className,
+  ...props
+}) => {
+  return <UiCard className={className} {...props} />;
 };

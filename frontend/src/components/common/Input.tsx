@@ -1,20 +1,41 @@
-import React, { type InputHTMLAttributes } from 'react';
-import styles from './Input.module.css';
+import * as React from "react";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-    label?: string;
-    error?: string;
+import {
+  Input as UiInput,
+  type InputProps as UiInputProps,
+} from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+interface InputProps extends UiInputProps {
+  label?: string;
+  error?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ label, error, className = '', ...props }) => {
-    return (
-        <div className={styles.wrapper}>
-            {label && <label className={styles.label}>{label}</label>}
-            <input
-                className={`${styles.input} ${error ? styles.hasError : ''} ${className}`}
-                {...props}
-            />
-            {error && <span className={styles.error}>{error}</span>}
-        </div>
-    );
+export const Input: React.FC<InputProps> = ({
+  label,
+  error,
+  className,
+  id,
+  ...props
+}) => {
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
+
+  return (
+    <div className="space-y-2">
+      {label && <Label htmlFor={inputId}>{label}</Label>}
+      <UiInput
+        id={inputId}
+        className={cn(
+          error
+            ? "border-destructive focus-visible:ring-destructive"
+            : undefined,
+          className,
+        )}
+        {...props}
+      />
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </div>
+  );
 };

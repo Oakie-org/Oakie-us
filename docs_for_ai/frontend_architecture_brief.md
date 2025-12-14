@@ -1,110 +1,112 @@
 # Frontend Architecture Brief (Oakie)
 
-## 1. Project Overview
+## 1. Stack
 
-**Oakie** (formerly Dada Island) is a modern web platform for project collaboration.
+- React (Vite) + TypeScript
+- TailwindCSS v4 + shadcn/ui
+- CSS Modules
+- lucide-react icons
 
-- **Stack**: React (Vite), TypeScript, TailwindCSS + `shadcn/ui` primitives, CSS Modules, Lucide React (Icons).
-- **Core Design**: Premium Minimalist, Glassmorphism, "Floating Island" UI.
+## 2. Application Shell
 
-## 2. Key Components
+**Entry**: `src/pages/ApplicationShell.tsx`
 
-### Core Layout
+- Uses shadcn-studio `application-shell-08` template
+- SidebarProvider + floating Sidebar + main content with Outlet
+- Header with search, share, language, activity, notifications, profile dropdowns
 
-- **`AppLayout.tsx`**: Main wrapper with Sidebar and Global Search.
-- **`Sidebar.tsx`**: Sidebar navigation (composed from shadcn primitives + CSS Modules layout).
-- **`TopHeader.tsx`**: Search + actions (composed from shadcn primitives + CSS Modules layout).
+**Routing** (`src/App.tsx`):
 
-### Pages
-
-- **`Projects.tsx` (Explore)**:
-  - **Feature**: "Smart Filter Bar" (Liquid Glass effect).
-  - **Logic**: Hides on scroll down, shows on scroll up. Consolidated Search + Filtering.
-  - **UI**: Floating glass pill (800px max-width) with integrated Search and expandable "Advanced Filter".
-- **`ProjectDetail.tsx`**: Detailed view of a project.
-- **`Profile.tsx`**: User profile with charts and tabs.
-
-### UI Components
-
-- **`frontend/src/components/ui/*`**: Local shadcn-style primitives (Button, Input, Card, Select, Avatar, Separator, etc.).
-  - _Style_: Components are Tailwind-styled but should use the existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`, `--spacing-*`) so the UI stays consistent.
-- **`frontend/src/components/common/ProjectTag.tsx`**: Reusable tag pill used across Explore/Detail.
-- **`frontend/src/components/features/projects/SmartFilterBar.tsx`**: The main filter component containing search, filter toggle, and advanced panel.
-- **`frontend/src/components/features/projects/*`**: Project detail blocks (`ProjectHeader`, `TeamSection`, `ProjectTimeline`) and `CreateProjectModal`.
-
-### Shared Logic
-
-- **`frontend/src/types/index.ts`**: Centralized interfaces for `User`, `Project`, `Member`, `TimelinePost`.
-- **`frontend/src/data/mockProjects.ts`**: Centralized mock data for Explore + Detail pages.
-
-## 3. Design Tokens (`index.css`)
-
-- **Colors**:
-  - `--color-primary`: `#2563EB` (Blue)
-  - `--color-background`: `#FFFFFF`
-- **Spacing**: `var(--spacing-xs)` to `var(--spacing-3xl)`.
-- **Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-full`.
-- **shadcn tokens**: also defines `--background/--foreground/--primary/...` (used by Tailwind classes in `frontend/src/components/ui/*`).
-
-## 5. Tailwind v4 Compatibility
-
-> **CRITICAL**: Project uses Tailwind CSS v4 with `@tailwindcss/vite` plugin.
-
-### CSS Variable Syntax in Arbitrary Values
-
-**Tailwind v4 uses different syntax for CSS variables in arbitrary values:**
-
-| Tailwind v3 (OLD)     | Tailwind v4 (NEW)     |
-| --------------------- | --------------------- |
-| `w-[--sidebar-width]` | `w-(--sidebar-width)` |
-| `h-[--header-height]` | `h-(--header-height)` |
-| `left-[--offset]`     | `left-(--offset)`     |
-
-**Example (sidebar.tsx gap div):**
-
-```tsx
-// ❌ Tailwind v3 - Does NOT work in v4
-className = "w-[--sidebar-width] ...";
-
-// ✅ Tailwind v4 - Correct syntax
-className = "w-(--sidebar-width) ...";
+```
+/ → ApplicationShell
+  ├─ /explore → ExploreProjects
+  ├─ /create → CreateProjectPage
+  ├─ /projects/:id → ProjectDetailPage
+  └─ /profile → ProfilePage
 ```
 
-### Common Pitfalls
+## 3. Pages
 
-1. **Shadcn UI components**: Many shadcn components use v3 syntax. When installing new components via `npx shadcn@latest add`, check for CSS variable usage and convert to v4 syntax.
+| Page             | Path          | File                              |
+| ---------------- | ------------- | --------------------------------- |
+| Explore Projects | /explore      | `src/pages/ExploreProjects.tsx`   |
+| Create Project   | /create       | `src/pages/CreateProjectPage.tsx` |
+| Project Detail   | /projects/:id | `src/pages/ProjectDetailPage.tsx` |
+| User Profile     | /profile      | `src/pages/ProfilePage.tsx`       |
 
-2. **calc() expressions**: Within `calc()`, use `var()` wrapper:
-   ```tsx
-   // Works in both v3 and v4
-   className = "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]";
-   ```
+## 4. Sidebar Navigation
 
-## 6. Progress Log
+**Core Pages**:
 
-### 2025-12-15
+- Explore → /explore
+- Create Project → /create
+- Future Feature (×3) → placeholder
 
-12. **Tailwind v4 Sidebar Fix**: Fixed sidebar expand/collapse layout issue caused by incompatible CSS variable syntax. Converted `w-[--sidebar-width]` to `w-(--sidebar-width)` in `sidebar.tsx`.
+**Visualization**:
 
-### 2025-12-11
+- View Profile → /profile
+- Data Export → #
+- Integrations → submenu
 
-1.  **Rebrand**: Renamed to "Oakie".
-2.  **Premium Cards**: Redesigned Project Cards (Avatar Stack with +N badge, Team Progress text).
-3.  **Smart Filter**: Implemented "Hide-on-Scroll-Down / Show-on-Scroll-Up" floating filter bar.
-4.  **Project Detail (Premium)**: Implemented Header, Team, and Timeline sections interactively.
-5.  **Refactor**: Standardized `Button` component and introduced shared TypeScript definitions.
-6.  **Create Project Flow**: Implemented `CreateProjectModal` (Selection -> Form). Integrated with Sidebar.
-7.  **Tags Refactor**: Separated Project `tags` (Content+Tech) from User `skills`. Implemented generic comma-separated input. Redesigned Tag UI (Pill + `#` prefix).
-8.  **Schema Update**: Added `subtitle` (One-sentence intro) to `Project` interface for Explore cards.
-9.  **Mock Data Centralization**: Extracted all project data to `src/data/mockProjects.ts`. Enabled dynamic lookup in `ProjectDetail.tsx` (ID-based routing).
-10. **UI Refactor**: Enlarged `CreateProjectModal` (1000x800) and removed legacy search bar. Unified Tags UI with reusable `ProjectTag` component across Explore and Detail pages.
-11. **Smart Filter Refactor**: Replaced generic filter row with `SmartFilterBar`. Features: "Apple-style" liquid glass effect, integrated Search input (removed from global header), and "Advanced Filter" expandable panel for categories/cities/unis.
+## 5. Components
 
-## 7. Context for AI
+### UI (`src/components/ui/`)
 
-- **Primitives**: Prefer `shadcn/ui` primitives in `frontend/src/components/ui/*` for shared UI building blocks.
-- **Styling**: Use **CSS Modules** for page/layout composition (`[Name].module.css`), and keep visuals aligned with existing design tokens.
-- **Icons**: Use `lucide-react`.
-- **State**: Use React Hooks (`useState`, `useEffect`).
-- **Convention**: Keep components small, detached, and visually distinct.
-- **Tailwind v4**: Use `w-(--var)` syntax for CSS variables, NOT `w-[--var]`.
+shadcn primitives: Button, Input, Card, Avatar, Sidebar, Separator, Label, Textarea, Select, etc.
+
+### shadcn-studio blocks (`src/components/shadcn-studio/blocks/`)
+
+- dropdown-profile.tsx (has View Profile → /profile navigation)
+- dropdown-share.tsx
+- dropdown-language.tsx
+- dropdown-notification.tsx
+- dialog-search.tsx
+- dialog-activity.tsx
+
+### Feature Components (`src/components/features/projects/`)
+
+- ProjectHeader.tsx
+- TeamSection.tsx
+- ProjectTimeline.tsx
+
+### Common (`src/components/common/`)
+
+- ProjectTag.tsx
+
+## 6. Type Definitions
+
+`src/types/index.ts`:
+
+```ts
+interface User { id, name, role, avatar, skills[], location?, website? }
+interface Member { id, name, role, avatar }
+interface TimelinePost { id, author: Member, content, timestamp, likes, comments }
+interface Project { id, title, subtitle, description, thumbnail, tags[], members: Member[], timeline: TimelinePost[], status }
+```
+
+## 7. Mock Data
+
+`src/data/mockProjects.ts`: Array of Project objects for ExploreProjects and ProjectDetailPage
+
+## 8. Assets
+
+- Logo: `src/assets/oakie-logo.jpg` (used in sidebar header, h-34)
+- SVGs: `src/assets/svg/`
+
+## 9. Tailwind v4 Syntax
+
+**CSS Variables**: Use `w-(--var)` not `w-[--var]`
+
+```tsx
+// ✅ Correct
+className = "w-(--sidebar-width)";
+// ❌ Wrong
+className = "w-[--sidebar-width]";
+```
+
+## 10. Key Patterns
+
+- Pages use CSS Modules (`.module.css`)
+- Colors use `hsl(var(--primary))` shadcn tokens
+- Routes via react-router-dom with nested Outlet
+- Profile dropdown uses `useNavigate()` for View Profile

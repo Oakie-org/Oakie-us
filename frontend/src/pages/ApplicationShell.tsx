@@ -3,20 +3,17 @@ import { Outlet } from "react-router-dom";
 
 import {
   ActivityIcon,
-  AlertTriangleIcon,
   BellIcon,
   ChartColumnBigIcon,
-  ChartColumnStackedIcon,
   ChevronRightIcon,
-  ClipboardListIcon,
   LanguagesIcon,
   LinkIcon,
+  LockIcon,
+  PlusCircleIcon,
   SearchIcon,
   Share2Icon,
-  SquareCheckBigIcon,
-  TrendingUpIcon,
   UploadIcon,
-  UsersIcon,
+  UserIcon,
 } from "lucide-react";
 import { CompassIcon } from "lucide-react";
 
@@ -90,43 +87,33 @@ const corePagesItems: MenuItem[] = [
     href: "/explore",
   },
   {
-    icon: UsersIcon,
-    label: "Audience",
+    icon: PlusCircleIcon,
+    label: "Create Project",
+    href: "/create",
+  },
+  {
+    icon: LockIcon,
+    label: "Future Feature",
     href: "#",
   },
   {
-    icon: TrendingUpIcon,
-    label: "Traffic Sources",
-    href: "#",
-    badge: "3",
-  },
-  {
-    icon: ChartColumnStackedIcon,
-    label: "Engagement Metrics",
+    icon: LockIcon,
+    label: "Future Feature",
     href: "#",
   },
   {
-    icon: ClipboardListIcon,
-    label: "Custom Reports",
-    items: [
-      { label: "User Retention", href: "#", badge: "4" },
-      { label: "Session Duration", href: "#" },
-      { label: "Bounce Rate", href: "#" },
-    ],
-  },
-  {
-    icon: AlertTriangleIcon,
-    label: "Error Logs",
-    href: "#",
-  },
-  {
-    icon: SquareCheckBigIcon,
-    label: "Survey Results",
+    icon: LockIcon,
+    label: "Future Feature",
     href: "#",
   },
 ];
 
 const visualizationItems: MenuItem[] = [
+  {
+    icon: UserIcon,
+    label: "View Profile",
+    href: "/profile",
+  },
   {
     icon: UploadIcon,
     label: "Data Export",
@@ -393,7 +380,7 @@ const ApplicationShell = () => {
           </main>
           <footer className="flex items-center justify-between gap-3 px-4 pb-6 max-lg:flex-col sm:px-6 lg:gap-6">
             <p className="text-muted-foreground text-sm text-balance max-lg:text-center">
-              {`©${new Date().getFullYear()}`}{" "}
+              {`©${new Date().getFullYear()} `}{" "}
               <a href="#" className="text-primary">
                 Shadcn/studio
               </a>

@@ -3,6 +3,7 @@ import ApplicationShell from "@/pages/ApplicationShell";
 import ExploreProjects from "@/pages/ExploreProjects";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
 import ProfilePage from "@/pages/ProfilePage";
+import CreateProjectPage from "@/pages/CreateProjectPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="explore" element={<ExploreProjects />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="create" element={<CreateProjectPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

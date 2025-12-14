@@ -46,7 +46,47 @@
 - **Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-full`.
 - **shadcn tokens**: also defines `--background/--foreground/--primary/...` (used by Tailwind classes in `frontend/src/components/ui/*`).
 
-## 4. Progress Log (2025-12-11)
+## 5. Tailwind v4 Compatibility
+
+> **CRITICAL**: Project uses Tailwind CSS v4 with `@tailwindcss/vite` plugin.
+
+### CSS Variable Syntax in Arbitrary Values
+
+**Tailwind v4 uses different syntax for CSS variables in arbitrary values:**
+
+| Tailwind v3 (OLD)     | Tailwind v4 (NEW)     |
+| --------------------- | --------------------- |
+| `w-[--sidebar-width]` | `w-(--sidebar-width)` |
+| `h-[--header-height]` | `h-(--header-height)` |
+| `left-[--offset]`     | `left-(--offset)`     |
+
+**Example (sidebar.tsx gap div):**
+
+```tsx
+// ❌ Tailwind v3 - Does NOT work in v4
+className = "w-[--sidebar-width] ...";
+
+// ✅ Tailwind v4 - Correct syntax
+className = "w-(--sidebar-width) ...";
+```
+
+### Common Pitfalls
+
+1. **Shadcn UI components**: Many shadcn components use v3 syntax. When installing new components via `npx shadcn@latest add`, check for CSS variable usage and convert to v4 syntax.
+
+2. **calc() expressions**: Within `calc()`, use `var()` wrapper:
+   ```tsx
+   // Works in both v3 and v4
+   className = "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]";
+   ```
+
+## 6. Progress Log
+
+### 2025-12-15
+
+12. **Tailwind v4 Sidebar Fix**: Fixed sidebar expand/collapse layout issue caused by incompatible CSS variable syntax. Converted `w-[--sidebar-width]` to `w-(--sidebar-width)` in `sidebar.tsx`.
+
+### 2025-12-11
 
 1.  **Rebrand**: Renamed to "Oakie".
 2.  **Premium Cards**: Redesigned Project Cards (Avatar Stack with +N badge, Team Progress text).
@@ -60,10 +100,11 @@
 10. **UI Refactor**: Enlarged `CreateProjectModal` (1000x800) and removed legacy search bar. Unified Tags UI with reusable `ProjectTag` component across Explore and Detail pages.
 11. **Smart Filter Refactor**: Replaced generic filter row with `SmartFilterBar`. Features: "Apple-style" liquid glass effect, integrated Search input (removed from global header), and "Advanced Filter" expandable panel for categories/cities/unis.
 
-## 5. Context for AI
+## 7. Context for AI
 
 - **Primitives**: Prefer `shadcn/ui` primitives in `frontend/src/components/ui/*` for shared UI building blocks.
 - **Styling**: Use **CSS Modules** for page/layout composition (`[Name].module.css`), and keep visuals aligned with existing design tokens.
 - **Icons**: Use `lucide-react`.
 - **State**: Use React Hooks (`useState`, `useEffect`).
 - **Convention**: Keep components small, detached, and visually distinct.
+- **Tailwind v4**: Use `w-(--var)` syntax for CSS variables, NOT `w-[--var]`.

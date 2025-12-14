@@ -83,10 +83,7 @@ const ShareDropdown = ({
                     <p className="text-muted-foreground">{item.email}</p>
                   </div>
                   <Select defaultValue={item.role}>
-                    <SelectTrigger
-                      size="sm"
-                      className="border-0 px-2 shadow-none"
-                    >
+                    <SelectTrigger className="border-0 px-2 shadow-none h-8">
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>

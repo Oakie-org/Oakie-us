@@ -1,4 +1,5 @@
 import type { ComponentType, CSSProperties } from "react";
+import { Outlet } from "react-router-dom";
 
 import {
   ActivityIcon,
@@ -15,9 +16,9 @@ import {
   SquareCheckBigIcon,
   TrendingUpIcon,
   UploadIcon,
-  UserIcon,
   UsersIcon,
 } from "lucide-react";
+import { CompassIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -84,9 +85,9 @@ const menuItems: MenuItem[] = [
 
 const corePagesItems: MenuItem[] = [
   {
-    icon: UserIcon,
-    label: "User Behavior",
-    href: "#",
+    icon: CompassIcon,
+    label: "Explore",
+    href: "/explore",
   },
   {
     icon: UsersIcon,
@@ -381,7 +382,9 @@ const ApplicationShell = () => {
           <main className="size-full flex-1 px-4 py-6 sm:px-6">
             <Card className="h-250">
               <CardContent className="h-full">
-                <div className="h-full rounded-md border bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_1px,var(--card)_2px,var(--card)_15px)]" />
+                <div className="h-full rounded-md border bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_1px,var(--card)_2px,var(--card)_15px)] overflow-y-auto">
+                  <Outlet />
+                </div>
               </CardContent>
             </Card>
           </main>

@@ -62,8 +62,11 @@ coverage.xml
 .env.local
 .env.*.local
 # Exclude example env files from ignoring if you want to share templates
-!
-.env.example
+!.env.example
+
+# Frontend source (root-level `lib/` ignore is for Python tooling)
+!frontend/src/lib/
+!frontend/src/lib/**
 
 # Java / Gradle (archived_java_impl)
 .gradle/

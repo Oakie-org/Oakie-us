@@ -92,7 +92,7 @@ Week 3:
 Stack:
 
 - React (Vite) + TypeScript
-- Styling: TailwindCSS + `shadcn/ui` primitives **plus** CSS Modules for page/layout styles
+- Styling: TailwindCSS v4 + `shadcn/ui` primitives **plus** CSS Modules for page/layout styles
 - Icons: `lucide-react`
 
 Key files:
@@ -108,6 +108,14 @@ Style rules:
 - When styling shadcn components, prefer existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`, `--spacing-*`) to keep visuals consistent.
 - Keep UI “premium & airy”: large radius (≈24px), soft shadow, glassmorphism, generous spacing.
 - Frontend import alias: `@/*` maps to `frontend/src/*` (use for `@/components/ui/...`).
+
+**⚠️ Tailwind v4 CSS Variable Syntax (CRITICAL):**
+
+- Project uses Tailwind v4 via `@tailwindcss/vite` plugin.
+- **CSS variables in arbitrary values use parentheses, not brackets:**
+  - ❌ v3: `w-[--sidebar-width]`
+  - ✅ v4: `w-(--sidebar-width)`
+- When installing new shadcn components, check for v3 syntax and convert to v4.
 
 ## 7) Local dev (fast path)
 

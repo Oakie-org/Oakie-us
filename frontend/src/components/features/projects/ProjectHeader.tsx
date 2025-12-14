@@ -1,4 +1,3 @@
-import React from "react";
 import {
   ArrowLeft,
   MoreHorizontal,
@@ -80,24 +79,8 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           <h1 className={styles.title}>{title}</h1>
           <p className={styles.description}>{description}</p>
 
-          <div
-            className={styles.statsRow}
-            style={{
-              display: "flex",
-              gap: "20px",
-              marginBottom: "20px",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                color: "#4B5563",
-                fontWeight: 500,
-              }}
-            >
+          <div className={styles.statsRow}>
+            <div className={styles.statItem}>
               <Star
                 size={18}
                 className="text-yellow-500"
@@ -106,16 +89,8 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
               />
               <span>{likes} Stars</span>
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                color: "#4B5563",
-                fontWeight: 500,
-              }}
-            >
-              <UserPlus size={18} color="#4F46E5" />
+            <div className={styles.statItem}>
+              <UserPlus size={18} className="text-primary" />
               <span>{follows} Followers</span>
             </div>
           </div>
@@ -127,16 +102,12 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           </div>
 
           <div className={styles.actionButtons}>
-            <Button
-              type="button"
-              variant="ghost"
-              className={cn(styles.btn, styles.btnPrimary)}
-            >
+            <Button type="button" className={cn(styles.btn, styles.btnPrimary)}>
               Request to Join
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               className={cn(styles.btn, styles.btnSecondary)}
             >
               Follow

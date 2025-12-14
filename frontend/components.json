@@ -7,8 +7,10 @@
     "config": "tailwind.config.js",
     "css": "src/index.css",
     "baseColor": "neutral",
-    "cssVariables": true
+    "cssVariables": true,
+    "prefix": ""
   },
+  "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
@@ -16,28 +18,5 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {
-    "@shadcn-studio": "https://shadcnstudio.com/r/{name}.json",
-    "@ss-components": {
-      "url": "https://shadcnstudio.com/r/components/{name}.json",
-      "params": {
-        "email": "${EMAIL}",
-        "license_key": "${LICENSE_KEY}"
-      }
-    },
-    "@ss-blocks": {
-      "url": "https://shadcnstudio.com/r/blocks/{name}.json",
-      "params": {
-        "email": "${EMAIL}",
-        "license_key": "${LICENSE_KEY}"
-      }
-    },
-    "@ss-themes": {
-      "url": "https://shadcnstudio.com/r/themes/{name}.json",
-      "params": {
-        "email": "${EMAIL}",
-        "license_key": "${LICENSE_KEY}"
-      }
-    }
-  }
+  "registries": {}
 }

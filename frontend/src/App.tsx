@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ApplicationShell from "@/pages/ApplicationShell";
 import ExploreProjects from "@/pages/ExploreProjects";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
+import ProfilePage from "@/pages/ProfilePage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
           <Route index element={<ExploreProjects />} />
           <Route path="explore" element={<ExploreProjects />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

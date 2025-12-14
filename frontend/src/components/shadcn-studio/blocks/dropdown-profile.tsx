@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   UserIcon,
@@ -28,6 +29,8 @@ type Props = {
 };
 
 const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
+  const navigate = useNavigate();
+
   return (
     <DropdownMenu defaultOpen={defaultOpen}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
@@ -56,9 +59,12 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          <DropdownMenuItem className="px-4 py-2.5 text-base">
+          <DropdownMenuItem
+            className="px-4 py-2.5 text-base cursor-pointer"
+            onClick={() => navigate("/profile")}
+          >
             <UserIcon className="text-foreground size-5" />
-            <span>My account</span>
+            <span>View Profile</span>
           </DropdownMenuItem>
           <DropdownMenuItem className="px-4 py-2.5 text-base">
             <SettingsIcon className="text-foreground size-5" />

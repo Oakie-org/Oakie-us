@@ -48,7 +48,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-import LogoSvg from "@/assets/svg/logo";
+import oakieLogo from "@/assets/oakie-logo.jpg";
 import SearchDialog from "@/components/shadcn-studio/blocks/dialog-search";
 import ShareDropdown from "@/components/shadcn-studio/blocks/dropdown-share";
 import LanguageDropdown from "@/components/shadcn-studio/blocks/dropdown-language";
@@ -272,9 +272,12 @@ const ApplicationShell = () => {
                   className="gap-2.5 !bg-transparent [&>svg]:size-8"
                   asChild
                 >
-                  <a href="#">
-                    <LogoSvg className="[&_rect]:fill-sidebar [&_rect:first-child]:fill-primary" />
-                    <span className="text-xl font-semibold">Analytics</span>
+                  <a href="/">
+                    <img
+                      src={oakieLogo}
+                      alt="Oakie"
+                      className="h-34 w-auto rounded-lg object-contain"
+                    />
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>

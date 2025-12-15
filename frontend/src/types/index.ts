@@ -29,6 +29,7 @@ export interface Project {
   membersAvatars?: string[]; // Legacy support for Explore page
   members?: Member[]; // Full member support for Detail page
   requiredSkills?: string[];
+  timelinePosts?: TimelinePost[]; // Detail page feed (mock support)
 }
 
 export interface TimelinePost {

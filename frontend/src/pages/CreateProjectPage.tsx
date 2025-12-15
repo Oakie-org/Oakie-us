@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { createProject } from "@/lib/api";
 
 import styles from "./CreateProjectPage.module.css";
 
@@ -25,6 +26,7 @@ export const CreateProjectPage: React.FC = () => {
   const [subtitle, setSubtitle] = useState("");
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const handleBack = () => {
     if (step === "form") {
@@ -34,25 +36,33 @@ export const CreateProjectPage: React.FC = () => {
     }
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
+    if (isPublishing) return;
     const tagsArray = tagsInput
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
-    // Mock API call
-    console.log("Publishing Project:", {
-      title,
-      subtitle,
-      description,
-      tags: tagsArray,
-    });
-    // Reset and navigate to explore
-    setTitle("");
-    setSubtitle("");
-    setDescription("");
-    setTagsInput("");
-    setStep("selection");
-    navigate("/explore");
+
+    setIsPublishing(true);
+    try {
+      const created = await createProject({
+        title,
+        subtitle,
+        description,
+        tags: tagsArray,
+      });
+      setTitle("");
+      setSubtitle("");
+      setDescription("");
+      setTagsInput("");
+      setStep("selection");
+      navigate(`/projects/${created.id}`);
+    } catch (error) {
+      console.error(error);
+      navigate("/explore");
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -187,8 +197,9 @@ export const CreateProjectPage: React.FC = () => {
               type="button"
               className={styles.publishBtn}
               onClick={handlePublish}
+              disabled={isPublishing}
             >
-              Publish Project!
+              {isPublishing ? "Publishing..." : "Publish Project!"}
             </Button>
           </Card>
         )}

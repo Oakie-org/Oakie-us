@@ -3,3 +3,6 @@ boto3-stubs[dynamodb]
 pre-commit
 ruff
 absolufy-imports
+pytest
+testcontainers
+moto[dynamodb]

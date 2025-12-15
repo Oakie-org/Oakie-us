@@ -129,6 +129,30 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref OakieApi
+        PublicRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+            Path: /
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        PublicProjectsList:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+            Path: /api/v1/projects
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        PublicProjectsDetail:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+            Path: /api/v1/projects/{id}
+            Method: GET
+            Auth:
+              Authorizer: NONE
 
   # -------------------------------------------------------------------------
   # API Gateway (HTTP API)

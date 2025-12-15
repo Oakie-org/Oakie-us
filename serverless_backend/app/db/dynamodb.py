@@ -1,49 +1,76 @@
 import boto3
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 from app.core.config import settings
 from botocore.exceptions import ClientError
 
+
 class DynamoDBClient:
     def __init__(self):
-        self.client = boto3.resource("dynamodb", region_name=settings.AWS_REGION)
-        self.table = self.client.Table(settings.DYNAMODB_TABLE)
+        self.resource = boto3.resource("dynamodb", region_name=settings.AWS_REGION)
+        self.table = self.resource.Table(settings.DYNAMODB_TABLE)
 
-    def put_item(self, item: Dict[str, Any]):
+    def put_item(
+        self,
+        item: Dict[str, Any],
+        *,
+        condition_expression: Any | None = None,
+        expression_attribute_names: Dict[str, str] | None = None,
+        expression_attribute_values: Dict[str, Any] | None = None,
+    ) -> None:
         try:
-            self.table.put_item(Item=item)
+            kwargs: Dict[str, Any] = {"Item": item}
+            if condition_expression is not None:
+                kwargs["ConditionExpression"] = condition_expression
+            if expression_attribute_names is not None:
+                kwargs["ExpressionAttributeNames"] = expression_attribute_names
+            if expression_attribute_values is not None:
+                kwargs["ExpressionAttributeValues"] = expression_attribute_values
+            self.table.put_item(**kwargs)
         except ClientError as e:
             print(f"Error putting item: {e}")
             raise e
 
-    def get_item(self, pk: str, sk: str) -> Optional[Dict[str, Any]]:
+    def get_item(self, pk: str) -> Optional[Dict[str, Any]]:
         try:
-            response = self.table.get_item(Key={"PK": pk, "SK": sk})
+            response = self.table.get_item(Key={"PK": pk})
             return response.get("Item")
         except ClientError as e:
             print(f"Error getting item: {e}")
             raise e
 
-    def query_pk(self, pk: str) -> List[Dict[str, Any]]:
-        from boto3.dynamodb.conditions import Key
+    def scan(
+        self,
+        *,
+        filter_expression: Any | None = None,
+        expression_attribute_names: Dict[str, str] | None = None,
+        expression_attribute_values: Dict[str, Any] | None = None,
+        limit: int | None = None,
+    ) -> List[Dict[str, Any]]:
         try:
-            response = self.table.query(
-                KeyConditionExpression=Key("PK").eq(pk)
-            )
-            return response.get("Items", [])
+            kwargs: Dict[str, Any] = {}
+            if filter_expression is not None:
+                kwargs["FilterExpression"] = filter_expression
+            if expression_attribute_names is not None:
+                kwargs["ExpressionAttributeNames"] = expression_attribute_names
+            if expression_attribute_values is not None:
+                kwargs["ExpressionAttributeValues"] = expression_attribute_values
+            if limit is not None:
+                kwargs["Limit"] = limit
+
+            items: List[Dict[str, Any]] = []
+            last_evaluated_key: Dict[str, Any] | None = None
+            while True:
+                if last_evaluated_key is not None:
+                    kwargs["ExclusiveStartKey"] = last_evaluated_key
+                response = self.table.scan(**kwargs)
+                items.extend(response.get("Items", []))
+                last_evaluated_key = response.get("LastEvaluatedKey")
+                if not last_evaluated_key:
+                    break
+            return items
         except ClientError as e:
-            print(f"Error querying items: {e}")
+            print(f"Error scanning items: {e}")
             raise e
-            
-    def query_gsi1(self, gsi1pk: str) -> List[Dict[str, Any]]:
-        from boto3.dynamodb.conditions import Key
-        try:
-            response = self.table.query(
-                IndexName="GSI1",
-                KeyConditionExpression=Key("GSI1PK").eq(gsi1pk)
-            )
-            return response.get("Items", [])
-        except ClientError as e:
-            print(f"Error querying GSI1: {e}")
-            raise e
+
 
 db = DynamoDBClient()

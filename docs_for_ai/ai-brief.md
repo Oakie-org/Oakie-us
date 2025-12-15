@@ -65,3 +65,9 @@
   - GSI: `CategoryIndex` (filter by category).
 - **Applications Table**: PK=`App#<UUID>`, Attributes: `project_id`, `applicant_id`, `status`.
 - **Single-Table Design Consideration**: May consolidate if access patterns require complex joins, but keeping separate tables is fine for MVP speed.
+
+## 4. Running Tests (Backend)
+
+- Install dev deps: `cd serverless_backend && source venv/bin/activate && pip install -r requirements-dev.txt`
+- Run tests: `PYTHONPATH=. pytest`
+- DynamoDB for tests: prefers DynamoDB Local via Docker; falls back to Moto (in-memory) if Docker isn’t available.

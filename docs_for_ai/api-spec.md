@@ -43,3 +43,8 @@ _Although Cognito is used, we wrap basic flows in our API for frontend consisten
 - Prefer `*Base` Pydantic models for shared fields and extend specific request/response models from them (e.g. `ProjectBase` → `ProjectCreate`, `ProjectPublic`).
 - Use **FastAPI Dependencies** for Auth (`get_current_user`).
 - **DynamoDB**: Use `boto3` or `pynamodb` or single-table helper.
+
+## 7. Tests
+
+- Run: `cd serverless_backend && source venv/bin/activate && PYTHONPATH=. pytest`
+- Notes: tests use DynamoDB Local (Docker) when available; otherwise Moto (in-memory).

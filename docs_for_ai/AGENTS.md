@@ -153,6 +153,12 @@ Frontend:
   - Lambda runtime provides `boto3`, but for local typing we install `boto3-stubs[dynamodb]` in dev deps.
   - Runtime deps should stay in `serverless_backend/requirements.txt`; dev-only in `serverless_backend/requirements-dev.txt`.
 
+### Tests (Backend)
+
+- Install dev deps: `cd serverless_backend && source venv/bin/activate && pip install -r requirements-dev.txt`
+- Run tests: `PYTHONPATH=. pytest` (defaults to verbose via `pytest.ini`)
+- DynamoDB for tests: prefers DynamoDB Local via Docker; falls back to Moto (in-memory) if Docker isn’t available.
+
 ## 9) AWS SAM deploy defaults (what’s “configured”)
 
 - Template: `serverless_backend/template.yaml` (what gets built/deployed)

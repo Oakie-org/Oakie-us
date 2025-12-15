@@ -1,8 +1,6 @@
-from typing import Literal
-
 from pydantic import BaseModel, Field
 
-ProjectStatus = Literal["Recruiting", "In Progress", "Idea", "Completed"]
+from app.shared.enum import ProjectStatus
 
 
 class ProjectBase(BaseModel):
@@ -10,7 +8,7 @@ class ProjectBase(BaseModel):
     subtitle: str | None = None
     description: str
     tags: list[str] = Field(default_factory=list)
-    status: ProjectStatus = "Recruiting"
+    status: ProjectStatus = ProjectStatus.RECRUITING
     category: str = "General"
     uni: str = ""
     city: str = ""

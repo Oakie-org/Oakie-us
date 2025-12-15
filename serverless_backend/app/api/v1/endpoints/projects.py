@@ -13,6 +13,7 @@ from app.models.project import (
     ProjectPublic,
     ProjectsListResponse,
 )
+from app.shared.enum import ProjectStatus
 
 router = APIRouter()
 
@@ -54,7 +55,7 @@ def _project_from_item(item: dict) -> ProjectPublic:
         subtitle=(str(item["subtitle"]) if item.get("subtitle") else None),
         description=str(item.get("description") or ""),
         tags=list(item.get("tags") or []),
-        status=str(item.get("status") or "Recruiting"),  # validated by response model
+        status=ProjectStatus(item.get("status") or ProjectStatus.RECRUITING),
         category=str(item.get("category") or "General"),
         uni=str(item.get("uni") or ""),
         city=str(item.get("city") or ""),

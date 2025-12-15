@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 ProjectStatus = Literal["Recruiting", "In Progress", "Idea", "Completed"]
 
 
-class ProjectCreate(BaseModel):
+class ProjectBase(BaseModel):
     title: str
     subtitle: str | None = None
     description: str
@@ -19,22 +19,15 @@ class ProjectCreate(BaseModel):
     image_url: str | None = None
 
 
-class ProjectPublic(BaseModel):
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectPublic(ProjectBase):
     id: str
-    title: str
-    subtitle: str | None = None
-    description: str
-    tags: list[str] = Field(default_factory=list)
-    status: ProjectStatus
-    category: str
-    uni: str
-    city: str
     current_members: int
-    max_members: int
     likes: int
     follows: int
-    image: str
-    image_url: str | None = None
     created_at: str
     updated_at: str
 

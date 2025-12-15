@@ -167,6 +167,7 @@ Typical:
 ## 10) Agent working rules (repo-specific)
 
 - Keep changes minimal and aligned with existing patterns (FastAPI routers, shadcn primitives + Tailwind, CSS Modules for layouts, etc.).
+- API modeling: when adding API Pydantic models, prefer a `*Base` model for shared fields and extend request/response models from it.
 - Don’t touch generated folders (`serverless_backend/venv/`, `frontend/node_modules/`, `.aws-sam/`).
 - Avoid `archived_java_impl/` unless explicitly requested.
 - If you change dev workflow, update `README.md` and/or `scripts/setup-dev.sh`.

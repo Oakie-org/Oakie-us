@@ -37,3 +37,12 @@ class ProjectsListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class ProjectListRequest(BaseModel):
+    status: ProjectStatus | None = None
+    category: str | None = None
+    city: str | None = None
+    uni: str | None = None
+    tag: str | None = None
+    q: str | None = None

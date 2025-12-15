@@ -4,10 +4,15 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.db.dynamodb import db
-from app.models.project import ProjectCreate, ProjectPublic, ProjectsListResponse
+from app.models.project import (
+    ProjectCreate,
+    ProjectListRequest,
+    ProjectPublic,
+    ProjectsListResponse,
+)
 
 router = APIRouter()
 
@@ -66,12 +71,31 @@ def _project_from_item(item: dict) -> ProjectPublic:
 
 @router.get("", response_model=ProjectsListResponse)
 def list_projects(
+    filters: ProjectListRequest = Depends(),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
 ) -> ProjectsListResponse:
     from boto3.dynamodb.conditions import Attr
 
-    items = db.scan(filter_expression=Attr("type").eq("PROJECT"))
+    filter_expression = Attr("type").eq("PROJECT")
+    if filters.status:
+        filter_expression = filter_expression & Attr("status").eq(filters.status)
+    if filters.category:
+        filter_expression = filter_expression & Attr("category").eq(filters.category)
+    if filters.city:
+        filter_expression = filter_expression & Attr("city").eq(filters.city)
+    if filters.uni:
+        filter_expression = filter_expression & Attr("uni").eq(filters.uni)
+    if filters.tag:
+        filter_expression = filter_expression & Attr("tags").contains(filters.tag)
+    if filters.q:
+        q = filters.q.strip()
+        if q:
+            filter_expression = filter_expression & (
+                Attr("title").contains(q) | Attr("description").contains(q)
+            )
+
+    items = db.scan(filter_expression=filter_expression)
     projects = [_project_from_item(item) for item in items]
     projects.sort(key=lambda p: p.created_at, reverse=True)
 

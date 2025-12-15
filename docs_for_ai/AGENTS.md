@@ -153,6 +153,12 @@ Frontend:
   - Lambda runtime provides `boto3`, but for local typing we install `boto3-stubs[dynamodb]` in dev deps.
   - Runtime deps should stay in `serverless_backend/requirements.txt`; dev-only in `serverless_backend/requirements-dev.txt`.
 
+### Tests (Backend)
+
+- Install dev deps: `cd serverless_backend && source venv/bin/activate && pip install -r requirements-dev.txt`
+- Run tests: `PYTHONPATH=. pytest` (defaults to verbose via `pytest.ini`)
+- DynamoDB for tests: prefers DynamoDB Local via Docker; falls back to Moto (in-memory) if Docker isn’t available.
+
 ## 9) AWS SAM deploy defaults (what’s “configured”)
 
 - Template: `serverless_backend/template.yaml` (what gets built/deployed)
@@ -167,6 +173,7 @@ Typical:
 ## 10) Agent working rules (repo-specific)
 
 - Keep changes minimal and aligned with existing patterns (FastAPI routers, shadcn primitives + Tailwind, CSS Modules for layouts, etc.).
+- API modeling: when adding API Pydantic models, prefer a `*Base` model for shared fields and extend request/response models from it.
 - Don’t touch generated folders (`serverless_backend/venv/`, `frontend/node_modules/`, `.aws-sam/`).
 - Avoid `archived_java_impl/` unless explicitly requested.
 - If you change dev workflow, update `README.md` and/or `scripts/setup-dev.sh`.

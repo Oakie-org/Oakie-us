@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { ProjectTag } from "@/components/common/ProjectTag";
 import { MOCK_PROJECTS } from "@/data/mockProjects";
+import type { Project } from "@/types";
+import { listProjects } from "@/lib/api";
 
 import styles from "./ExploreProjects.module.css";
 
@@ -27,7 +29,27 @@ const itemVariants = {
 export const ExploreProjects: React.FC = () => {
   const navigate = useNavigate();
 
-  const filteredProjects = useMemo(() => MOCK_PROJECTS, []);
+  const [projects, setProjects] = useState<Project[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    listProjects()
+      .then((items) => {
+        if (cancelled) return;
+        setProjects(items);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setProjects(MOCK_PROJECTS);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filteredProjects = useMemo(() => projects ?? MOCK_PROJECTS, [projects]);
 
   return (
     <div className={styles.container}>

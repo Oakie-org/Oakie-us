@@ -28,6 +28,21 @@ Resources:
       BillingMode: PAY_PER_REQUEST
 
   # -------------------------------------------------------------------------
+  # DynamoDB Table (Projects)
+  # -------------------------------------------------------------------------
+  OakieProjectsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Oakie-Projects
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # -------------------------------------------------------------------------
   # Lambda Trigger: Post Confirmation (Sync to DDB)
   # -------------------------------------------------------------------------
   PostConfirmationFunction:
@@ -118,17 +133,44 @@ Resources:
       Handler: app.main.handler
       Environment:
         Variables:
-          DYNAMODB_TABLE: !Ref OakieTable
+          USERS_TABLE_NAME: !Ref OakieTable
+          PROJECTS_TABLE_NAME: !Ref OakieProjectsTable
           COGNITO_USER_POOL_ID: !Ref OakieUserPool
           COGNITO_CLIENT_ID: !Ref OakieUserClient
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OakieTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OakieProjectsTable
       Events:
         HttpApiEvent:
           Type: HttpApi
           Properties:
             ApiId: !Ref OakieApi
+        PublicRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+            Path: /
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        PublicProjectsList:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+            Path: /api/v1/projects
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        PublicProjectsDetail:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref OakieApi
+            Path: /api/v1/projects/{id}
+            Method: GET
+            Auth:
+              Authorizer: NONE
 
   # -------------------------------------------------------------------------
   # API Gateway (HTTP API)

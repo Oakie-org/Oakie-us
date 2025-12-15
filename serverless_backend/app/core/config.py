@@ -12,8 +12,12 @@ class Settings(BaseSettings):
 
     # AWS / DynamoDB
     AWS_REGION: str = "us-west-2"
-    DYNAMODB_TABLE: str = "Oakie-Users"
     DYNAMODB_ENDPOINT_URL: Optional[str] = os.getenv("DYNAMODB_ENDPOINT_URL")
+    USERS_TABLE_NAME: str = os.getenv("USERS_TABLE_NAME", "Oakie-Users")
+    PROJECTS_TABLE_NAME: str = os.getenv("PROJECTS_TABLE_NAME", "Oakie-Projects")
+
+    # Back-compat (deprecated): older code/env used one table name
+    DYNAMODB_TABLE: Optional[str] = os.getenv("DYNAMODB_TABLE")
 
     # CORS (local dev)
     CORS_ORIGINS: str = "*"

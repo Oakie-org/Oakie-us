@@ -6,7 +6,8 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.db.dynamodb import get_db
+
+from app.db.dynamodb import get_projects_db
 from app.models.project import (
     ProjectCreate,
     ProjectListRequest,
@@ -78,7 +79,7 @@ def list_projects(
 ) -> ProjectsListResponse:
     from boto3.dynamodb.conditions import Attr
 
-    db = get_db()
+    db = get_projects_db()
     filter_expression = Attr("type").eq("PROJECT")
     if filters.status:
         filter_expression = filter_expression & Attr("status").eq(filters.status)
@@ -114,7 +115,7 @@ def list_projects(
 
 @router.get("/{project_id}", response_model=ProjectPublic)
 def get_project(project_id: str) -> ProjectPublic:
-    db = get_db()
+    db = get_projects_db()
     item = db.get_item(f"PROJECT#{project_id}")
     if not item or item.get("type") != "PROJECT":
         raise HTTPException(status_code=404, detail="Project not found")
@@ -123,7 +124,7 @@ def get_project(project_id: str) -> ProjectPublic:
 
 @router.post("", response_model=ProjectPublic, status_code=201)
 def create_project(payload: ProjectCreate) -> ProjectPublic:
-    db = get_db()
+    db = get_projects_db()
     now = _iso_now()
     project_id = str(uuid4())
 

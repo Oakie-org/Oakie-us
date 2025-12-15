@@ -61,6 +61,11 @@ def dynamodb_table_name() -> str:
 
 
 @pytest.fixture(scope="session")
+def projects_table_name() -> str:
+    return "Oakie-Projects-Test"
+
+
+@pytest.fixture(scope="session")
 def _ensure_table(dynamodb_endpoint_url: str | None, dynamodb_table_name: str) -> None:
     kwargs: dict = {
         "service_name": "dynamodb",
@@ -87,15 +92,46 @@ def _ensure_table(dynamodb_endpoint_url: str | None, dynamodb_table_name: str) -
     waiter.wait(TableName=dynamodb_table_name)
 
 
+@pytest.fixture(scope="session")
+def _ensure_projects_table(
+    dynamodb_endpoint_url: str | None, projects_table_name: str
+) -> None:
+    kwargs: dict = {
+        "service_name": "dynamodb",
+        "region_name": "us-west-2",
+        "aws_access_key_id": "test",
+        "aws_secret_access_key": "test",
+    }
+    if dynamodb_endpoint_url is not None:
+        kwargs["endpoint_url"] = dynamodb_endpoint_url
+
+    client = boto3.client(**kwargs)
+
+    client.create_table(
+        TableName=projects_table_name,
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+        ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+    )
+
+    waiter = client.get_waiter("table_exists")
+    waiter.wait(TableName=projects_table_name)
+
+
 @pytest.fixture()
 def api_client(
     monkeypatch: pytest.MonkeyPatch,
     dynamodb_endpoint_url: str | None,
     dynamodb_table_name: str,
+    projects_table_name: str,
     _ensure_table: None,
+    _ensure_projects_table: None,
 ) -> TestClient:
     monkeypatch.setenv("AWS_REGION", "us-west-2")
-    monkeypatch.setenv("DYNAMODB_TABLE", dynamodb_table_name)
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("USERS_TABLE_NAME", dynamodb_table_name)
+    monkeypatch.setenv("PROJECTS_TABLE_NAME", projects_table_name)
     if dynamodb_endpoint_url is None:
         monkeypatch.delenv("DYNAMODB_ENDPOINT_URL", raising=False)
     else:

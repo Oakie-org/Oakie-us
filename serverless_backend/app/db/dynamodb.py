@@ -5,7 +5,7 @@ from botocore.exceptions import ClientError
 
 
 class DynamoDBClient:
-    def __init__(self):
+    def __init__(self, table_name: str):
         if settings.DYNAMODB_ENDPOINT_URL:
             self.resource = boto3.resource(
                 "dynamodb",
@@ -16,7 +16,7 @@ class DynamoDBClient:
             )
         else:
             self.resource = boto3.resource("dynamodb", region_name=settings.AWS_REGION)
-        self.table = self.resource.Table(settings.DYNAMODB_TABLE)
+        self.table = self.resource.Table(table_name)
 
     def put_item(
         self,
@@ -82,11 +82,23 @@ class DynamoDBClient:
             raise e
 
 
-_db: DynamoDBClient | None = None
+_projects_db: DynamoDBClient | None = None
+_users_db: DynamoDBClient | None = None
 
 
-def get_db() -> DynamoDBClient:
-    global _db
-    if _db is None:
-        _db = DynamoDBClient()
-    return _db
+def _resolve_users_table_name() -> str:
+    return settings.DYNAMODB_TABLE or settings.USERS_TABLE_NAME
+
+
+def get_users_db() -> DynamoDBClient:
+    global _users_db
+    if _users_db is None:
+        _users_db = DynamoDBClient(_resolve_users_table_name())
+    return _users_db
+
+
+def get_projects_db() -> DynamoDBClient:
+    global _projects_db
+    if _projects_db is None:
+        _projects_db = DynamoDBClient(settings.PROJECTS_TABLE_NAME)
+    return _projects_db

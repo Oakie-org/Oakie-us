@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Cognito
-    COGNITO_USER_POOL_ID: Optional[str] = None
-    COGNITO_CLIENT_ID: Optional[str] = None
+    COGNITO_USER_POOL_ID: Optional[str] = "us-west-2_7QDbDA101"
+    COGNITO_CLIENT_ID: Optional[str] = "6vrurc556dfp36qhh9iq2hapj7"
 
     def model_post_init(self, __context: Any) -> None:
         self.TABLES = {

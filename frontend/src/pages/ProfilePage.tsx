@@ -9,9 +9,22 @@ import {
   UserPlus,
 } from "lucide-react";
 import styles from "./ProfilePage.module.css";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const ProfilePage: React.FC = () => {
+  const { user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("Recruiting");
+
+  // Show loading while checking auth status
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Mock Widgets Data
   const todos = [
@@ -69,7 +82,14 @@ export const ProfilePage: React.FC = () => {
           <div className={styles.headerContent}>
             <div className={styles.headerTop}>
               <div className={styles.avatarWrapper}>
-                <div className={styles.avatar}>JD</div>
+                <div className={styles.avatar}>
+                  {user?.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) || "?"}
+                </div>
               </div>
               <div className={styles.actions}>
                 <Button variant="outline" size="sm">
@@ -80,9 +100,9 @@ export const ProfilePage: React.FC = () => {
 
             <div className={styles.infoSection}>
               <div>
-                <h1 className={styles.name}>John Doe</h1>
+                <h1 className={styles.name}>{user?.name || "Guest"}</h1>
                 <p className={styles.headline}>
-                  Full Stack Developer | React & Python Enthusiast
+                  {user?.email || "Not logged in"}
                 </p>
                 <div className={styles.metaInfo}>
                   <span className={styles.location}>

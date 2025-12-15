@@ -1,21 +1,43 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from app.core.config import settings
-# from app.core.security import get_current_user # To be implemented properly
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from typing import Optional
+
+from app.core.security import get_current_user, TokenPayload
+from app.db.dynamodb import get_users_db
 
 router = APIRouter()
 
-# Note: Registration and Login are now handled directly by Frontend <-> Cognito.
-# The 'PostConfirmation' Lambda Trigger syncs the user to DynamoDB.
 
-@router.get("/me")
-def read_users_me():
+class UserProfile(BaseModel):
+    """User profile response."""
+
+    sub: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    nickname: Optional[str] = None
+
+
+@router.get("/me", response_model=UserProfile)
+async def read_users_me(current_user: TokenPayload = Depends(get_current_user)):
     """
     Get current user profile.
-    Requires Authorization: Bearer <token> (validated by API Gateway Authorizer)
+    Requires Authorization: Bearer <token>
     """
-    # In a real implementation:
-    # 1. API Gateway validates JWT signature & expiration
-    # 2. Lambda receives 'requestContext' with claims (sub, email) or we decode it here
-    # 3. We use 'sub' to fetch profile from DynamoDB
-    
-    return {"msg": "This endpoint will return the current user profile from DynamoDB using the JWT 'sub' claim."}
+    # Try to get additional info from DynamoDB
+    db = get_users_db()
+    db_user = db.get_item(f"USER#{current_user.sub}")
+
+    if db_user:
+        return UserProfile(
+            sub=current_user.sub,
+            email=db_user.get("email") or current_user.email,
+            name=current_user.name,
+            nickname=db_user.get("nickname"),
+        )
+
+    # Fallback to JWT claims only
+    return UserProfile(
+        sub=current_user.sub,
+        email=current_user.email,
+        name=current_user.name,
+    )

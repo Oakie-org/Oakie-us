@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 import {
   ActivityIcon,
@@ -236,6 +237,16 @@ const SidebarGroupedMenuItems = ({
 };
 
 const ApplicationShell = () => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const initials =
+    user?.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "?";
+
   return (
     <div className="flex min-h-dvh w-full">
       <SidebarProvider
@@ -325,47 +336,67 @@ const ApplicationShell = () => {
                 />
               </div>
               <div className="flex items-center gap-1.5">
-                <ShareDropdown
-                  data={shareData}
-                  morePeople={morePeople}
-                  trigger={
-                    <Button variant="ghost" size="icon">
-                      <Share2Icon />
-                    </Button>
-                  }
-                />
-                <LanguageDropdown
-                  trigger={
-                    <Button variant="ghost" size="icon">
-                      <LanguagesIcon />
-                    </Button>
-                  }
-                />
-                <ActivityDialog
-                  trigger={
-                    <Button variant="ghost" size="icon">
-                      <ActivityIcon />
-                    </Button>
-                  }
-                />
-                <NotificationDropdown
-                  trigger={
-                    <Button variant="ghost" size="icon" className="relative">
-                      <BellIcon />
-                      <span className="bg-destructive absolute top-2 right-2.5 size-2 rounded-full" />
-                    </Button>
-                  }
-                />
-                <ProfileDropdown
-                  trigger={
-                    <Button variant="ghost" size="icon" className="size-9.5">
-                      <Avatar className="size-9.5 rounded-md">
-                        <AvatarImage src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png" />
-                        <AvatarFallback>JD</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  }
-                />
+                {isAuthenticated ? (
+                  <>
+                    <ShareDropdown
+                      data={shareData}
+                      morePeople={morePeople}
+                      trigger={
+                        <Button variant="ghost" size="icon">
+                          <Share2Icon />
+                        </Button>
+                      }
+                    />
+                    <LanguageDropdown
+                      trigger={
+                        <Button variant="ghost" size="icon">
+                          <LanguagesIcon />
+                        </Button>
+                      }
+                    />
+                    <ActivityDialog
+                      trigger={
+                        <Button variant="ghost" size="icon">
+                          <ActivityIcon />
+                        </Button>
+                      }
+                    />
+                    <NotificationDropdown
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative"
+                        >
+                          <BellIcon />
+                          <span className="bg-destructive absolute top-2 right-2.5 size-2 rounded-full" />
+                        </Button>
+                      }
+                    />
+                    <ProfileDropdown
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9.5"
+                        >
+                          <Avatar className="size-9.5 rounded-md">
+                            <AvatarImage src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png" />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      }
+                    />
+                  </>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => navigate("/login")}
+                  >
+                    Sign In
+                  </Button>
+                )}
               </div>
             </div>
           </header>

@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Props = {
   trigger: ReactNode;
@@ -30,6 +31,21 @@ type Props = {
 
 const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
+
+  // Get user initials from name
+  const initials =
+    user?.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "?";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   return (
     <DropdownMenu defaultOpen={defaultOpen}>
@@ -40,18 +56,18 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
             <Avatar className="size-10">
               <AvatarImage
                 src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png"
-                alt="John Doe"
+                alt={user?.name || "User"}
               />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <span className="ring-card absolute right-0 bottom-0 block size-2 rounded-full bg-green-600 ring-2" />
           </div>
           <div className="flex flex-1 flex-col items-start">
             <span className="text-foreground text-lg font-semibold">
-              John Doe
+              {user?.name || "Guest"}
             </span>
             <span className="text-muted-foreground text-base">
-              john.doe@example.com
+              {user?.email || "Not logged in"}
             </span>
           </div>
         </DropdownMenuLabel>
@@ -95,10 +111,23 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="px-4 py-2.5 text-base text-destructive">
-          <LogOutIcon className="size-5" />
-          <span>Logout</span>
-        </DropdownMenuItem>
+        {isAuthenticated ? (
+          <DropdownMenuItem
+            className="px-4 py-2.5 text-base text-destructive cursor-pointer"
+            onClick={handleLogout}
+          >
+            <LogOutIcon className="size-5" />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            className="px-4 py-2.5 text-base cursor-pointer"
+            onClick={() => navigate("/login")}
+          >
+            <LogOutIcon className="size-5" />
+            <span>Login</span>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

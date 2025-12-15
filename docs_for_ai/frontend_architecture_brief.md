@@ -18,23 +18,58 @@
 **Routing** (`src/App.tsx`):
 
 ```
-/ → ApplicationShell
-  ├─ /explore → ExploreProjects
-  ├─ /create → CreateProjectPage
-  ├─ /projects/:id → ProjectDetailPage
-  └─ /profile → ProfilePage
+/register → Register (standalone, no shell)
+/login → Login (standalone, no shell)
+/ → ApplicationShell (AuthProvider wrapped)
+  ├─ /explore → ExploreProjects (public)
+  ├─ /create → ProtectedRoute → CreateProjectPage
+  ├─ /projects/:id → ProjectDetailPage (public)
+  └─ /profile → ProtectedRoute → ProfilePage
 ```
 
-## 3. Pages
+## 3. Authentication
 
-| Page             | Path          | File                              |
-| ---------------- | ------------- | --------------------------------- |
-| Explore Projects | /explore      | `src/pages/ExploreProjects.tsx`   |
-| Create Project   | /create       | `src/pages/CreateProjectPage.tsx` |
-| Project Detail   | /projects/:id | `src/pages/ProjectDetailPage.tsx` |
-| User Profile     | /profile      | `src/pages/ProfilePage.tsx`       |
+**Pattern**: Frontend-direct Cognito via `aws-amplify`
 
-## 4. Sidebar Navigation
+**Key files**:
+
+- `src/contexts/AuthContext.tsx` - useAuth hook, AuthProvider
+- `src/lib/amplify-config.ts` - Cognito user pool config
+- `src/components/ProtectedRoute.tsx` - redirects to /login if !isAuthenticated
+
+**Auth state** (from useAuth):
+
+```ts
+{
+  user,
+    isAuthenticated,
+    isLoading,
+    error,
+    login,
+    register,
+    confirmRegistration,
+    logout,
+    getAccessToken;
+}
+```
+
+**Header behavior**:
+
+- Authenticated: shows all icons + profile dropdown
+- Not authenticated: shows only "Sign In" button
+
+## 4. Pages
+
+| Page             | Path          | File                                                 | Protected |
+| ---------------- | ------------- | ---------------------------------------------------- | --------- |
+| Explore Projects | /explore      | `src/pages/ExploreProjects.tsx`                      | No        |
+| Create Project   | /create       | `src/pages/CreateProjectPage.tsx`                    | Yes       |
+| Project Detail   | /projects/:id | `src/pages/ProjectDetailPage.tsx`                    | No        |
+| User Profile     | /profile      | `src/pages/ProfilePage.tsx`                          | Yes       |
+| Register         | /register     | `src/components/shadcn-studio/blocks/register-04/`   | No        |
+| Login            | /login        | `src/components/shadcn-studio/blocks/login-page-04/` | No        |
+
+## 5. Sidebar Navigation
 
 **Core Pages**:
 
@@ -48,7 +83,7 @@
 - Data Export → #
 - Integrations → submenu
 
-## 5. Components
+## 6. Components
 
 ### UI (`src/components/ui/`)
 
@@ -73,7 +108,7 @@ shadcn primitives: Button, Input, Card, Avatar, Sidebar, Separator, Label, Texta
 
 - ProjectTag.tsx
 
-## 6. Type Definitions
+## 7. Type Definitions
 
 `src/types/index.ts`:
 
@@ -84,16 +119,16 @@ interface TimelinePost { id, author: Member, content, timestamp, likes, comments
 interface Project { id, title, subtitle, description, thumbnail, tags[], members: Member[], timeline: TimelinePost[], status }
 ```
 
-## 7. Mock Data
+## 8. Mock Data
 
 `src/data/mockProjects.ts`: Array of Project objects for ExploreProjects and ProjectDetailPage
 
-## 8. Assets
+## 9. Assets
 
 - Logo: `src/assets/oakie-logo.jpg` (used in sidebar header, h-34)
 - SVGs: `src/assets/svg/`
 
-## 9. Tailwind v4 Syntax
+## 10. Tailwind v4 Syntax
 
 **CSS Variables**: Use `w-(--var)` not `w-[--var]`
 
@@ -104,7 +139,7 @@ className = "w-(--sidebar-width)";
 className = "w-[--sidebar-width]";
 ```
 
-## 10. Key Patterns
+## 11. Key Patterns
 
 - Pages use CSS Modules (`.module.css`)
 - Colors use `hsl(var(--primary))` shadcn tokens

@@ -59,9 +59,24 @@ Conventions (expected):
 
 Auth:
 
-- Frontend typically talks to Cognito (Hosted UI/Amplify) for signup/login/refresh.
-- Backend endpoints should rely on API Gateway JWT authorizer and use JWT `sub` to fetch profile.
-- Implemented now: `GET /api/v1/auth/me` (placeholder behavior in code).
+- **Frontend-direct Cognito pattern**: Frontend uses `aws-amplify` to talk directly to Cognito for signup/login/confirm.
+- Cognito PostConfirmation Lambda trigger syncs users to DynamoDB (`app/triggers/post_confirmation.py`).
+- Backend validates JWT via JWKS (`app/core/security.py`) for protected endpoints.
+- JWT Claims: `sub` (user ID), `email`, `name` extracted via `fetchUserAttributes()`.
+- Implemented: `GET /api/v1/auth/me` returns user profile from JWT + DynamoDB.
+
+JWT in API calls:
+
+- Header: `Authorization: Bearer <access_token>`
+- Get token in frontend: `const token = await getAccessToken();`
+- Backend decodes using `get_current_user()` dependency from `app/core/security.py`.
+
+Key auth files:
+
+- Frontend: `src/contexts/AuthContext.tsx` (state + Amplify calls), `src/lib/amplify-config.ts` (Cognito config)
+- Frontend env: `VITE_COGNITO_USER_POOL_ID`, `VITE_COGNITO_CLIENT_ID`
+- Backend: `app/core/security.py` (JWT verification), `app/api/v1/endpoints/auth.py` (/me endpoint)
+- Backend env: `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID` (in config.py)
 
 Domains planned (MVP direction):
 
@@ -71,9 +86,13 @@ Domains planned (MVP direction):
 
 ## 5) Execution roadmap (timeline summary)
 
-Week 0 (current focus):
+Week 0 (COMPLETED):
 
-- End-to-end loop: Register/Login → browse projects → create project → view/update profile
+- ✅ End-to-end auth: Register/Login → custom pages → JWT token → protected routes
+- ✅ User profile display in header + profile page
+- ✅ Protected routes (/profile, /create) redirect to login when unauthenticated
+
+Next:
 
 Week 1:
 

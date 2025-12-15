@@ -1,6 +1,7 @@
 import os
-from typing import Optional
+from typing import Any, Optional
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,9 +16,7 @@ class Settings(BaseSettings):
     DYNAMODB_ENDPOINT_URL: Optional[str] = os.getenv("DYNAMODB_ENDPOINT_URL")
     USERS_TABLE_NAME: str = os.getenv("USERS_TABLE_NAME", "Oakie-Users")
     PROJECTS_TABLE_NAME: str = os.getenv("PROJECTS_TABLE_NAME", "Oakie-Projects")
-
-    # Back-compat (deprecated): older code/env used one table name
-    DYNAMODB_TABLE: Optional[str] = os.getenv("DYNAMODB_TABLE")
+    TABLES: dict[str, str] = Field(default_factory=dict)
 
     # CORS (local dev)
     CORS_ORIGINS: str = "*"
@@ -30,6 +29,12 @@ class Settings(BaseSettings):
     # Cognito
     COGNITO_USER_POOL_ID: Optional[str] = None
     COGNITO_CLIENT_ID: Optional[str] = None
+
+    def model_post_init(self, __context: Any) -> None:
+        self.TABLES = {
+            "users": self.USERS_TABLE_NAME,
+            "projects": self.PROJECTS_TABLE_NAME,
+        }
 
 
 settings = Settings()

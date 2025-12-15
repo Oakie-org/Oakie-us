@@ -86,19 +86,15 @@ _projects_db: DynamoDBClient | None = None
 _users_db: DynamoDBClient | None = None
 
 
-def _resolve_users_table_name() -> str:
-    return settings.DYNAMODB_TABLE or settings.USERS_TABLE_NAME
-
-
 def get_users_db() -> DynamoDBClient:
     global _users_db
     if _users_db is None:
-        _users_db = DynamoDBClient(_resolve_users_table_name())
+        _users_db = DynamoDBClient(settings.TABLES["users"])
     return _users_db
 
 
 def get_projects_db() -> DynamoDBClient:
     global _projects_db
     if _projects_db is None:
-        _projects_db = DynamoDBClient(settings.PROJECTS_TABLE_NAME)
+        _projects_db = DynamoDBClient(settings.TABLES["projects"])
     return _projects_db

@@ -404,7 +404,7 @@ const ApplicationShell = () => {
           <main className="size-full flex-1 px-4 py-6 sm:px-6">
             <Card className="h-250">
               <CardContent className="h-full">
-                <div className="h-full rounded-md border bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_1px,var(--card)_2px,var(--card)_15px)] overflow-y-auto">
+                <div className="h-full rounded-md bg-card overflow-y-auto">
                   <Outlet />
                 </div>
               </CardContent>

@@ -21,7 +21,7 @@ import { CompassIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible,
   CollapsibleContent,
@@ -380,9 +380,10 @@ const ApplicationShell = () => {
                           size="icon"
                           className="size-9.5"
                         >
-                          <Avatar className="size-9.5 rounded-md">
-                            <AvatarImage src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png" />
-                            <AvatarFallback>{initials}</AvatarFallback>
+                          <Avatar className="size-9.5 rounded-md bg-primary text-primary-foreground">
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {initials}
+                            </AvatarFallback>
                           </Avatar>
                         </Button>
                       }

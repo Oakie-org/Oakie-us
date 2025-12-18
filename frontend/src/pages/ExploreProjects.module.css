@@ -23,14 +23,14 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  border: none;
-  background: hsl(var(--card) / 0.85);
+  /* Let Card component's border show through */
+  background: hsl(var(--card));
   backdrop-filter: blur(12px);
   border-radius: 24px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.02),
-    0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
   overflow: visible;
   isolation: isolate;
   cursor: pointer;

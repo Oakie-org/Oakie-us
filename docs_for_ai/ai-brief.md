@@ -27,6 +27,13 @@
   - Frontend obtains JWT (Access Token) and sends it in `Authorization` header to Backend.
   - Backend validates Token via API Gateway Authorizer and reads user data from DynamoDB.
 
+### RBAC (Role-Based Access Control)
+
+- **Cognito Groups**: `super_admin` (0), `admin` (1), `moderator` (2), `creator` (10), `user` (100)
+- **JWT claim**: `cognito:groups` contains user's role(s)
+- **Backend guards**: `app/core/permissions.py` - `require_admin()`, `require_creator_or_above()`
+- **Project visibility**: `public` | `members_only` | `private` (private hidden from list, 404 for non-owners)
+
 ### Core Domains (FastAPI Routers)
 
 - `landing`: `/stats/overview` (counters), `/projects/trending`.

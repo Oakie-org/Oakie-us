@@ -53,9 +53,61 @@ Resources:
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref OakieTable
+          COGNITO_USER_POOL_ID: !Ref OakieUserPool
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OakieTable
+        # Permission to add users to Cognito groups
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminAddUserToGroup
+              Resource: !GetAtt OakieUserPool.Arn
+
+  # -------------------------------------------------------------------------
+  # Cognito User Pool Groups (Role-Based Access Control)
+  # -------------------------------------------------------------------------
+  # Precedence: lower number = higher priority (appears first in cognito:groups claim)
+
+  SuperAdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: super_admin
+      UserPoolId: !Ref OakieUserPool
+      Description: Super administrators with full platform access
+      Precedence: 0
+
+  AdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: admin
+      UserPoolId: !Ref OakieUserPool
+      Description: Platform administrators - user and content management
+      Precedence: 1
+
+  ModeratorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: moderator
+      UserPoolId: !Ref OakieUserPool
+      Description: Content moderators - review projects and handle reports
+      Precedence: 2
+
+  CreatorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: creator
+      UserPoolId: !Ref OakieUserPool
+      Description: Verified creators - can create and manage projects
+      Precedence: 10
+
+  UserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: user
+      UserPoolId: !Ref OakieUserPool
+      Description: Standard users - browse and apply to projects
+      Precedence: 100
 
   # -------------------------------------------------------------------------
   # Cognito User Pool

@@ -78,6 +78,15 @@ Key auth files:
 - Backend: `app/core/security.py` (JWT verification), `app/api/v1/endpoints/auth.py` (/me endpoint)
 - Backend env: `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID` (in config.py)
 
+Role-Based Access Control (RBAC):
+
+- **Cognito Groups** manage global roles (precedence order):
+  - `super_admin` (0), `admin` (1), `moderator` (2), `creator` (10), `user` (100)
+- JWT claim `cognito:groups` contains user's roles (ordered by precedence)
+- Backend guards: `app/core/permissions.py` - `require_admin()`, `require_creator_or_above()`
+- Frontend guards: `src/components/ProtectedRoute.tsx`, `src/components/auth/PermissionGate.tsx`
+- Project-level: `visibility` (public/members_only/private), `owner_id` fields on projects
+
 Domains planned (MVP direction):
 
 - Projects: `GET /projects`, `POST /projects`, `GET/PATCH /projects/{id}`, roles under `/projects/{id}/positions`

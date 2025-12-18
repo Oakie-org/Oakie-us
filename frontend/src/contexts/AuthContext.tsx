@@ -10,11 +10,40 @@ import {
   fetchUserAttributes,
 } from "aws-amplify/auth";
 
+// ============================================================================
+// Types
+// ============================================================================
+
+/**
+ * Global user roles managed via Cognito Groups.
+ * These match the backend GlobalRole enum.
+ */
+export type GlobalRole =
+  | "super_admin"
+  | "admin"
+  | "moderator"
+  | "creator"
+  | "user";
+
+/**
+ * User permissions parsed from JWT.
+ */
+export interface UserPermissions {
+  /** List of roles user belongs to (from cognito:groups) */
+  roles: GlobalRole[];
+  /** Highest priority role (first in cognito:groups) */
+  primaryRole: GlobalRole;
+}
+
+/**
+ * Authenticated user information with permissions.
+ */
 interface User {
   username: string;
   userId: string;
   email?: string;
   name?: string;
+  permissions: UserPermissions;
 }
 
 interface AuthContextType {
@@ -22,6 +51,14 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+
+  // Permission check helpers
+  hasRole: (role: GlobalRole) => boolean;
+  hasAnyRole: (roles: GlobalRole[]) => boolean;
+  isAdmin: () => boolean;
+  isCreatorOrAbove: () => boolean;
+
+  // Auth actions
   register: (
     email: string,
     password: string,
@@ -34,7 +71,68 @@ interface AuthContextType {
   getAccessToken: () => Promise<string | null>;
 }
 
+// ============================================================================
+// Context
+// ============================================================================
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Known valid global roles for filtering
+const VALID_ROLES: GlobalRole[] = [
+  "super_admin",
+  "admin",
+  "moderator",
+  "creator",
+  "user",
+];
+
+/**
+ * Parse permissions from Cognito JWT token.
+ */
+async function parsePermissionsFromSession(): Promise<UserPermissions> {
+  const defaultPermissions: UserPermissions = {
+    roles: ["user"],
+    primaryRole: "user",
+  };
+
+  try {
+    const session = await fetchAuthSession();
+    const idToken = session.tokens?.idToken;
+
+    if (!idToken?.payload) {
+      return defaultPermissions;
+    }
+
+    // cognito:groups is a string array in the JWT payload
+    const groups = idToken.payload["cognito:groups"];
+
+    if (!Array.isArray(groups) || groups.length === 0) {
+      return defaultPermissions;
+    }
+
+    // Filter to only valid role names
+    const validRoles = groups.filter(
+      (g): g is GlobalRole =>
+        typeof g === "string" && VALID_ROLES.includes(g as GlobalRole),
+    );
+
+    if (validRoles.length === 0) {
+      return defaultPermissions;
+    }
+
+    return {
+      roles: validRoles,
+      primaryRole: validRoles[0], // First role has highest precedence
+    };
+  } catch {
+    console.warn("Failed to parse permissions from session");
+    return defaultPermissions;
+  }
+}
+
+// ============================================================================
+// Provider
+// ============================================================================
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -50,12 +148,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const currentUser = await getCurrentUser();
       const attributes = await fetchUserAttributes();
+      const permissions = await parsePermissionsFromSession();
 
       setUser({
         username: currentUser.username,
         userId: currentUser.userId,
         email: attributes.email,
         name: attributes.name,
+        permissions,
       });
     } catch {
       // Not authenticated
@@ -64,6 +164,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   }
+
+  // =========================================================================
+  // Permission check helpers
+  // =========================================================================
+
+  function hasRole(role: GlobalRole): boolean {
+    return user?.permissions.roles.includes(role) ?? false;
+  }
+
+  function hasAnyRole(roles: GlobalRole[]): boolean {
+    return roles.some((role) => hasRole(role));
+  }
+
+  function isAdmin(): boolean {
+    return hasAnyRole(["admin", "super_admin"]);
+  }
+
+  function isCreatorOrAbove(): boolean {
+    return hasAnyRole(["creator", "moderator", "admin", "super_admin"]);
+  }
+
+  // =========================================================================
+  // Auth actions
+  // =========================================================================
 
   async function register(email: string, password: string, name: string) {
     setError(null);
@@ -118,12 +242,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (isSignedIn) {
         const currentUser = await getCurrentUser();
         const attributes = await fetchUserAttributes();
+        const permissions = await parsePermissionsFromSession();
 
         setUser({
           username: currentUser.username,
           userId: currentUser.userId,
           email: attributes.email,
           name: attributes.name,
+          permissions,
         });
       }
     } catch (err) {
@@ -157,11 +283,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
   }
 
+  // =========================================================================
+  // Provide context
+  // =========================================================================
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     isLoading,
     error,
+    hasRole,
+    hasAnyRole,
+    isAdmin,
+    isCreatorOrAbove,
     register,
     confirmRegistration,
     login,
@@ -172,6 +306,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+// ============================================================================
+// Hook
+// ============================================================================
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {

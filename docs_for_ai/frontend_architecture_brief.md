@@ -53,6 +53,26 @@
 }
 ```
 
+**RBAC (Role-Based Access Control)**:
+
+Cognito Groups define global roles (precedence order):
+
+- `super_admin` (0), `admin` (1), `moderator` (2), `creator` (10), `user` (100)
+
+Permission helpers from `useAuth()`:
+
+```ts
+hasRole(role: GlobalRole) → boolean
+hasAnyRole(roles: GlobalRole[]) → boolean
+isAdmin() → boolean
+isCreatorOrAbove() → boolean
+```
+
+Frontend guards:
+
+- `ProtectedRoute` - Route-level protection with optional `requiredRoles` prop
+- `PermissionGate` - Conditional UI rendering (`AdminOnly`, `CreatorOnly` shortcuts)
+
 **Header behavior**:
 
 - Authenticated: shows all icons + profile dropdown

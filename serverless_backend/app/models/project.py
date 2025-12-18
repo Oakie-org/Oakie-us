@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from app.shared.enum import ProjectStatus
+from app.shared.enum import ProjectStatus, ProjectVisibility
 
 
 class ProjectBase(BaseModel):
@@ -15,6 +15,9 @@ class ProjectBase(BaseModel):
     max_members: int = 5
     image: str = ""
     image_url: str | None = None
+    # Access control fields
+    visibility: ProjectVisibility = ProjectVisibility.PUBLIC
+    owner_id: str | None = None  # Cognito sub of creator
 
 
 class ProjectCreate(ProjectBase):

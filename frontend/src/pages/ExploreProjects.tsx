@@ -1,9 +1,17 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { FunnelPlusIcon } from "lucide-react";
 
 import ProjectCard from "@/components/features/ProjectCard";
 import { MOCK_PROJECTS } from "@/data/mockProjects";
+import { RippleButton } from "@/components/ui/ripple-button";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import styles from "./ExploreProjects.module.css";
 
@@ -22,8 +30,11 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const MOCK_QUICK_FILTERS = ["Web", "Mobile", "Finance", "TikTok", "Startup"];
+
 export const ExploreProjects: React.FC = () => {
   const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = React.useState<string | null>(null);
 
   // TODO: Re-enable real API projects when ready
   // const [projects, setProjects] = useState<Project[] | null>(null);
@@ -47,7 +58,42 @@ export const ExploreProjects: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.pageTitle}>Explore Projects</h1>
+      <div className={styles.filterRow}>
+        {/* Advanced Filter Popover - Coming Soon */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="rounded-full h-9 gap-2">
+              <FunnelPlusIcon className="size-4" />
+              <span>Advanced</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64">
+            <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+              <div className="rounded-full bg-muted p-3">
+                <FunnelPlusIcon className="size-6 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Advanced Filters</p>
+                <p className="text-xs text-muted-foreground">Coming Soon</p>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Quick Filter Buttons */}
+        {MOCK_QUICK_FILTERS.map((filter) => (
+          <RippleButton
+            key={filter}
+            onClick={() =>
+              setActiveFilter(activeFilter === filter ? null : filter)
+            }
+            variant={activeFilter === filter ? "default" : "outline"}
+            className="rounded-full h-9"
+          >
+            {filter}
+          </RippleButton>
+        ))}
+      </div>
 
       <motion.div
         className={styles.projectGrid}

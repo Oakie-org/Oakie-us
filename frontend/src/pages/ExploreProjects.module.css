@@ -1,7 +1,7 @@
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1rem 0 2rem;
+  padding: 0rem 0 2rem;
 }
 
 .pageTitle {
@@ -15,8 +15,8 @@
 /* Premium Card Grid */
 .projectGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 48px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
 }
 
 .modernCard {
@@ -229,3 +229,16 @@
     gap: 32px;
   }
 }
+
+.filterRow {
+  display: flex;
+  gap: 12px;
+  /* Adjust this margin to move the buttons closer/further from projects */
+  margin-bottom: 32px;
+  margin-top: -10px;
+  /* To move buttons UP, reduce padding-top of .container above or add negative margin here */
+  /* margin-top: -10px; */
+  flex-wrap: wrap;
+}
+
+/* Old .filterButton styles removed in favor of RippleButton component */

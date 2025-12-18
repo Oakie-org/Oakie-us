@@ -1,5 +1,5 @@
 import type { ComponentType, CSSProperties } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 import {
@@ -175,6 +175,7 @@ const SidebarGroupedMenuItems = ({
   data: MenuItem[];
   groupLabel?: string;
 }) => {
+  const location = useLocation();
   return (
     <SidebarGroup>
       {groupLabel && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
@@ -198,6 +199,7 @@ const SidebarGroupedMenuItems = ({
                           <SidebarMenuSubButton
                             className="justify-between"
                             asChild
+                            isActive={location.pathname === subItem.href}
                           >
                             <a href={subItem.href}>
                               {subItem.label}
@@ -216,7 +218,11 @@ const SidebarGroupedMenuItems = ({
               </Collapsible>
             ) : (
               <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton tooltip={item.label} asChild>
+                <SidebarMenuButton
+                  tooltip={item.label}
+                  asChild
+                  isActive={location.pathname === item.href}
+                >
                   <a href={item.href}>
                     <item.icon />
                     <span>{item.label}</span>
@@ -293,12 +299,25 @@ const ApplicationShell = () => {
             />
           </SidebarContent>
           <SidebarFooter className="[[data-state=collapsed]_&]:hidden">
-            <div className="flex flex-col items-start gap-4 overflow-hidden rounded-md p-2">
-              <p className="truncate text-xl font-semibold">Go to Premium</p>
-              <p className="line-clamp-2 text-sm">
-                Explore 600+ courses with lifetime membership
-              </p>
-              <Button className="truncate">Upgrade</Button>
+            <div className="flex flex-col items-start gap-3 overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 p-4">
+              <p className="text-lg font-semibold">✨ Oakie Pro</p>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span>Custom Profile - Showcase professionally</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span>AI Best Match - Smart teammate recommendations</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span>Pin Projects - Get more visibility</span>
+                </li>
+              </ul>
+              <Button size="sm" className="w-full mt-1">
+                Upgrade
+              </Button>
             </div>
           </SidebarFooter>
         </Sidebar>
@@ -402,9 +421,9 @@ const ApplicationShell = () => {
             </div>
           </header>
           <main className="size-full flex-1 px-4 py-6 sm:px-6">
-            <Card className="h-250">
-              <CardContent className="h-full">
-                <div className="h-full rounded-md bg-card overflow-y-auto">
+            <Card className="min-h-[calc(100vh-10rem)] h-auto bg-sidebar">
+              <CardContent className="h-full p-6 sm:p-8">
+                <div className="rounded-md">
                   <Outlet />
                 </div>
               </CardContent>
@@ -412,17 +431,17 @@ const ApplicationShell = () => {
           </main>
           <footer className="flex items-center justify-between gap-3 px-4 pb-6 max-lg:flex-col sm:px-6 lg:gap-6">
             <p className="text-muted-foreground text-sm text-balance max-lg:text-center">
-              {`©${new Date().getFullYear()} `}{" "}
-              <a href="#" className="text-primary">
-                Shadcn/studio
+              {`© ${new Date().getFullYear()} `}
+              <a href="/" className="text-primary font-medium">
+                Oakie
               </a>
-              , Made for better web design
+              {" · Where dreams meet teammates"}
             </p>
             <div className="text-muted-foreground *:hover:text-primary flex items-center gap-3 text-sm whitespace-nowrap max-[450px]:flex-col min-[450px]:gap-4">
-              <a href="#">License</a>
-              <a href="#">More Themes</a>
-              <a href="#">Documentation</a>
-              <a href="#">Support</a>
+              <a href="#">About</a>
+              <a href="#">Privacy</a>
+              <a href="#">Terms</a>
+              <a href="#">Contact</a>
             </div>
           </footer>
         </div>

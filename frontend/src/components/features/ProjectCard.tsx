@@ -102,19 +102,19 @@ const ProjectCard = ({ project, className, onClick }: ProjectCardProps) => {
   return (
     <Card
       className={cn(
-        "justify-between cursor-pointer transition-all hover:shadow-lg relative",
+        "justify-between cursor-pointer transition-all hover:shadow-lg relative overflow-hidden",
         className,
       )}
       onClick={onClick}
     >
       {/* Status badge positioned absolutely in top-right corner */}
-      <div className="absolute top-3 right-3 z-10">
+      <div className="absolute top-2 right-2 z-10">
         <StatusBadge status={project.status} />
       </div>
 
-      <CardHeader className="flex justify-between">
-        <div className="flex items-center gap-4">
-          <Avatar className="size-10.5 rounded-full">
+      <CardHeader className="flex justify-between p-5">
+        <div className="flex items-center gap-4 w-full">
+          <Avatar className="size-10.5 rounded-full shrink-0">
             <AvatarImage
               src={owner?.avatarUrl}
               alt={owner?.name ?? "Project Owner"}
@@ -124,9 +124,14 @@ const ProjectCard = ({ project, className, onClick }: ProjectCardProps) => {
               {owner ? getInitials(owner.name) : "OA"}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col gap-1">
-            <span className="text-lg font-medium">{project.title}</span>
-            <span className="text-muted-foreground text-sm">
+          <div className="flex flex-col gap-1 min-w-0 pr-16">
+            <span
+              className="text-lg font-medium truncate"
+              title={project.title}
+            >
+              {project.title}
+            </span>
+            <span className="text-muted-foreground text-sm truncate">
               {project.uni} • {project.city}
             </span>
           </div>

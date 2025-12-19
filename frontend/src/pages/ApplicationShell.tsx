@@ -109,27 +109,6 @@ const corePagesItems: MenuItem[] = [
   },
 ];
 
-const visualizationItems: MenuItem[] = [
-  {
-    icon: UserIcon,
-    label: "View Profile",
-    href: "/profile",
-  },
-  {
-    icon: UploadIcon,
-    label: "Data Export",
-    href: "#",
-  },
-  {
-    icon: LinkIcon,
-    label: "Integrations",
-    items: [
-      { label: "Google Analytics", href: "#" },
-      { label: "Custom API", href: "#", badge: "2" },
-    ],
-  },
-];
-
 const shareData = [
   {
     img: "https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png",
@@ -244,7 +223,31 @@ const SidebarGroupedMenuItems = ({
 
 const ApplicationShell = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth(); // isAuthenticated needs to be used
+
+  // Move visualizationItems inside to access user
+  const visualizationItems: MenuItem[] = [
+    {
+      icon: UserIcon,
+      label: "View Profile",
+      // Fallback to "guest" ID for local dev exploration if not logged in
+      href: user?.userId ? `/users/${user.userId}` : "/users/guest",
+    },
+    {
+      icon: UploadIcon,
+      label: "Data Export",
+      href: "#",
+    },
+    {
+      icon: LinkIcon,
+      label: "Integrations",
+      items: [
+        { label: "Google Analytics", href: "#" },
+        { label: "Custom API", href: "#", badge: "2" },
+      ],
+    },
+  ];
+
   const initials =
     user?.name
       ?.split(" ")

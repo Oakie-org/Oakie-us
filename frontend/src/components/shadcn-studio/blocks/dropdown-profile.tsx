@@ -75,7 +75,9 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
         <DropdownMenuGroup>
           <DropdownMenuItem
             className="px-4 py-2.5 text-base cursor-pointer"
-            onClick={() => navigate("/profile")}
+            onClick={() =>
+              navigate(user?.userId ? `/users/${user.userId}` : "/users/guest")
+            }
           >
             <UserIcon className="text-foreground size-5" />
             <span>View Profile</span>

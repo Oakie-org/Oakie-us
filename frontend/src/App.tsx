@@ -28,15 +28,8 @@ function App() {
             <Route index element={<ExploreProjects />} />
             <Route path="explore" element={<ExploreProjects />} />
             <Route path="projects/:id" element={<ProjectDetailPage />} />
+            <Route path="users/:userId" element={<ProfilePage />} />
             {/* Protected routes - require login */}
-            <Route
-              path="profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="create"
               element={

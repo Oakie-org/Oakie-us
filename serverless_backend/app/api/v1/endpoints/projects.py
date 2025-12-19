@@ -113,6 +113,8 @@ def list_projects(
         filter_expression = filter_expression & Attr("uni").eq(filters.uni)
     if filters.tag:
         filter_expression = filter_expression & Attr("tags").contains(filters.tag)
+    if filters.owner_id:
+        filter_expression = filter_expression & Attr("owner_id").eq(filters.owner_id)
     if filters.q:
         q = filters.q.strip()
         if q:

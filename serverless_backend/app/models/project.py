@@ -47,3 +47,4 @@ class ProjectListRequest(BaseModel):
     uni: str | None = None
     tag: str | None = None
     q: str | None = None
+    owner_id: str | None = None

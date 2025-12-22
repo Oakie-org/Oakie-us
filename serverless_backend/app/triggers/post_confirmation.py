@@ -15,7 +15,6 @@ dynamodb = boto3.resource("dynamodb")
 cognito = boto3.client("cognito-idp")
 
 table_name = os.environ.get("USER_TABLE_NAME")
-user_pool_id = os.environ.get("COGNITO_USER_POOL_ID")
 table = dynamodb.Table(table_name) if table_name else None
 
 
@@ -24,7 +23,7 @@ def _iso_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _add_user_to_default_group(username: str) -> bool:
+def _add_user_to_default_group(user_pool_id: str, username: str) -> bool:
     """
     Add user to the 'user' Cognito group.
     Returns True on success, False on failure (non-blocking).
@@ -74,6 +73,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         return event
 
     # 2. Extract user attributes
+    # UserPoolId is always in the event from Cognito
+    user_pool_id = event.get("userPoolId")
     request = event.get("request", {})
     user_attrs = request.get("userAttributes", {})
 
@@ -111,8 +112,8 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         print(f"Error syncing user to DynamoDB: {e}")
 
     # 4. Add user to default Cognito group
-    if cognito_username:
-        _add_user_to_default_group(cognito_username)
+    if user_pool_id and cognito_username:
+        _add_user_to_default_group(user_pool_id, cognito_username)
 
     # 5. Return event to Cognito (required)
     return event

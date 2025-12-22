@@ -53,16 +53,18 @@ Resources:
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref OakieTable
-          COGNITO_USER_POOL_ID: !Ref OakieUserPool
+          # Note: User Pool ID is extracted from the event, not env var
+          # This breaks circular dependency with OakieUserPool
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OakieTable
-        # Permission to add users to Cognito groups
+        # Permission to add users to any Cognito group in this account
+        # Using wildcard to avoid circular dependency
         - Statement:
             - Effect: Allow
               Action:
                 - cognito-idp:AdminAddUserToGroup
-              Resource: !GetAtt OakieUserPool.Arn
+              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*
 
   # -------------------------------------------------------------------------
   # Cognito User Pool Groups (Role-Based Access Control)

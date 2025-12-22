@@ -161,6 +161,10 @@ Resources:
       UserPoolId: !Ref OakieUserPool
       ClientName: Oakie-Web
       GenerateSecret: false # Public client for SPA/Mobile
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH   # For simple password auth (testing)
+        - ALLOW_USER_SRP_AUTH         # For SRP auth (frontend)
+        - ALLOW_REFRESH_TOKEN_AUTH    # For token refresh
       SupportedIdentityProviders:
         - COGNITO
       CallbackURLs:

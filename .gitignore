@@ -100,3 +100,8 @@ tmp/
 
 # Achived Java Files
 archived_java_impl/
+
+# Test scripts (local testing only)
+test_scripts/
+# For local issue markdown
+.github

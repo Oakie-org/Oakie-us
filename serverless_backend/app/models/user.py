@@ -1,16 +1,34 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 
-class UserBase(BaseModel):
-    email: EmailStr
-    full_name: Optional[str] = None
 
-class UserCreate(UserBase):
-    password: str
+class UserProfile(BaseModel):
+    """Full public profile"""
 
-class UserInDB(UserBase):
-    hashed_password: str
-    
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+    sub: str
+    name: str
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    skills: Optional[list[str]] = None
+    avatar_url: Optional[str] = None
+    banner_url: Optional[str] = None
+    num_projects: int = 0
+    num_followers: int = 0
+    num_following: int = 0
+
+
+class PublicUserProfile(UserProfile):
+    """Public profile"""
+
+    pass
+
+
+class PrivateUserProfile(UserProfile):
+    """Private profile"""
+
+    email: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class UserProfileUpdate(UserProfile):
+    pass

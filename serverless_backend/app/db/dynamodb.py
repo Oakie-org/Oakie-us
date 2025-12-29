@@ -39,9 +39,12 @@ class DynamoDBClient:
             print(f"Error putting item: {e}")
             raise e
 
-    def get_item(self, pk: str) -> Optional[Dict[str, Any]]:
+    def get_item(self, pk: str, sk: Optional[str] = None) -> Optional[Dict[str, Any]]:
         try:
-            response = self.table.get_item(Key={"PK": pk})
+            key = {"PK": pk}
+            if sk:
+                key["SK"] = sk
+            response = self.table.get_item(Key=key)
             return response.get("Item")
         except ClientError as e:
             print(f"Error getting item: {e}")

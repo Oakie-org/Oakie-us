@@ -5,7 +5,7 @@ from decimal import Decimal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-
+from boto3.dynamodb.conditions import Key, Attr
 
 from app.db.dynamodb import get_projects_db
 from app.models.project import (
@@ -13,6 +13,12 @@ from app.models.project import (
     ProjectListRequest,
     ProjectPublic,
     ProjectsListResponse,
+)
+from app.models.timeline import (
+    CreateTimelinePostRequest,
+    UpdateTimelinePostRequest,
+    TimelinePostPublic,
+    TimelinePostsListResponse,
 )
 from app.shared.enum import ProjectStatus, ProjectVisibility
 from app.core.security import TokenPayload, get_current_user_optional
@@ -94,8 +100,6 @@ def list_projects(
     Note: Private projects are excluded from this listing.
     Members-only projects show in list but may have restricted detail access.
     """
-    from boto3.dynamodb.conditions import Attr
-
     db = get_projects_db()
 
     # Base filter: only PROJECT type, exclude PRIVATE visibility
@@ -151,7 +155,7 @@ def get_project(
     - PRIVATE: Only members can view (returns 404 for non-members)
     """
     db = get_projects_db()
-    item = db.get_item(f"PROJECT#{project_id}")
+    item = db.get_item(f"PROJECT#{project_id}", sk="METADATA")
     if not item or item.get("type") != "PROJECT":
         raise HTTPException(status_code=404, detail="Project not found")
 
@@ -190,6 +194,7 @@ def create_project(
 
     item = {
         "PK": f"PROJECT#{project_id}",
+        "SK": "METADATA",
         "type": "PROJECT",
         "id": project_id,
         "title": payload.title,
@@ -214,3 +219,187 @@ def create_project(
 
     db.put_item(item, condition_expression="attribute_not_exists(PK)")
     return _project_from_item(item)
+
+
+# =============================================================================
+# TIMELINE ENDPOINTS
+# =============================================================================
+
+
+@router.post(
+    "/{project_id}/timeline", response_model=TimelinePostPublic, status_code=201
+)
+def create_timeline_post(
+    project_id: str,
+    payload: CreateTimelinePostRequest,
+    current_user: TokenPayload = Depends(require_creator_or_above()),
+):
+    """
+    Add a new post to the project timeline.
+    Only the project owner can post details.
+    """
+    db = get_projects_db()
+
+    # Verify Project Ownership
+    project_item = db.get_item(f"PROJECT#{project_id}", sk="METADATA")
+    if not project_item:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if project_item.get("owner_id") != current_user.sub:
+        raise HTTPException(
+            status_code=403, detail="Only the project owner can post updates"
+        )
+
+    now = _iso_now()
+    post_id = str(uuid4())
+
+    # Store with Composite Key for sorting
+    item = {
+        "PK": f"PROJECT#{project_id}",
+        "SK": f"TIMELINE#{now}#{post_id}",
+        "type": "TIMELINE_POST",
+        "id": post_id,
+        "project_id": project_id,
+        "title": payload.title,
+        "content": payload.content,
+        "media_urls": payload.media_urls,
+        "created_at": now,
+        "updated_at": now,
+    }
+
+    db.put_item(item)
+
+    return TimelinePostPublic(
+        id=post_id,
+        project_id=project_id,
+        title=payload.title,
+        content=payload.content,
+        media_urls=payload.media_urls,
+        created_at=now,
+        updated_at=now,
+    )
+
+
+@router.get("/{project_id}/timeline", response_model=TimelinePostsListResponse)
+def list_timeline_posts(
+    project_id: str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=50),
+    current_user: TokenPayload | None = Depends(get_current_user_optional),
+):
+    """
+    List timeline posts for a project.
+    """
+    db = get_projects_db()
+
+    # Fetch posts (reverse chronological)
+    items = db.query(
+        KeyConditionExpression=Key("PK").eq(f"PROJECT#{project_id}")
+        & Key("SK").begins_with("TIMELINE#"),
+        ScanIndexForward=False,
+    )
+
+    posts = []
+    for item in items:
+        posts.append(
+            TimelinePostPublic(
+                id=item["id"],
+                project_id=item["project_id"],
+                title=item["title"],
+                content=item["content"],
+                media_urls=item.get("media_urls", []),
+                created_at=item["created_at"],
+                updated_at=item.get("updated_at"),
+            )
+        )
+
+    total = len(posts)
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    return TimelinePostsListResponse(
+        items=posts[start:end], total=total, page=page, page_size=page_size
+    )
+
+
+@router.put("/{project_id}/timeline/{post_id}", response_model=TimelinePostPublic)
+def update_timeline_post(
+    project_id: str,
+    post_id: str,
+    payload: UpdateTimelinePostRequest,
+    current_user: TokenPayload = Depends(require_creator_or_above()),
+):
+    db = get_projects_db()
+
+    # Check Ownership
+    project_item = db.get_item(f"PROJECT#{project_id}", sk="METADATA")
+    if project_item.get("owner_id") != current_user.sub:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Fetch all posts to find target
+    items = db.query(
+        KeyConditionExpression=Key("PK").eq(f"PROJECT#{project_id}")
+        & Key("SK").begins_with("TIMELINE#"),
+    )
+
+    target_item = None
+    for item in items:
+        if item.get("id") == post_id:
+            target_item = item
+            break
+
+    if not target_item:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # Update Fields
+    update_data = payload.dict(exclude_unset=True)
+    if not update_data:
+        return TimelinePostPublic(**target_item)
+
+    target_item.update(update_data)
+    target_item["updated_at"] = _iso_now()
+
+    db.put_item(target_item)
+
+    return TimelinePostPublic(
+        id=target_item["id"],
+        project_id=target_item["project_id"],
+        title=target_item["title"],
+        content=target_item["content"],
+        media_urls=target_item.get("media_urls", []),
+        created_at=target_item["created_at"],
+        updated_at=target_item.get("updated_at"),
+    )
+
+
+@router.delete("/{project_id}/timeline/{post_id}", status_code=204)
+def delete_timeline_post(
+    project_id: str,
+    post_id: str,
+    current_user: TokenPayload = Depends(require_creator_or_above()),
+):
+    db = get_projects_db()
+
+    # Check Ownership
+    project_item = db.get_item(f"PROJECT#{project_id}", sk="METADATA")
+    if project_item.get("owner_id") != current_user.sub:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Find item
+    items = db.query(
+        KeyConditionExpression=Key("PK").eq(f"PROJECT#{project_id}")
+        & Key("SK").begins_with("TIMELINE#"),
+    )
+
+    target_item = None
+    for item in items:
+        if item.get("id") == post_id:
+            target_item = item
+            break
+
+    if not target_item:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # Delete
+    db.delete_item(f"PROJECT#{project_id}", target_item["SK"])
+    return None

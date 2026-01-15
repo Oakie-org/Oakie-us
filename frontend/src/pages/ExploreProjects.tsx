@@ -1,10 +1,12 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { FunnelPlusIcon } from "lucide-react";
+import { FunnelPlusIcon, Loader2 } from "lucide-react";
 
 import ProjectCard from "@/components/features/ProjectCard";
 import { MOCK_PROJECTS } from "@/data/mockProjects";
+import { listProjects, type ProjectFilters } from "@/lib/api";
+import type { Project } from "@/types";
 import { RippleButton } from "@/components/ui/ripple-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,34 +32,65 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const MOCK_QUICK_FILTERS = ["Web", "Mobile", "Finance", "TikTok", "Startup"];
+const QUICK_FILTER_TAGS = ["Web", "Mobile", "Finance", "AI", "Startup"];
 
 export const ExploreProjects: React.FC = () => {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = React.useState<string | null>(null);
 
-  // TODO: Re-enable real API projects when ready
-  // const [projects, setProjects] = useState<Project[] | null>(null);
-  // useEffect(() => {
-  //   let cancelled = false;
-  //   listProjects()
-  //     .then((items) => {
-  //       if (cancelled) return;
-  //       setProjects(items);
-  //     })
-  //     .catch(() => {
-  //       if (cancelled) return;
-  //       setProjects(MOCK_PROJECTS);
-  //     });
-  //   return () => {
-  //     cancelled = true;
-  //   };
-  // }, []);
+  // Filter state
+  const [activeTag, setActiveTag] = useState<string | null>(null);
 
-  const filteredProjects = useMemo(() => MOCK_PROJECTS, []);
+  // Data state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [usingMockData, setUsingMockData] = useState(false);
+
+  // Fetch projects when filters change
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+
+    // Build filters object
+    const filters: ProjectFilters = {};
+    if (activeTag) {
+      filters.tag = activeTag;
+    }
+
+    try {
+      const data = await listProjects(filters);
+      setProjects(data);
+      setUsingMockData(false);
+    } catch (error) {
+      console.warn(
+        "Failed to fetch projects from API, using mock data:",
+        error,
+      );
+      // Fallback to mock data, applying local filters
+      let filtered = MOCK_PROJECTS as Project[];
+      if (activeTag) {
+        filtered = filtered.filter((p) =>
+          p.tags.some((t) => t.toLowerCase().includes(activeTag.toLowerCase())),
+        );
+      }
+      setProjects(filtered);
+      setUsingMockData(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTag]);
+
+  // Trigger fetch on mount and when filters change
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // Handle quick filter click
+  const handleTagClick = (tag: string) => {
+    setActiveTag(activeTag === tag ? null : tag);
+  };
 
   return (
     <div className={styles.container}>
+      {/* Filter Row */}
       <div className={styles.filterRow}>
         {/* Advanced Filter Popover - Coming Soon */}
         <Popover>
@@ -81,47 +114,63 @@ export const ExploreProjects: React.FC = () => {
         </Popover>
 
         {/* Quick Filter Buttons */}
-        {MOCK_QUICK_FILTERS.map((filter) => (
+        {QUICK_FILTER_TAGS.map((tag) => (
           <RippleButton
-            key={filter}
-            onClick={() =>
-              setActiveFilter(activeFilter === filter ? null : filter)
-            }
-            variant={activeFilter === filter ? "default" : "outline"}
+            key={tag}
+            onClick={() => handleTagClick(tag)}
+            variant={activeTag === tag ? "default" : "outline"}
             className="rounded-full h-9"
           >
-            {filter}
+            {tag}
           </RippleButton>
         ))}
       </div>
 
-      <motion.div
-        className={styles.projectGrid}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <AnimatePresence>
-          {filteredProjects.map((project) => (
-            <motion.div
-              key={project.id}
-              variants={itemVariants}
-              layout
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              <ProjectCard
-                project={project}
-                onClick={() => navigate(`/projects/${project.id}`)}
-                className={styles.modernCard}
-              />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
 
-      {filteredProjects.length === 0 && (
+      {/* Projects Grid */}
+      {!loading && (
+        <motion.div
+          className={styles.projectGrid}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <AnimatePresence>
+            {projects.map((project) => (
+              <motion.div
+                key={project.id}
+                variants={itemVariants}
+                layout
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
+                <ProjectCard
+                  project={project}
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                  className={styles.modernCard}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
+
+      {/* Empty State */}
+      {!loading && projects.length === 0 && (
         <div className={styles.emptyState}>No projects match your filters.</div>
+      )}
+
+      {/* Mock Data Indicator (for development) */}
+      {usingMockData && !loading && (
+        <div className="fixed bottom-4 right-4 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg">
+          Using mock data (API unavailable)
+        </div>
       )}
     </div>
   );

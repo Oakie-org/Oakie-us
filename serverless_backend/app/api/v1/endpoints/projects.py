@@ -115,8 +115,7 @@ def list_projects(
         filter_expression = filter_expression & Attr("city").eq(filters.city)
     if filters.uni:
         filter_expression = filter_expression & Attr("uni").eq(filters.uni)
-    if filters.tag:
-        filter_expression = filter_expression & Attr("tags").contains(filters.tag)
+    # Note: tag filter moved to Python layer for partial matching support
     if filters.owner_id:
         filter_expression = filter_expression & Attr("owner_id").eq(filters.owner_id)
     if filters.q:
@@ -128,6 +127,13 @@ def list_projects(
 
     items = db.scan(filter_expression=filter_expression)
     projects = [_project_from_item(item) for item in items]
+
+    # Apply partial tag matching in Python layer
+    # This allows "Web" to match "Web3", "Mobile" to match "Mobile App", etc.
+    if filters.tag:
+        tag_lower = filters.tag.lower()
+        projects = [p for p in projects if any(tag_lower in t.lower() for t in p.tags)]
+
     projects.sort(key=lambda p: p.created_at, reverse=True)
 
     total = len(projects)

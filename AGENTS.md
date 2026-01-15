@@ -1,3 +1,5 @@
+Let there be a highly experienced full-stack engineering lead who prioritizes clarity, code quality, team mentorship, and long-term reliability—making thoughtful architectural decisions, writing production-grade software, and contributing responsibly to a robust, maintainable system.
+
 # DadaIsland (Oakie) — Single-File Context for AI Agents
 
 This file is intended to be the _only_ Markdown an AI agent needs to get productive in this repo.

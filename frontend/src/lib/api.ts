@@ -97,8 +97,40 @@ function toProject(apiProject: ApiProject): Project {
   };
 }
 
-export async function listProjects(): Promise<Project[]> {
-  const data = await requestJson<ProjectsListResponse>("/projects");
+// Filter parameters matching backend ProjectListRequest
+export type ProjectFilters = {
+  status?: "Recruiting" | "In Progress" | "Completed" | "Idea" | "On Hold";
+  category?: string;
+  city?: string;
+  uni?: string;
+  tag?: string;
+  q?: string;
+  owner_id?: string;
+  page?: number;
+  page_size?: number;
+};
+
+export async function listProjects(
+  filters?: ProjectFilters,
+): Promise<Project[]> {
+  // Build query string from filters
+  const params = new URLSearchParams();
+  if (filters) {
+    if (filters.status) params.set("status", filters.status);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.city) params.set("city", filters.city);
+    if (filters.uni) params.set("uni", filters.uni);
+    if (filters.tag) params.set("tag", filters.tag);
+    if (filters.q) params.set("q", filters.q);
+    if (filters.owner_id) params.set("owner_id", filters.owner_id);
+    if (filters.page) params.set("page", String(filters.page));
+    if (filters.page_size) params.set("page_size", String(filters.page_size));
+  }
+
+  const queryString = params.toString();
+  const path = queryString ? `/projects?${queryString}` : "/projects";
+
+  const data = await requestJson<ProjectsListResponse>(path);
   return data.items.map(toProject);
 }
 

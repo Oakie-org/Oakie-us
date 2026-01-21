@@ -107,10 +107,8 @@ export const ExploreProjects: React.FC = () => {
       console.log(
         "Fetched projects:",
         response.items.length,
-        "Total after merge:",
-        isInitialLoad
-          ? response.items.length
-          : projects.length + response.items.length,
+        "Is Initial Load:",
+        isInitialLoad,
       );
     } catch (error) {
       console.warn(

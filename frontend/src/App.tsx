@@ -10,36 +10,43 @@ import ProfilePage from "@/pages/ProfilePage";
 import CreateProjectPage from "@/pages/CreateProjectPage";
 import Register from "@/components/shadcn-studio/blocks/register-04/register-04";
 import Login from "@/components/shadcn-studio/blocks/login-page-04/login-page-04";
+import ErrorPage from "@/components/shadcn-studio/blocks/error-page-04/error-page-04";
 
 // Initialize Amplify
 Amplify.configure(amplifyConfig);
+
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* Auth pages - standalone, no shell */}
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          {/* Main app with shell */}
-          <Route path="/" element={<ApplicationShell />}>
-            {/* Public routes */}
-            <Route index element={<ExploreProjects />} />
-            <Route path="explore" element={<ExploreProjects />} />
-            <Route path="projects/:id" element={<ProjectDetailPage />} />
-            <Route path="users/:userId" element={<ProfilePage />} />
-            {/* Protected routes - require login */}
-            <Route
-              path="create"
-              element={
-                <ProtectedRoute>
-                  <CreateProjectPage />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            {/* Auth pages - standalone, no shell */}
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            {/* Main app with shell */}
+            <Route path="/" element={<ApplicationShell />}>
+              {/* Public routes */}
+              <Route index element={<ExploreProjects />} />
+              <Route path="explore" element={<ExploreProjects />} />
+              <Route path="projects/:id" element={<ProjectDetailPage />} />
+              <Route path="users/:userId" element={<ProfilePage />} />
+              {/* Protected routes - require login */}
+              <Route
+                path="create"
+                element={
+                  <ProtectedRoute>
+                    <CreateProjectPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+            {/* 404 - Catch all */}
+            <Route path="*" element={<ErrorPage />} />
+          </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </AuthProvider>
   );

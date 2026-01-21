@@ -61,6 +61,9 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    if (response.status >= 500) {
+      window.dispatchEvent(new Event("server-error"));
+    }
     const errorText = await response.text().catch(() => "");
     throw new Error(
       `API ${response.status} ${response.statusText}${

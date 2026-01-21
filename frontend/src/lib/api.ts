@@ -162,3 +162,59 @@ export async function createProject(payload: CreateProjectPayload) {
   });
   return toProject(data);
 }
+
+// ============================================================================
+// Cursor-based Pagination (for infinite scroll)
+// ============================================================================
+
+export type ProjectCursorFilters = Omit<
+  ProjectFilters,
+  "page" | "page_size"
+> & {
+  cursor?: string | null;
+  page_size?: number;
+};
+
+export type ProjectsCursorResponse = {
+  items: Project[];
+  next_cursor: string | null;
+  has_more: boolean;
+  page_size: number;
+};
+
+type ApiProjectsCursorResponse = {
+  items: ApiProject[];
+  next_cursor: string | null;
+  has_more: boolean;
+  page_size: number;
+};
+
+export async function listProjectsCursor(
+  filters?: ProjectCursorFilters,
+): Promise<ProjectsCursorResponse> {
+  const params = new URLSearchParams();
+  if (filters) {
+    if (filters.status) params.set("status", filters.status);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.city) params.set("city", filters.city);
+    if (filters.uni) params.set("uni", filters.uni);
+    if (filters.tag) params.set("tag", filters.tag);
+    if (filters.q) params.set("q", filters.q);
+    if (filters.owner_id) params.set("owner_id", filters.owner_id);
+    if (filters.cursor) params.set("cursor", filters.cursor);
+    if (filters.page_size) params.set("page_size", String(filters.page_size));
+  }
+
+  const queryString = params.toString();
+  const path = queryString
+    ? `/projects/cursor?${queryString}`
+    : "/projects/cursor";
+
+  const data = await requestJson<ApiProjectsCursorResponse>(path);
+  return {
+    items: data.items.map(toProject),
+    next_cursor: data.next_cursor,
+    has_more: data.has_more,
+    page_size: data.page_size,
+  };
+}

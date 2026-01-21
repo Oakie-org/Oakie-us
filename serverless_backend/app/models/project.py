@@ -29,6 +29,7 @@ class ProjectPublic(ProjectBase):
     current_members: int
     likes: int
     follows: int
+    priority: int = 0  # Higher value = appears first in list
     created_at: str
     updated_at: str
 
@@ -37,6 +38,17 @@ class ProjectsListResponse(BaseModel):
     items: list[ProjectPublic]
     total: int
     page: int
+    page_size: int
+
+
+class ProjectsCursorResponse(BaseModel):
+    """Cursor-based pagination response for infinite scroll."""
+
+    items: list[ProjectPublic]
+    next_cursor: str | None = (
+        None  # Base64-encoded cursor for next page, None if no more
+    )
+    has_more: bool = False
     page_size: int
 
 

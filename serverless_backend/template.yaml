@@ -33,11 +33,15 @@ Resources:
   OakieProjectsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Oakie-Projects
+      TableName: Oakie-Projects-v2
       AttributeDefinitions:
         - AttributeName: PK
           AttributeType: S
         - AttributeName: SK
+          AttributeType: S
+        - AttributeName: type
+          AttributeType: S
+        - AttributeName: gsi1_sk
           AttributeType: S
       KeySchema:
         - AttributeName: PK
@@ -45,6 +49,15 @@ Resources:
         - AttributeName: SK
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: ProjectsByType
+          KeySchema:
+            - AttributeName: type
+              KeyType: HASH
+            - AttributeName: gsi1_sk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   # -------------------------------------------------------------------------
   # Lambda Trigger: Post Confirmation (Sync to DDB)

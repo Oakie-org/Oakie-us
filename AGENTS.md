@@ -95,28 +95,6 @@ Domains planned (MVP direction):
 - Users: `GET /users/{id}`, `GET/PATCH /users/me`, `GET /users/{id}/projects`
 - Meta/stats/uploads: `/meta/*`, `/stats`, `POST /uploads/sign`
 
-## 5) Execution roadmap (timeline summary)
-
-Week 0 (COMPLETED):
-
-- ✅ End-to-end auth: Register/Login → custom pages → JWT token → protected routes
-- ✅ User profile display in header + profile page
-- ✅ Protected routes (/profile, /create) redirect to login when unauthenticated
-
-Next:
-
-Week 1:
-
-- Applications (apply/approve/reject) + talent directory
-
-Week 2:
-
-- Messaging + notifications/activity feed
-
-Week 3:
-
-- Search, caching, async/event-driven notifications
-
 ## 6) Frontend architecture + design rules (brief summary)
 
 Stack:
@@ -143,62 +121,13 @@ Style rules:
 
 - Project uses Tailwind v4 via `@tailwindcss/vite` plugin.
 - **CSS variables in arbitrary values use parentheses, not brackets:**
-  - ❌ v3: `w-[--sidebar-width]`
   - ✅ v4: `w-(--sidebar-width)`
 - When installing new shadcn components, check for v3 syntax and convert to v4.
-
-## 7) Local dev (fast path)
-
-One-shot setup:
-
-- `./scripts/setup-dev.sh`
-  - Creates/uses `serverless_backend/venv`
-  - Installs Python deps (`requirements.txt` + `requirements-dev.txt`)
-  - Installs frontend deps (`npm install`)
-  - Installs git hooks (`pre-commit install`) when `.git/` exists
-
-Backend:
-
-- `cd serverless_backend && source venv/bin/activate`
-- `uvicorn app.main:app --reload` (docs: `http://127.0.0.1:8000/docs`)
-
-Frontend:
-
-- `cd frontend && npm run dev` (Vite: `http://localhost:5173`)
-
-## 8) Tooling / quality gates (formatting + type checking)
-
-### Pre-commit (format on `git commit`)
-
-- Config: `.pre-commit-config.yaml`
-- Install once: `pre-commit install`
-- Python hooks: `absolufy-imports` → `ruff check --fix` → `ruff format`
-- Frontend hooks: `prettier` + `eslint` (runs `cd frontend && npm run lint`)
-
-### Type checking (Python)
-
-- Config: `pyrightconfig.json` (BasedPyright/Pyright-style)
-  - Points at `serverless_backend/venv` and adds `serverless_backend` to import paths.
-- boto3 typing:
-  - Lambda runtime provides `boto3`, but for local typing we install `boto3-stubs[dynamodb]` in dev deps.
-  - Runtime deps should stay in `serverless_backend/requirements.txt`; dev-only in `serverless_backend/requirements-dev.txt`.
-
-### Tests (Backend)
-
-- Install dev deps: `cd serverless_backend && source venv/bin/activate && pip install -r requirements-dev.txt`
-- Run tests: `PYTHONPATH=. pytest` (defaults to verbose via `pytest.ini`)
-- DynamoDB for tests: prefers DynamoDB Local via Docker; falls back to Moto (in-memory) if Docker isn’t available.
 
 ## 9) AWS SAM deploy defaults (what’s “configured”)
 
 - Template: `serverless_backend/template.yaml` (what gets built/deployed)
 - Deploy defaults: `serverless_backend/samconfig.toml` (stack name/region/etc.)
-
-Typical:
-
-- `cd serverless_backend && sam build`
-- `sam deploy --guided` (first time), then `sam deploy`
-- `sam sync --watch` for faster iteration
 
 ## 10) Agent working rules (repo-specific)
 

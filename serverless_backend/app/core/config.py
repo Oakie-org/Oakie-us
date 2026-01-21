@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     AWS_REGION: str = "us-west-2"
     DYNAMODB_ENDPOINT_URL: Optional[str] = os.getenv("DYNAMODB_ENDPOINT_URL")
     USERS_TABLE_NAME: str = os.getenv("USERS_TABLE_NAME", "Oakie-Users")
-    PROJECTS_TABLE_NAME: str = os.getenv("PROJECTS_TABLE_NAME", "Oakie-Projects")
+    PROJECTS_TABLE_NAME: str = os.getenv("PROJECTS_TABLE_NAME", "Oakie-Projects-v2")
     TABLES: dict[str, str] = Field(default_factory=dict)
 
     # CORS (local dev)

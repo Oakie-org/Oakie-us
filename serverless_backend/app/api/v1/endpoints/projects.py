@@ -12,6 +12,7 @@ from app.models.project import (
     ProjectCreate,
     ProjectListRequest,
     ProjectPublic,
+    ProjectsCursorResponse,
     ProjectsListResponse,
 )
 from app.models.timeline import (
@@ -79,6 +80,7 @@ def _project_from_item(item: dict) -> ProjectPublic:
         max_members=_as_int(item.get("max_members"), 5),
         likes=_as_int(item.get("likes"), 0),
         follows=_as_int(item.get("follows"), 0),
+        priority=_as_int(item.get("priority"), 0),
         image=str(item.get("image") or ""),
         image_url=(str(item["image_url"]) if item.get("image_url") else None),
         visibility=visibility,
@@ -130,11 +132,18 @@ def list_projects(
 
     # Apply partial tag matching in Python layer
     # This allows "Web" to match "Web3", "Mobile" to match "Mobile App", etc.
+    # Also matches category field for broader filter coverage
     if filters.tag:
         tag_lower = filters.tag.lower()
-        projects = [p for p in projects if any(tag_lower in t.lower() for t in p.tags)]
+        projects = [
+            p
+            for p in projects
+            if any(tag_lower in t.lower() for t in p.tags)
+            or tag_lower in p.category.lower()
+        ]
 
-    projects.sort(key=lambda p: p.created_at, reverse=True)
+    # Sort by priority (ascending: lower = first), then by created_at (descending: newer = first), then by id
+    projects.sort(key=lambda p: (-p.priority, p.created_at, p.id), reverse=True)
 
     total = len(projects)
     start = (page - 1) * page_size
@@ -143,6 +152,156 @@ def list_projects(
         items=projects[start:end],
         total=total,
         page=page,
+        page_size=page_size,
+    )
+
+
+def _decode_cursor(cursor: str | None) -> int:
+    """Decode base64 cursor to offset. Returns 0 if invalid/None."""
+    if not cursor:
+        return 0
+    try:
+        import base64
+
+        decoded = base64.urlsafe_b64decode(cursor.encode()).decode()
+        return int(decoded)
+    except Exception:
+        return 0
+
+
+def _encode_cursor(offset: int) -> str:
+    """Encode offset to base64 cursor."""
+    import base64
+
+    return base64.urlsafe_b64encode(str(offset).encode()).decode()
+
+
+@router.get("/cursor", response_model=ProjectsCursorResponse)
+def list_projects_cursor(
+    filters: ProjectListRequest = Depends(),
+    cursor: str | None = Query(None, description="Cursor for next page"),
+    page_size: int = Query(15, ge=1, le=50),
+) -> ProjectsCursorResponse:
+    """
+    List projects with cursor-based pagination (for infinite scroll).
+
+    Returns a cursor for the next page. Pass this cursor in subsequent
+    requests to fetch more items. When `has_more` is False, there are
+    no more items to fetch.
+
+    Uses loop-fetch to ensure accurate has_more when post-query filters
+    reduce result counts.
+    """
+    import base64
+    import json
+
+    db = get_projects_db()
+
+    # Build base filter expression for DynamoDB
+    filter_expression = Attr("visibility").ne(ProjectVisibility.PRIVATE.value)
+    if filters.status:
+        filter_expression &= Attr("status").eq(filters.status)
+    if filters.category:
+        filter_expression &= Attr("category").eq(filters.category)
+    if filters.city:
+        filter_expression &= Attr("city").eq(filters.city)
+    if filters.uni:
+        filter_expression &= Attr("uni").eq(filters.uni)
+    if filters.owner_id:
+        filter_expression &= Attr("owner_id").eq(filters.owner_id)
+
+    # Check if we need post-query (Python-side) filtering
+    needs_post_filter = bool(filters.q or filters.tag)
+
+    # Decode initial cursor
+    current_cursor_key = None
+    if cursor:
+        try:
+            decoded = base64.urlsafe_b64decode(cursor.encode()).decode()
+            current_cursor_key = json.loads(decoded)
+        except Exception:
+            pass  # Invalid cursor, start from beginning
+
+    collected_projects: list[ProjectPublic] = []
+    last_evaluated_key = current_cursor_key
+    has_more_pages = True
+
+    # Loop-fetch: keep fetching until we have enough items OR no more pages
+    # This handles "sparse" results caused by post-query filtering
+    max_iterations = 10  # Safety limit to prevent infinite loops
+    iteration = 0
+
+    while (
+        len(collected_projects) < page_size
+        and has_more_pages
+        and iteration < max_iterations
+    ):
+        iteration += 1
+
+        query_kwargs = {
+            "IndexName": "ProjectsByType",
+            "KeyConditionExpression": Key("type").eq("PROJECT"),
+            "ScanIndexForward": False,  # Descending order (priority + recency)
+            "Limit": page_size * 2
+            if needs_post_filter
+            else page_size,  # Fetch more if filtering
+            "FilterExpression": filter_expression,
+        }
+
+        if last_evaluated_key:
+            query_kwargs["ExclusiveStartKey"] = last_evaluated_key
+
+        response = db.table.query(**query_kwargs)
+        items = response.get("Items", [])
+        last_evaluated_key = response.get("LastEvaluatedKey")
+        has_more_pages = bool(last_evaluated_key)
+
+        # Convert to ProjectPublic objects
+        projects = [_project_from_item(item) for item in items]
+
+        # Apply post-query filtering (text search & tags)
+        if filters.q:
+            q = filters.q.strip().lower()
+            projects = [
+                p
+                for p in projects
+                if q in p.title.lower() or q in p.description.lower()
+            ]
+
+        if filters.tag:
+            tag_lower = filters.tag.lower()
+            # Match tag in either tags array OR category field (partial match)
+            projects = [
+                p
+                for p in projects
+                if any(tag_lower in t.lower() for t in p.tags)
+                or tag_lower in p.category.lower()
+            ]
+
+        # Deduplicate and add to collected results
+        existing_ids = {p.id for p in collected_projects}
+        for p in projects:
+            if p.id not in existing_ids:
+                collected_projects.append(p)
+                existing_ids.add(p.id)
+
+    # Trim to page_size if we collected more
+    result_projects = collected_projects[:page_size]
+
+    # Determine if there are more items to fetch
+    # has_more is True if: we have more pages to scan OR we trimmed results
+    has_more = has_more_pages or len(collected_projects) > page_size
+
+    # Encode next cursor (only if has_more)
+    next_cursor = None
+    if has_more and last_evaluated_key:
+        json_str = json.dumps(last_evaluated_key)
+        next_cursor = base64.urlsafe_b64encode(json_str.encode()).decode()
+
+    return ProjectsCursorResponse(
+        items=result_projects,
+        next_cursor=next_cursor,
+        has_more=has_more,
         page_size=page_size,
     )
 
@@ -221,6 +380,9 @@ def create_project(
         "owner_id": current_user.sub,
         "created_at": now,
         "updated_at": now,
+        # GSI Keys for sorting: {priority}#{created_at}#{id}
+        # Priority defaults to 0 for regular users.
+        "gsi1_sk": f"0000#{now}#{project_id}",
     }
 
     db.put_item(item, condition_expression="attribute_not_exists(PK)")

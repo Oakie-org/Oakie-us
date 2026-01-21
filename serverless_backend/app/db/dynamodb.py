@@ -18,6 +18,10 @@ class DynamoDBClient:
             self.resource = boto3.resource("dynamodb", region_name=settings.AWS_REGION)
         self.table = self.resource.Table(table_name)
 
+    @property
+    def table_resource(self):
+        return self.table
+
     def put_item(
         self,
         item: Dict[str, Any],

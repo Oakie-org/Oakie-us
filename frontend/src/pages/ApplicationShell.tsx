@@ -94,17 +94,17 @@ const corePagesItems: MenuItem[] = [
   },
   {
     icon: LockIcon,
-    label: "Future Feature",
+    label: "Future Feature 1",
     href: "#",
   },
   {
     icon: LockIcon,
-    label: "Future Feature",
+    label: "Future Feature 2",
     href: "#",
   },
   {
     icon: LockIcon,
-    label: "Future Feature",
+    label: "Future Feature 3",
     href: "#",
   },
 ];

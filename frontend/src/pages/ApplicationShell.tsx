@@ -21,7 +21,7 @@ import { CompassIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible,
   CollapsibleContent,
@@ -248,14 +248,6 @@ const ApplicationShell = () => {
     },
   ];
 
-  const initials =
-    user?.name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?";
-
   return (
     <div className="flex min-h-dvh w-full">
       <SidebarProvider
@@ -402,9 +394,20 @@ const ApplicationShell = () => {
                           size="icon"
                           className="size-9.5"
                         >
-                          <Avatar className="size-9.5 rounded-md bg-primary text-primary-foreground">
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              {initials}
+                          <Avatar className="size-9.5 rounded-md">
+                            <AvatarImage
+                              src={
+                                user?.avatarUrl || "/images/default-avatar.png"
+                              }
+                              alt={user?.name || "User"}
+                            />
+                            <AvatarFallback className="rounded-md bg-primary/10 text-primary text-sm font-medium">
+                              {user?.name
+                                ?.split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2) || "?"}
                             </AvatarFallback>
                           </Avatar>
                         </Button>

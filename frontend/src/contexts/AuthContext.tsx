@@ -43,6 +43,7 @@ interface User {
   userId: string;
   email?: string;
   name?: string;
+  avatarUrl?: string;
   permissions: UserPermissions;
 }
 
@@ -155,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userId: currentUser.userId,
         email: attributes.email,
         name: attributes.name,
+        avatarUrl: attributes.picture,
         permissions,
       });
     } catch {
@@ -249,6 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userId: currentUser.userId,
           email: attributes.email,
           name: attributes.name,
+          avatarUrl: attributes.picture,
           permissions,
         });
       }

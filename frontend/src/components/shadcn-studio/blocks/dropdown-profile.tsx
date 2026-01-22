@@ -11,7 +11,7 @@ import {
   LogOutIcon,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,15 +33,6 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
 
-  // Get user initials from name
-  const initials =
-    user?.name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?";
-
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -53,9 +44,18 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
       <DropdownMenuContent className="w-80" align={align || "end"}>
         <DropdownMenuLabel className="flex items-center gap-4 px-4 py-2.5 font-normal">
           <div className="relative">
-            <Avatar className="size-10 bg-primary text-primary-foreground">
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {initials}
+            <Avatar className="size-10">
+              <AvatarImage
+                src={user?.avatarUrl || "/images/default-avatar.png"}
+                alt={user?.name || "User"}
+              />
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                {user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2) || "?"}
               </AvatarFallback>
             </Avatar>
             <span className="ring-card absolute right-0 bottom-0 block size-2 rounded-full bg-green-600 ring-2" />

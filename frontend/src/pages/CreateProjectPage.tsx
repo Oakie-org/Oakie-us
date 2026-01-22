@@ -1,6 +1,6 @@
 import React, { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileInput, Image as ImageIcon, Plus } from "lucide-react";
+import { ArrowLeft, FileInput, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { createProject } from "@/lib/api";
+import { ImageUploader } from "@/components/common/ImageUploader";
 
 import styles from "./CreateProjectPage.module.css";
 
@@ -26,6 +27,7 @@ export const CreateProjectPage: React.FC = () => {
   const [subtitle, setSubtitle] = useState("");
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handleBack = () => {
@@ -50,11 +52,13 @@ export const CreateProjectPage: React.FC = () => {
         subtitle,
         description,
         tags: tagsArray,
+        imageUrl: imageUrl || undefined,
       });
       setTitle("");
       setSubtitle("");
       setDescription("");
       setTagsInput("");
+      setImageUrl("");
       setStep("selection");
       navigate(`/projects/${created.id}`);
     } catch (error) {
@@ -112,14 +116,12 @@ export const CreateProjectPage: React.FC = () => {
           <Card className={styles.formContainer}>
             <div className={styles.inputGroup}>
               <Label className={styles.label}>Add Picture/Thumbnail</Label>
-              <div className={styles.imageUploadRow}>
-                <div className={styles.uploadBox}>
-                  <ImageIcon size={32} />
-                </div>
-                <div className={styles.uploadBox}>
-                  <Plus size={32} />
-                </div>
-              </div>
+              <ImageUploader
+                purpose="project_cover"
+                onUpload={setImageUrl}
+                currentUrl={imageUrl}
+                className={styles.uploadBox}
+              />
             </div>
 
             <div className={styles.inputGroup}>

@@ -24,18 +24,6 @@ interface ProjectCardProps {
 }
 
 /**
- * Get initials from a name (e.g., "Alex Liu" -> "AL")
- */
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-/**
  * Status badge component - compact version for card display
  */
 function StatusBadge({ status }: { status: Project["status"] }) {
@@ -116,13 +104,10 @@ const ProjectCard = ({ project, className, onClick }: ProjectCardProps) => {
         <div className="flex items-center gap-4 w-full">
           <Avatar className="size-10.5 rounded-full shrink-0">
             <AvatarImage
-              src={owner?.avatarUrl}
+              src={owner?.avatarUrl || "/images/default-avatar.png"}
               alt={owner?.name ?? "Project Owner"}
               className="rounded-full"
             />
-            <AvatarFallback className="text-xs">
-              {owner ? getInitials(owner.name) : "OA"}
-            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-1 min-w-0 pr-16">
             <span
@@ -141,13 +126,11 @@ const ProjectCard = ({ project, className, onClick }: ProjectCardProps) => {
       <div className="flex flex-col gap-9">
         <div className="relative">
           <div
-            className="h-48 w-full rounded-md"
+            className="h-48 w-full rounded-md bg-cover bg-center"
             style={{
-              background: project.imageUrl
-                ? `url(${project.imageUrl}) center/cover`
-                : project.image?.includes("var(--")
-                  ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)"
-                  : project.image,
+              backgroundImage: `url(${
+                project.imageUrl || "/images/default-project-cover.png"
+              })`,
             }}
           />
         </div>
@@ -176,10 +159,10 @@ const ProjectCard = ({ project, className, onClick }: ProjectCardProps) => {
             <Tooltip key={`${project.id}-member-${index}-${member.name}`}>
               <TooltipTrigger asChild>
                 <Avatar className="ring-background size-9 ring-2 transition-all duration-300 ease-in-out">
-                  <AvatarImage src={member.avatarUrl} alt={member.name} />
-                  <AvatarFallback className="text-xs">
-                    {getInitials(member.name)}
-                  </AvatarFallback>
+                  <AvatarImage
+                    src={member.avatarUrl || "/images/default-avatar.png"}
+                    alt={member.name}
+                  />
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent>{member.name}</TooltipContent>

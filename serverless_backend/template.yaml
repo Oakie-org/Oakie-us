@@ -60,6 +60,43 @@ Resources:
             ProjectionType: ALL
 
   # -------------------------------------------------------------------------
+  # S3 Bucket (Uploads - project covers, avatars)
+  # -------------------------------------------------------------------------
+  OakieUploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub oakie-uploads-${AWS::AccountId}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3000
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+
+  OakieUploadsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref OakieUploadsBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: !Sub ${OakieUploadsBucket.Arn}/*
+
+  # -------------------------------------------------------------------------
   # Lambda Trigger: Post Confirmation (Sync to DDB)
   # -------------------------------------------------------------------------
   PostConfirmationFunction:
@@ -210,6 +247,7 @@ Resources:
         Variables:
           USERS_TABLE_NAME: !Ref OakieTable
           PROJECTS_TABLE_NAME: !Ref OakieProjectsTable
+          UPLOADS_BUCKET_NAME: !Ref OakieUploadsBucket
           COGNITO_USER_POOL_ID: !Ref OakieUserPool
           COGNITO_CLIENT_ID: !Ref OakieUserClient
       Policies:
@@ -217,6 +255,8 @@ Resources:
             TableName: !Ref OakieTable
         - DynamoDBCrudPolicy:
             TableName: !Ref OakieProjectsTable
+        - S3CrudPolicy:
+            BucketName: !Ref OakieUploadsBucket
       Events:
         HttpApiEvent:
           Type: HttpApi

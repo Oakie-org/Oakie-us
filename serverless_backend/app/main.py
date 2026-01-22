@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from app.core.config import settings
-from app.api.v1.endpoints import projects, users
+from app.api.v1.endpoints import projects, users, uploads
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
@@ -26,6 +26,9 @@ app.add_middleware(
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 app.include_router(
     projects.router, prefix=f"{settings.API_V1_STR}/projects", tags=["projects"]
+)
+app.include_router(
+    uploads.router, prefix=f"{settings.API_V1_STR}/uploads", tags=["uploads"]
 )
 
 

@@ -1,138 +1,52 @@
-Let there be a highly experienced full-stack engineering lead who prioritizes clarity, code quality, team mentorship, and long-term reliability—making thoughtful architectural decisions, writing production-grade software, and contributing responsibly to a robust, maintainable system.
+# DadaIsland (Oakie) — Agent Guide
 
-# DadaIsland (Oakie) — Single-File Context for AI Agents
+Concise context for working in this repo.
 
-This file is intended to be the _only_ Markdown an AI agent needs to get productive in this repo.
+## Product
 
-## 1) Product snapshot
+- Platform for students/young creators to publish projects, recruit teammates, and collaborate.
 
-**DadaIsland** (UI copy often says **Oakie**) is a platform for students/young creators to:
+## Repo Layout
 
-- publish/host projects, recruit teammates, and collaborate,
-- match across skills/schools/cities,
-- eventually build “verifiable contribution records” and co-found ventures.
+- `serverless_backend/`: FastAPI backend for AWS Lambda (SAM), DynamoDB, Cognito.
+- `frontend/`: React + TypeScript + Vite SPA.
+- `docs_for_ai/`: internal briefs/specs.
+- `docs/`: longer guides.
+- `archived_java_impl/`: legacy Java (avoid unless requested).
+- Generated: `serverless_backend/venv/`, `frontend/node_modules/`, `.aws-sam/`.
 
-## 2) Repo layout (what to touch)
+## Backend Architecture
 
-- `serverless_backend/`: Python FastAPI backend for AWS Lambda + API Gateway + DynamoDB + Cognito (AWS SAM).
-- `frontend/`: React + TypeScript + Vite SPA (most pages are still mock-driven).
-- `docs_for_ai/`: concise internal briefs/specs (summarized below).
-- `docs/`: longer developer guides (summarized below).
-- `archived_java_impl/`: legacy Java/Spring app (avoid unless explicitly requested).
+- Single FastAPI Lambda via Mangum + API Gateway (SAM-defined).
+- Cognito User Pool with PostConfirmation trigger.
+- DynamoDB uses separate tables for users and projects.
+- S3 uploads use presigned POSTs.
+- Config is in `serverless_backend/app/core/config.py` (env-driven).
+- Import path rule: run from `serverless_backend/` or set `PYTHONPATH=serverless_backend`.
 
-Generated/uncommitted:
+## API Conventions
 
-- `serverless_backend/venv/`, `frontend/node_modules/`, `.aws-sam/` are generated—don’t edit.
+- Prefix: `/api/v1`, JSON `snake_case`.
+- Auth: `Authorization: Bearer <Cognito JWT>`.
+- Pagination: `page`/`page_size` (and some cursor endpoints).
+- Core domains: projects, users, uploads; projects include visibility/ownership fields.
 
-## 3) Current backend reality (serverless “monolith” + trigger)
+## Frontend
 
-Even though some docs talk about microservices, the current SAM template deploys:
+- React + Vite + TypeScript.
+- TailwindCSS v4 + shadcn/ui + CSS Modules.
+- Alias: `@/*` -> `frontend/src/*`.
+- Tailwind v4 CSS var syntax: `w-(--var)`.
 
-- **One FastAPI Lambda** (monolith) via `Mangum`:
-  - App entry: `serverless_backend/app/main.py`
-  - Lambda handler: `app.main.handler`
-- **One Cognito PostConfirmation trigger Lambda**:
-  - `serverless_backend/app/triggers/post_confirmation.py`
-  - Syncs confirmed Cognito users into DynamoDB
-- **One DynamoDB table** (users in template today) and **Cognito User Pool + Client + Domain**
-  - Defined in: `serverless_backend/template.yaml`
+## AWS SAM
 
-Config/env:
+- Template: `serverless_backend/template.yaml`.
+- Deploy defaults: `serverless_backend/samconfig.toml`.
 
-- `serverless_backend/app/core/config.py` loads env vars (and `.env` locally).
-- DynamoDB wrapper: `serverless_backend/app/db/dynamodb.py`
+## Working Rules
 
-### Import-path rule (critical)
-
-Backend uses absolute imports like `from app...`.
-This works when `serverless_backend/` is the import root:
-
-- In Lambda/SAM: `CodeUri: .` with handler `app.*` makes this true.
-- Locally: run from `serverless_backend/` **or** set `PYTHONPATH=serverless_backend`.
-
-## 4) API conventions + expected endpoints (spec summary)
-
-Conventions (expected):
-
-- Base prefix: `/api/v1`
-- JSON: `snake_case`
-- Auth header: `Authorization: Bearer <Cognito JWT>`
-- Pagination: `page`, `page_size`, response `{ items, total, page }` (where relevant)
-
-Auth:
-
-- **Frontend-direct Cognito pattern**: Frontend uses `aws-amplify` to talk directly to Cognito for signup/login/confirm.
-- Cognito PostConfirmation Lambda trigger syncs users to DynamoDB (`app/triggers/post_confirmation.py`).
-- Backend validates JWT via JWKS (`app/core/security.py`) for protected endpoints.
-- JWT Claims: `sub` (user ID), `email`, `name` extracted via `fetchUserAttributes()`.
-- Implemented: `GET /api/v1/auth/me` returns user profile from JWT + DynamoDB.
-
-JWT in API calls:
-
-- Header: `Authorization: Bearer <access_token>`
-- Get token in frontend: `const token = await getAccessToken();`
-- Backend decodes using `get_current_user()` dependency from `app/core/security.py`.
-
-Key auth files:
-
-- Frontend: `src/contexts/AuthContext.tsx` (state + Amplify calls), `src/lib/amplify-config.ts` (Cognito config)
-- Frontend env: `VITE_COGNITO_USER_POOL_ID`, `VITE_COGNITO_CLIENT_ID`
-- Backend: `app/core/security.py` (JWT verification), `app/api/v1/endpoints/auth.py` (/me endpoint)
-- Backend env: `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID` (in config.py)
-
-Role-Based Access Control (RBAC):
-
-- **Cognito Groups** manage global roles (precedence order):
-  - `super_admin` (0), `admin` (1), `moderator` (2), `creator` (10), `user` (100)
-- JWT claim `cognito:groups` contains user's roles (ordered by precedence)
-- Backend guards: `app/core/permissions.py` - `require_admin()`, `require_creator_or_above()`
-- Frontend guards: `src/components/ProtectedRoute.tsx`, `src/components/auth/PermissionGate.tsx`
-- Project-level: `visibility` (public/members_only/private), `owner_id` fields on projects
-
-Domains planned (MVP direction):
-
-- Projects: `GET /projects`, `POST /projects`, `GET/PATCH /projects/{id}`, roles under `/projects/{id}/positions`
-- Users: `GET /users/{id}`, `GET/PATCH /users/me`, `GET /users/{id}/projects`
-- Meta/stats/uploads: `/meta/*`, `/stats`, `POST /uploads/sign`
-
-## 6) Frontend architecture + design rules (brief summary)
-
-Stack:
-
-- React (Vite) + TypeScript
-- Styling: TailwindCSS v4 + `shadcn/ui` primitives **plus** CSS Modules for page/layout styles
-- Icons: `lucide-react`
-
-Key files:
-
-- Routing: `frontend/src/App.tsx`
-- Layout shell: `frontend/src/components/common/AppLayout.tsx` (sidebar + header)
-- Explore page (mock data + “smart sticky filter”): `frontend/src/pages/Projects.tsx`
-
-Style rules:
-
-- Prefer `shadcn/ui` primitives in `frontend/src/components/ui/*` for shared UI building blocks (buttons, inputs, cards, select, avatar, etc.).
-- Use **CSS Modules** (`*.module.css`) for page/layout composition and bespoke styling (keep the current “premium & airy” look).
-- When styling shadcn components, prefer existing design tokens (`--color-*`, `--shadow-*`, `--radius-*`, `--spacing-*`) to keep visuals consistent.
-- Keep UI “premium & airy”: large radius (≈24px), soft shadow, glassmorphism, generous spacing.
-- Frontend import alias: `@/*` maps to `frontend/src/*` (use for `@/components/ui/...`).
-
-**⚠️ Tailwind v4 CSS Variable Syntax (CRITICAL):**
-
-- Project uses Tailwind v4 via `@tailwindcss/vite` plugin.
-- **CSS variables in arbitrary values use parentheses, not brackets:**
-  - ✅ v4: `w-(--sidebar-width)`
-- When installing new shadcn components, check for v3 syntax and convert to v4.
-
-## 9) AWS SAM deploy defaults (what’s “configured”)
-
-- Template: `serverless_backend/template.yaml` (what gets built/deployed)
-- Deploy defaults: `serverless_backend/samconfig.toml` (stack name/region/etc.)
-
-## 10) Agent working rules (repo-specific)
-
-- Keep changes minimal and aligned with existing patterns (FastAPI routers, shadcn primitives + Tailwind, CSS Modules for layouts, etc.).
-- API modeling: when adding API Pydantic models, prefer a `*Base` model for shared fields and extend request/response models from it.
-- Don’t touch generated folders (`serverless_backend/venv/`, `frontend/node_modules/`, `.aws-sam/`).
-- Avoid `archived_java_impl/` unless explicitly requested.
-- If you change dev workflow, update `README.md` and/or `scripts/setup-dev.sh`.
+- Keep changes minimal and follow existing patterns.
+- API modeling: use a `*Base` model for shared fields, then extend.
+- Avoid generated folders.
+- Avoid `archived_java_impl/` unless requested.
+- If dev workflow changes, update `README.md` or `scripts/setup-dev.sh`.

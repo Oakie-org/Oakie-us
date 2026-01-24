@@ -25,6 +25,7 @@ _Although Cognito is used, we wrap basic flows in our API for frontend consisten
 
 ## 4. Users Domain
 
+- `GET /users`: Search users (query param: `q`).
 - `GET /users/{id}`: Public profile (nickname, avatar, headline, bio, skills).
 - `GET /users/me`: Private full profile.
 - `PATCH /users/me`: Update profile fields.

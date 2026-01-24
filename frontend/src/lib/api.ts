@@ -27,6 +27,19 @@ type ProjectsListResponse = {
   page_size: number;
 };
 
+type ApiUser = {
+  sub: string;
+  name?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  skills?: string[] | null;
+  avatar_url?: string | null;
+};
+
+type UsersListResponse = {
+  items: ApiUser[];
+};
+
 type CreateProjectPayload = {
   title: string;
   subtitle?: string;
@@ -100,6 +113,26 @@ function toProject(apiProject: ApiProject): Project {
   };
 }
 
+export type UserSearchResult = {
+  id: string;
+  name: string;
+  bio?: string;
+  location?: string;
+  skills?: string[];
+  avatarUrl?: string;
+};
+
+function toUserSearchResult(apiUser: ApiUser): UserSearchResult {
+  return {
+    id: apiUser.sub,
+    name: apiUser.name ?? "",
+    bio: apiUser.bio ?? undefined,
+    location: apiUser.location ?? undefined,
+    skills: apiUser.skills ?? undefined,
+    avatarUrl: apiUser.avatar_url ?? undefined,
+  };
+}
+
 // Filter parameters matching backend ProjectListRequest
 export type ProjectFilters = {
   status?: "Recruiting" | "In Progress" | "Completed" | "Idea" | "On Hold";
@@ -164,6 +197,17 @@ export async function createProject(payload: CreateProjectPayload) {
     body: JSON.stringify(apiPayload),
   });
   return toProject(data);
+}
+
+export async function listUsers(query?: string): Promise<UserSearchResult[]> {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+
+  const queryString = params.toString();
+  const path = queryString ? `/users?${queryString}` : "/users";
+
+  const data = await requestJson<UsersListResponse>(path);
+  return data.items.map(toUserSearchResult);
 }
 
 // ============================================================================

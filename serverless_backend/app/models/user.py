@@ -32,3 +32,7 @@ class PrivateUserProfile(UserProfile):
 
 class UserProfileUpdate(UserProfile):
     pass
+
+
+class UsersListResponse(BaseModel):
+    items: list[PublicUserProfile]

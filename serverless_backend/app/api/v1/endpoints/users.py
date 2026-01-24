@@ -1,9 +1,69 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from boto3.dynamodb.conditions import Attr
 from app.core.security import get_current_user, TokenPayload
 from app.db.dynamodb import get_users_db
-from app.models.user import PrivateUserProfile, PublicUserProfile, UserProfileUpdate
+from app.models.user import (
+    PrivateUserProfile,
+    PublicUserProfile,
+    UserProfileUpdate,
+    UsersListResponse,
+)
 
 router = APIRouter()
+
+
+def _public_user_from_item(item: dict) -> PublicUserProfile:
+    pk = str(item.get("PK") or "")
+    user_id = (
+        pk[len("USER#") :] if pk.startswith("USER#") else str(item.get("sub") or "")
+    )
+    name = item.get("name") or item.get("nickname") or ""
+
+    return PublicUserProfile(
+        sub=user_id,
+        name=name,
+        bio=item.get("bio"),
+        location=(item.get("params") or {}).get("city"),
+        uni=(item.get("params") or {}).get("uni"),
+        skills=item.get("skills", []),
+        avatar_url=item.get("avatar_url"),
+        banner_url=item.get("banner_url"),
+        num_projects=item.get("num_projects", 0),
+        num_followers=item.get("num_followers", 0),
+        num_following=item.get("num_following", 0),
+    )
+
+
+@router.get("", response_model=UsersListResponse)
+def list_users(
+    q: str | None = Query(None, description="Search query"),
+) -> UsersListResponse:
+    """
+    List users, optionally filtered by a search query.
+    """
+    db = get_users_db()
+    items = db.scan(filter_expression=Attr("type").eq("USER"))
+
+    if q:
+        q_value = q.strip().lower()
+        if q_value:
+            filtered_items: list[dict] = []
+            for item in items:
+                name = str(item.get("name") or "")
+                nickname = str(item.get("nickname") or "")
+                bio = str(item.get("bio") or "")
+                skills = item.get("skills") or []
+                if (
+                    q_value in name.lower()
+                    or q_value in nickname.lower()
+                    or q_value in bio.lower()
+                    or any(q_value in str(skill).lower() for skill in skills)
+                ):
+                    filtered_items.append(item)
+            items = filtered_items
+
+    users = [_public_user_from_item(item) for item in items]
+    return UsersListResponse(items=users)
 
 
 @router.get("/me", response_model=PrivateUserProfile)

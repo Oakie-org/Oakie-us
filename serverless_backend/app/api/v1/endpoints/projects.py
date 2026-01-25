@@ -13,7 +13,6 @@ from app.models.project import (
     ProjectListRequest,
     ProjectPublic,
     ProjectsCursorResponse,
-    ProjectsListResponse,
 )
 from app.models.timeline import (
     CreateTimelinePostRequest,
@@ -87,72 +86,6 @@ def _project_from_item(item: dict) -> ProjectPublic:
         owner_id=item.get("owner_id"),
         created_at=str(created_at),
         updated_at=str(updated_at),
-    )
-
-
-@router.get("", response_model=ProjectsListResponse)
-def list_projects(
-    filters: ProjectListRequest = Depends(),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-) -> ProjectsListResponse:
-    """
-    List all PUBLIC projects.
-
-    Note: Private projects are excluded from this listing.
-    Members-only projects show in list but may have restricted detail access.
-    """
-    db = get_projects_db()
-
-    # Base filter: only PROJECT type, exclude PRIVATE visibility
-    filter_expression = Attr("type").eq("PROJECT") & Attr("visibility").ne(
-        ProjectVisibility.PRIVATE.value
-    )
-
-    if filters.status:
-        filter_expression = filter_expression & Attr("status").eq(filters.status)
-    if filters.category:
-        filter_expression = filter_expression & Attr("category").eq(filters.category)
-    if filters.city:
-        filter_expression = filter_expression & Attr("city").eq(filters.city)
-    if filters.uni:
-        filter_expression = filter_expression & Attr("uni").eq(filters.uni)
-    # Note: tag filter moved to Python layer for partial matching support
-    if filters.owner_id:
-        filter_expression = filter_expression & Attr("owner_id").eq(filters.owner_id)
-    if filters.q:
-        q = filters.q.strip()
-        if q:
-            filter_expression = filter_expression & (
-                Attr("title").contains(q) | Attr("description").contains(q)
-            )
-
-    items = db.scan(filter_expression=filter_expression)
-    projects = [_project_from_item(item) for item in items]
-
-    # Apply partial tag matching in Python layer
-    # This allows "Web" to match "Web3", "Mobile" to match "Mobile App", etc.
-    # Also matches category field for broader filter coverage
-    if filters.tag:
-        tag_lower = filters.tag.lower()
-        projects = [
-            p
-            for p in projects
-            if any(tag_lower in t.lower() for t in p.tags)
-            or tag_lower in p.category.lower()
-        ]
-
-    # Sort by priority (ascending: lower = first), then by created_at (descending: newer = first), then by id
-    projects.sort(key=lambda p: (-p.priority, p.created_at, p.id), reverse=True)
-
-    total = len(projects)
-    start = (page - 1) * page_size
-    end = start + page_size
-    return ProjectsListResponse(
-        items=projects[start:end],
-        total=total,
-        page=page,
-        page_size=page_size,
     )
 
 

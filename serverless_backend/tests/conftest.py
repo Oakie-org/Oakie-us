@@ -107,12 +107,37 @@ def _ensure_projects_table(
 
     client = boto3.client(**kwargs)
 
-    client.create_table(
-        TableName=projects_table_name,
-        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
-        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
-        ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
-    )
+    try:
+        client.create_table(
+            TableName=projects_table_name,
+            AttributeDefinitions=[
+                {"AttributeName": "PK", "AttributeType": "S"},
+                {"AttributeName": "SK", "AttributeType": "S"},
+                {"AttributeName": "type", "AttributeType": "S"},
+                {"AttributeName": "gsi1_sk", "AttributeType": "S"},
+            ],
+            KeySchema=[
+                {"AttributeName": "PK", "KeyType": "HASH"},
+                {"AttributeName": "SK", "KeyType": "RANGE"},
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": "ProjectsByType",
+                    "KeySchema": [
+                        {"AttributeName": "type", "KeyType": "HASH"},
+                        {"AttributeName": "gsi1_sk", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {"ProjectionType": "ALL"},
+                    "ProvisionedThroughput": {
+                        "ReadCapacityUnits": 5,
+                        "WriteCapacityUnits": 5,
+                    },
+                }
+            ],
+            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+        )
+    except client.exceptions.ResourceInUseException:
+        pass
 
     waiter = client.get_waiter("table_exists")
     waiter.wait(TableName=projects_table_name)
@@ -138,5 +163,11 @@ def api_client(
         monkeypatch.setenv("DYNAMODB_ENDPOINT_URL", dynamodb_endpoint_url)
 
     from app.main import app
+    from app.core.security import TokenPayload, get_current_user
+
+    def _test_user() -> TokenPayload:
+        return TokenPayload(sub="test-user", cognito_groups=["creator"])
+
+    app.dependency_overrides[get_current_user] = _test_user
 
     return TestClient(app)

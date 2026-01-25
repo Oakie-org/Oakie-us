@@ -34,13 +34,6 @@ class ProjectPublic(ProjectBase):
     updated_at: str
 
 
-class ProjectsListResponse(BaseModel):
-    items: list[ProjectPublic]
-    total: int
-    page: int
-    page_size: int
-
-
 class ProjectsCursorResponse(BaseModel):
     """Cursor-based pagination response for infinite scroll."""
 

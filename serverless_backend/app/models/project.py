@@ -51,5 +51,5 @@ class ProjectListRequest(BaseModel):
     city: str | None = None
     uni: str | None = None
     tag: str | None = None
-    q: str | None = None
+    title: str | None = None
     owner_id: str | None = None

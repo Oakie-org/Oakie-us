@@ -17,7 +17,7 @@ _尽管核心使用 Cognito，我们在 API 层做一层轻量封装以保持前
 
 ## 3. 项目 (Projects)
 
-- `GET /projects`: 搜索与列表. 筛选: `category`, `stage`, `city`.
+- `GET /projects/cursor`: 搜索与列表（游标分页）. 筛选: `category`, `stage`, `city`, `title`, `tag`.
 - `POST /projects`: 创建项目. Body: `{ title, description, category, tags[], city, stage, ... }`.
 - `GET /projects/{id}`: 项目详情. 包含 `owner` 摘要.
 - `PATCH /projects/{id}`: 编辑信息.
@@ -25,7 +25,7 @@ _尽管核心使用 Cognito，我们在 API 层做一层轻量封装以保持前
 
 ## 4. 用户 (Users)
 
-- `GET /users`: 搜索用户（查询参数：`q`）。
+- `GET /users`: 搜索用户（查询参数：`name`, `nickname`, `bio`, `location`, `uni`, `skill`）。
 - `GET /users/{id}`: 公开资料 (昵称, 头像, 头衔, 简介, 技能).
 - `GET /users/me`: 个人完整资料 (私有).
 - `PATCH /users/me`: 更新资料.

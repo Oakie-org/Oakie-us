@@ -20,13 +20,6 @@ type ApiProject = {
   updated_at?: string;
 };
 
-type ProjectsListResponse = {
-  items: ApiProject[];
-  total: number;
-  page: number;
-  page_size: number;
-};
-
 type ApiUser = {
   sub: string;
   name?: string | null;
@@ -122,6 +115,15 @@ export type UserSearchResult = {
   avatarUrl?: string;
 };
 
+export type UserFilters = {
+  name?: string;
+  nickname?: string;
+  bio?: string;
+  location?: string;
+  uni?: string;
+  skill?: string;
+};
+
 function toUserSearchResult(apiUser: ApiUser): UserSearchResult {
   return {
     id: apiUser.sub,
@@ -140,35 +142,11 @@ export type ProjectFilters = {
   city?: string;
   uni?: string;
   tag?: string;
-  q?: string;
+  title?: string;
   owner_id?: string;
   page?: number;
   page_size?: number;
 };
-
-export async function listProjects(
-  filters?: ProjectFilters,
-): Promise<Project[]> {
-  // Build query string from filters
-  const params = new URLSearchParams();
-  if (filters) {
-    if (filters.status) params.set("status", filters.status);
-    if (filters.category) params.set("category", filters.category);
-    if (filters.city) params.set("city", filters.city);
-    if (filters.uni) params.set("uni", filters.uni);
-    if (filters.tag) params.set("tag", filters.tag);
-    if (filters.q) params.set("q", filters.q);
-    if (filters.owner_id) params.set("owner_id", filters.owner_id);
-    if (filters.page) params.set("page", String(filters.page));
-    if (filters.page_size) params.set("page_size", String(filters.page_size));
-  }
-
-  const queryString = params.toString();
-  const path = queryString ? `/projects?${queryString}` : "/projects";
-
-  const data = await requestJson<ProjectsListResponse>(path);
-  return data.items.map(toProject);
-}
 
 export async function getProject(projectId: string): Promise<Project> {
   const data = await requestJson<ApiProject>(`/projects/${projectId}`);
@@ -199,9 +177,18 @@ export async function createProject(payload: CreateProjectPayload) {
   return toProject(data);
 }
 
-export async function listUsers(query?: string): Promise<UserSearchResult[]> {
+export async function listUsers(
+  filters?: UserFilters,
+): Promise<UserSearchResult[]> {
   const params = new URLSearchParams();
-  if (query) params.set("q", query);
+  if (filters) {
+    if (filters.name) params.set("name", filters.name);
+    if (filters.nickname) params.set("nickname", filters.nickname);
+    if (filters.bio) params.set("bio", filters.bio);
+    if (filters.location) params.set("location", filters.location);
+    if (filters.uni) params.set("uni", filters.uni);
+    if (filters.skill) params.set("skill", filters.skill);
+  }
 
   const queryString = params.toString();
   const path = queryString ? `/users?${queryString}` : "/users";
@@ -246,7 +233,7 @@ export async function listProjectsCursor(
     if (filters.city) params.set("city", filters.city);
     if (filters.uni) params.set("uni", filters.uni);
     if (filters.tag) params.set("tag", filters.tag);
-    if (filters.q) params.set("q", filters.q);
+    if (filters.title) params.set("title", filters.title);
     if (filters.owner_id) params.set("owner_id", filters.owner_id);
     if (filters.cursor) params.set("cursor", filters.cursor);
     if (filters.page_size) params.set("page_size", String(filters.page_size));

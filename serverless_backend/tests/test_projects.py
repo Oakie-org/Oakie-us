@@ -73,7 +73,7 @@ def test_list_projects_filters(api_client):
     assert any(p["title"] == "Alpha" for p in tagged)
     assert all("Python" in (p.get("tags") or []) for p in tagged)
 
-    q_response = api_client.get("/api/v1/projects/cursor?page_size=50&q=media")
+    q_response = api_client.get("/api/v1/projects/cursor?page_size=50&title=Beta")
     assert q_response.status_code == 200
     q_items = q_response.json()["items"]
     assert any(p["title"] == "Beta" for p in q_items)

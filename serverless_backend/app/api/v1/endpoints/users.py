@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from boto3.dynamodb.conditions import Attr
 from app.core.security import get_current_user, TokenPayload
 from app.db.dynamodb import get_users_db
 from app.models.user import (
     PrivateUserProfile,
     PublicUserProfile,
+    UsersListRequest,
     UserProfileUpdate,
     UsersListResponse,
 )
@@ -36,31 +37,48 @@ def _public_user_from_item(item: dict) -> PublicUserProfile:
 
 @router.get("", response_model=UsersListResponse)
 def list_users(
-    q: str | None = Query(None, description="Search query"),
+    filters: UsersListRequest = Depends(),
 ) -> UsersListResponse:
     """
     List users, optionally filtered by a search query.
     """
     db = get_users_db()
-    items = db.scan(filter_expression=Attr("type").eq("USER"))
+    filter_expression = Attr("type").eq("USER")
+    if filters.name:
+        name_value = filters.name.strip()
+        if name_value:
+            filter_expression &= Attr("name").contains(name_value) | Attr(
+                "nickname"
+            ).contains(name_value)
+    if filters.nickname:
+        nickname_value = filters.nickname.strip()
+        if nickname_value:
+            filter_expression &= Attr("nickname").contains(nickname_value)
+    if filters.bio:
+        bio_value = filters.bio.strip()
+        if bio_value:
+            filter_expression &= Attr("bio").contains(bio_value)
+    if filters.skill:
+        skill_value = filters.skill.strip()
+        if skill_value:
+            filter_expression &= Attr("skills").contains(skill_value)
 
-    if q:
-        q_value = q.strip().lower()
-        if q_value:
-            filtered_items: list[dict] = []
-            for item in items:
-                name = str(item.get("name") or "")
-                nickname = str(item.get("nickname") or "")
-                bio = str(item.get("bio") or "")
-                skills = item.get("skills") or []
-                if (
-                    q_value in name.lower()
-                    or q_value in nickname.lower()
-                    or q_value in bio.lower()
-                    or any(q_value in str(skill).lower() for skill in skills)
-                ):
-                    filtered_items.append(item)
-            items = filtered_items
+    items = db.scan(filter_expression=filter_expression)
+
+    if filters.location or filters.uni:
+        location_value = filters.location.strip() if filters.location else None
+        uni_value = filters.uni.strip() if filters.uni else None
+        filtered_items: list[dict] = []
+        for item in items:
+            params = item.get("params") or {}
+            item_location = item.get("location") or params.get("city") or ""
+            item_uni = item.get("uni") or params.get("uni") or ""
+            if location_value and location_value not in str(item_location):
+                continue
+            if uni_value and uni_value not in str(item_uni):
+                continue
+            filtered_items.append(item)
+        items = filtered_items
 
     users = [_public_user_from_item(item) for item in items]
     return UsersListResponse(items=users)

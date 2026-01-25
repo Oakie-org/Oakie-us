@@ -4,7 +4,11 @@ import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { listProjects, listUsers, type UserSearchResult } from "@/lib/api";
+import {
+  listProjectsCursor,
+  listUsers,
+  type UserSearchResult,
+} from "@/lib/api";
 import type { Project } from "@/types";
 import {
   CommandDialog,
@@ -60,13 +64,13 @@ const SearchDialog = ({ defaultOpen = false, trigger, className }: Props) => {
     const requestId = (requestIdRef.current += 1);
 
     try {
-      const [projects, users] = await Promise.all([
-        listProjects({ q: query, page: 1, page_size: 5 }),
-        listUsers(query),
+      const [projectsResponse, users] = await Promise.all([
+        listProjectsCursor({ title: query, page_size: 5 }),
+        listUsers({ name: query }),
       ]);
 
       if (requestId !== requestIdRef.current) return;
-      setProjectResults(projects);
+      setProjectResults(projectsResponse.items);
       setUserResults(users.slice(0, 5));
     } catch (error) {
       if (requestId !== requestIdRef.current) return;

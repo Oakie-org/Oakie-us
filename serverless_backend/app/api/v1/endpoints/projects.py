@@ -142,9 +142,13 @@ def list_projects_cursor(
         filter_expression &= Attr("uni").eq(filters.uni)
     if filters.owner_id:
         filter_expression &= Attr("owner_id").eq(filters.owner_id)
+    if filters.title:
+        title_value = filters.title.strip()
+        if title_value:
+            filter_expression &= Attr("title").contains(title_value)
 
     # Check if we need post-query (Python-side) filtering
-    needs_post_filter = bool(filters.q or filters.tag)
+    needs_post_filter = bool(filters.tag)
 
     # Decode initial cursor
     current_cursor_key = None
@@ -192,15 +196,7 @@ def list_projects_cursor(
         # Convert to ProjectPublic objects
         projects = [_project_from_item(item) for item in items]
 
-        # Apply post-query filtering (text search & tags)
-        if filters.q:
-            q = filters.q.strip().lower()
-            projects = [
-                p
-                for p in projects
-                if q in p.title.lower() or q in p.description.lower()
-            ]
-
+        # Apply post-query filtering (tags)
         if filters.tag:
             tag_lower = filters.tag.lower()
             # Match tag in either tags array OR category field (partial match)

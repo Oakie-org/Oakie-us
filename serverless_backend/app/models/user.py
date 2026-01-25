@@ -34,5 +34,14 @@ class UserProfileUpdate(UserProfile):
     pass
 
 
+class UsersListRequest(BaseModel):
+    name: Optional[str] = None
+    nickname: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    uni: Optional[str] = None
+    skill: Optional[str] = None
+
+
 class UsersListResponse(BaseModel):
     items: list[PublicUserProfile]

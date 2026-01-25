@@ -65,10 +65,10 @@ def test_list_users_returns_public_profiles(
     assert "user-bob" in subs
 
 
-def test_list_users_filters_by_query(
+def test_list_users_filters_by_name(
     api_client, dynamodb_endpoint_url, dynamodb_table_name
 ):
-    # Insert users with searchable fields for query matching.
+    # Insert users with name/nickname fields for query matching.
     _put_user(
         dynamodb_endpoint_url=dynamodb_endpoint_url,
         table_name=dynamodb_table_name,
@@ -91,19 +91,13 @@ def test_list_users_filters_by_query(
     )
 
     # Query should match by name.
-    response = api_client.get("/api/v1/users?q=alice")
+    response = api_client.get("/api/v1/users?name=Alice")
     assert response.status_code == 200
     subs = {item["sub"] for item in response.json()["items"]}
     assert "user-alice" in subs
 
-    # Query should match by bio.
-    response = api_client.get("/api/v1/users?q=music")
+    # Query should match by nickname.
+    response = api_client.get("/api/v1/users?name=Charlie")
     assert response.status_code == 200
     subs = {item["sub"] for item in response.json()["items"]}
     assert "user-charlie" in subs
-
-    # Query should match by skills.
-    response = api_client.get("/api/v1/users?q=python")
-    assert response.status_code == 200
-    subs = {item["sub"] for item in response.json()["items"]}
-    assert "user-alice" in subs

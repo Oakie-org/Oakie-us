@@ -17,7 +17,7 @@ _Although Cognito is used, we wrap basic flows in our API for frontend consisten
 
 ## 3. Projects Domain
 
-- `GET /projects`: Search & List. Filters: `category`, `stage`, `city`.
+- `GET /projects/cursor`: Search & List (cursor-based). Filters: `category`, `stage`, `city`, `title`, `tag`.
 - `POST /projects`: Create Project. Body: `{ title, description, category, tags[], city, stage, ... }`.
 - `GET /projects/{id}`: Detail. Includes `owner` summary.
 - `PATCH /projects/{id}`: Edit details.
@@ -25,7 +25,7 @@ _Although Cognito is used, we wrap basic flows in our API for frontend consisten
 
 ## 4. Users Domain
 
-- `GET /users`: Search users (query param: `q`).
+- `GET /users`: Search users (query params: `name`, `nickname`, `bio`, `location`, `uni`, `skill`).
 - `GET /users/{id}`: Public profile (nickname, avatar, headline, bio, skills).
 - `GET /users/me`: Private full profile.
 - `PATCH /users/me`: Update profile fields.

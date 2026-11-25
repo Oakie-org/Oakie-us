@@ -1,0 +1,13 @@
+line-length = 100
+target-version = "py311"
+extend-exclude = ["archived_java_impl", "serverless_backend/venv"]
+
+[lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008"]  # FastAPI's Depends() in argument defaults
+
+[lint.isort]
+known-first-party = ["app", "tests"]
+
+[lint.per-file-ignores]
+"serverless_backend/app/db/schema.py" = ["E501"]  # key-layout table in the docstring

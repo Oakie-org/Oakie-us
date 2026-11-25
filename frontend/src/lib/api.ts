@@ -1,223 +1,116 @@
-import type { Project } from "@/types";
+/**
+ * HTTP client for the Oakie API.
+ *
+ * The auth layer registers a token getter and a session-expired handler here,
+ * so data hooks never need to know how the user signed in.
+ */
 
-type ApiProject = {
-  id: string;
-  title: string;
-  subtitle?: string | null;
-  description: string;
-  tags?: string[];
-  status: Project["status"];
-  category?: string;
-  uni?: string;
-  city?: string;
-  current_members?: number;
-  max_members?: number;
-  likes?: number;
-  follows?: number;
-  image?: string;
-  image_url?: string | null;
-  created_at?: string;
-  updated_at?: string;
-};
+const BASE =
+  (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "") + "/api/v1";
 
-type ProjectsListResponse = {
-  items: ApiProject[];
-  total: number;
-  page: number;
-  page_size: number;
-};
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: string;
 
-type CreateProjectPayload = {
-  title: string;
-  subtitle?: string;
-  description: string;
-  tags: string[];
-  status?: Project["status"];
-  category?: string;
-  uni?: string;
-  city?: string;
-  maxMembers?: number;
-  image?: string;
-  imageUrl?: string;
-};
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)
-  ?.replace(/\/+$/, "")
-  .trim();
-
-function apiUrl(path: string) {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const base = API_BASE_URL || "";
-  return `${base}/api/v1${normalizedPath}`;
+  constructor(status: number, message: string, code = "error") {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
 }
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(apiUrl(path), {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-  });
+type TokenGetter = () => Promise<string | null>;
 
-  if (!response.ok) {
-    if (response.status >= 500) {
-      window.dispatchEvent(new Event("server-error"));
+let getToken: TokenGetter = async () => null;
+let onSessionExpired: () => void = () => {};
+
+export function configureApi(options: {
+  getToken: TokenGetter;
+  onSessionExpired: () => void;
+}) {
+  getToken = options.getToken;
+  onSessionExpired = options.onSessionExpired;
+}
+
+type Query = Record<string, string | number | boolean | null | undefined>;
+
+function buildUrl(path: string, query?: Query) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value !== undefined && value !== null && value !== "")
+      params.set(key, String(value));
+  }
+  const search = params.toString();
+  return `${BASE}${path}${search ? `?${search}` : ""}`;
+}
+
+async function describeFailure(response: Response): Promise<ApiError> {
+  let message = "Something went wrong. Please try again.";
+  let code = "error";
+  try {
+    const body = await response.json();
+    if (typeof body.detail === "string") message = body.detail;
+    else if (Array.isArray(body.detail) && body.detail[0]?.msg) {
+      const first = body.detail[0];
+      const field = Array.isArray(first.loc)
+        ? first.loc[first.loc.length - 1]
+        : "";
+      message = field ? `${field}: ${first.msg}` : first.msg;
     }
-    const errorText = await response.text().catch(() => "");
-    throw new Error(
-      `API ${response.status} ${response.statusText}${
-        errorText ? `: ${errorText}` : ""
-      }`,
+    if (typeof body.code === "string") code = body.code;
+  } catch {
+    // Non-JSON error body: keep the generic message.
+  }
+  return new ApiError(response.status, message, code);
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  options: { query?: Query; body?: unknown } = {},
+): Promise<T> {
+  const token = await getToken();
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (options.body !== undefined) headers["Content-Type"] = "application/json";
+
+  let response: Response;
+  try {
+    response = await fetch(buildUrl(path, options.query), {
+      method,
+      headers,
+      body:
+        options.body === undefined ? undefined : JSON.stringify(options.body),
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "Can't reach Oakie right now. Check your connection and try again.",
+      "network",
     );
   }
 
+  if (!response.ok) {
+    if (response.status === 401 && token) onSessionExpired();
+    throw await describeFailure(response);
+  }
+  if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }
 
-function toProject(apiProject: ApiProject): Project {
-  return {
-    id: apiProject.id,
-    title: apiProject.title,
-    subtitle: apiProject.subtitle ?? undefined,
-    description: apiProject.description,
-    tags: apiProject.tags ?? [],
-    status: apiProject.status,
-    currentMembers: apiProject.current_members ?? 1,
-    maxMembers: apiProject.max_members ?? 5,
-    likes: apiProject.likes ?? 0,
-    follows: apiProject.follows ?? 0,
-    category: apiProject.category ?? "General",
-    uni: apiProject.uni ?? "",
-    city: apiProject.city ?? "",
-    image:
-      apiProject.image ??
-      "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 100%)",
-    imageUrl: apiProject.image_url ?? undefined,
-    membersAvatars: [],
-    members: [],
-    requiredSkills: [],
-  };
-}
-
-// Filter parameters matching backend ProjectListRequest
-export type ProjectFilters = {
-  status?: "Recruiting" | "In Progress" | "Completed" | "Idea" | "On Hold";
-  category?: string;
-  city?: string;
-  uni?: string;
-  tag?: string;
-  q?: string;
-  owner_id?: string;
-  page?: number;
-  page_size?: number;
+export const api = {
+  get: <T>(path: string, query?: Query) => request<T>("GET", path, { query }),
+  post: <T>(path: string, body?: unknown) =>
+    request<T>("POST", path, { body: body ?? {} }),
+  put: <T>(path: string, body?: unknown) => request<T>("PUT", path, { body }),
+  patch: <T>(path: string, body: unknown) =>
+    request<T>("PATCH", path, { body }),
+  delete: <T>(path: string) => request<T>("DELETE", path),
 };
 
-export async function listProjects(
-  filters?: ProjectFilters,
-): Promise<Project[]> {
-  // Build query string from filters
-  const params = new URLSearchParams();
-  if (filters) {
-    if (filters.status) params.set("status", filters.status);
-    if (filters.category) params.set("category", filters.category);
-    if (filters.city) params.set("city", filters.city);
-    if (filters.uni) params.set("uni", filters.uni);
-    if (filters.tag) params.set("tag", filters.tag);
-    if (filters.q) params.set("q", filters.q);
-    if (filters.owner_id) params.set("owner_id", filters.owner_id);
-    if (filters.page) params.set("page", String(filters.page));
-    if (filters.page_size) params.set("page_size", String(filters.page_size));
-  }
-
-  const queryString = params.toString();
-  const path = queryString ? `/projects?${queryString}` : "/projects";
-
-  const data = await requestJson<ProjectsListResponse>(path);
-  return data.items.map(toProject);
-}
-
-export async function getProject(projectId: string): Promise<Project> {
-  const data = await requestJson<ApiProject>(`/projects/${projectId}`);
-  return toProject(data);
-}
-
-export async function createProject(payload: CreateProjectPayload) {
-  const apiPayload = {
-    title: payload.title,
-    subtitle: payload.subtitle,
-    description: payload.description,
-    tags: payload.tags,
-    status: payload.status ?? "Recruiting",
-    category: payload.category ?? "General",
-    uni: payload.uni ?? "",
-    city: payload.city ?? "",
-    max_members: payload.maxMembers ?? 5,
-    image:
-      payload.image ??
-      "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 100%)",
-    image_url: payload.imageUrl ?? null,
-  };
-
-  const data = await requestJson<ApiProject>("/projects", {
-    method: "POST",
-    body: JSON.stringify(apiPayload),
-  });
-  return toProject(data);
-}
-
-// ============================================================================
-// Cursor-based Pagination (for infinite scroll)
-// ============================================================================
-
-export type ProjectCursorFilters = Omit<
-  ProjectFilters,
-  "page" | "page_size"
-> & {
-  cursor?: string | null;
-  page_size?: number;
-};
-
-export type ProjectsCursorResponse = {
-  items: Project[];
-  next_cursor: string | null;
-  has_more: boolean;
-  page_size: number;
-};
-
-type ApiProjectsCursorResponse = {
-  items: ApiProject[];
-  next_cursor: string | null;
-  has_more: boolean;
-  page_size: number;
-};
-
-export async function listProjectsCursor(
-  filters?: ProjectCursorFilters,
-): Promise<ProjectsCursorResponse> {
-  const params = new URLSearchParams();
-  if (filters) {
-    if (filters.status) params.set("status", filters.status);
-    if (filters.category) params.set("category", filters.category);
-    if (filters.city) params.set("city", filters.city);
-    if (filters.uni) params.set("uni", filters.uni);
-    if (filters.tag) params.set("tag", filters.tag);
-    if (filters.q) params.set("q", filters.q);
-    if (filters.owner_id) params.set("owner_id", filters.owner_id);
-    if (filters.cursor) params.set("cursor", filters.cursor);
-    if (filters.page_size) params.set("page_size", String(filters.page_size));
-  }
-
-  const queryString = params.toString();
-  const path = queryString
-    ? `/projects/cursor?${queryString}`
-    : "/projects/cursor";
-
-  const data = await requestJson<ApiProjectsCursorResponse>(path);
-  return {
-    items: data.items.map(toProject),
-    next_cursor: data.next_cursor,
-    has_more: data.has_more,
-    page_size: data.page_size,
-  };
+export function errorMessage(error: unknown): string {
+  return error instanceof Error
+    ? error.message
+    : "Something went wrong. Please try again.";
 }

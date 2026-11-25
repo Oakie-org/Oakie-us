@@ -1,142 +1,103 @@
-from __future__ import annotations
+"""Test harness: the real app against an in-memory DynamoDB (moto).
 
-import shutil
-from typing import TYPE_CHECKING, Generator
+No Docker and no AWS account are needed. Auth runs in local mode, so tests mint
+tokens for whichever member they want to act as.
+"""
 
-import boto3
-import pytest
-from fastapi.testclient import TestClient
-from moto import mock_aws
+import os
 
+os.environ.update(
+    AUTH_MODE="local",
+    AWS_REGION="us-west-2",
+    AWS_DEFAULT_REGION="us-west-2",
+    AWS_ACCESS_KEY_ID="test",
+    AWS_SECRET_ACCESS_KEY="test",
+    TABLE_NAME="Oakie-Test",
+    UPLOADS_BUCKET_NAME="oakie-test-uploads",
+)
+os.environ.pop("AWS_ENDPOINT_URL", None)
 
-if TYPE_CHECKING:
-    from testcontainers.core.container import DockerContainer
+import boto3  # noqa: E402
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from moto import mock_aws  # noqa: E402
 
-
-def _try_start_dynamodb_local() -> tuple["DockerContainer", str] | None:
-    if not shutil.which("docker"):
-        return None
-
-    from testcontainers.core.container import DockerContainer
-
-    container = None
-    try:
-        container = DockerContainer("amazon/dynamodb-local:latest").with_exposed_ports(
-            8000
-        )
-        container.start()
-        host = container.get_container_host_ip()
-        port = container.get_exposed_port(8000)
-        return container, f"http://{host}:{port}"
-    except Exception:
-        if container is not None:
-            try:
-                container.stop()
-            except Exception:
-                pass
-        return None
+from app.core.config import settings  # noqa: E402
+from app.core.security import LocalTokenVerifier, Principal  # noqa: E402
+from app.db.schema import table_definition  # noqa: E402
+from app.db.table import get_table  # noqa: E402
+from app.main import app  # noqa: E402
+from app.services import platform  # noqa: E402
 
 
-@pytest.fixture(scope="session")
-def dynamodb_endpoint_url() -> Generator[str | None, None, None]:
-    """
-    Prefer real DynamoDB Local (Docker). Fall back to Moto when Docker isn't available.
-    """
-    started = _try_start_dynamodb_local()
-    if started:
-        container, endpoint_url = started
-        try:
-            yield endpoint_url
-        finally:
-            container.stop()
-        return
-
+@pytest.fixture(autouse=True)
+def aws():
+    """A fresh table and bucket for every test."""
     with mock_aws():
-        yield None
-
-
-@pytest.fixture(scope="session")
-def dynamodb_table_name() -> str:
-    return "Oakie-Users-Test"
-
-
-@pytest.fixture(scope="session")
-def projects_table_name() -> str:
-    return "Oakie-Projects-Test"
-
-
-@pytest.fixture(scope="session")
-def _ensure_table(dynamodb_endpoint_url: str | None, dynamodb_table_name: str) -> None:
-    kwargs: dict = {
-        "service_name": "dynamodb",
-        "region_name": "us-west-2",
-        "aws_access_key_id": "test",
-        "aws_secret_access_key": "test",
-    }
-    if dynamodb_endpoint_url is not None:
-        kwargs["endpoint_url"] = dynamodb_endpoint_url
-
-    client = boto3.client(**kwargs)
-
-    try:
-        client.create_table(
-            TableName=dynamodb_table_name,
-            AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
-            KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
-            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+        get_table.cache_clear()
+        platform._s3.cache_clear()
+        platform.reset_cache()
+        boto3.client("dynamodb").create_table(**table_definition(settings.TABLE_NAME))
+        boto3.client("s3").create_bucket(
+            Bucket=settings.UPLOADS_BUCKET_NAME,
+            CreateBucketConfiguration={"LocationConstraint": settings.AWS_REGION},
         )
-    except client.exceptions.ResourceInUseException:
-        pass
-
-    waiter = client.get_waiter("table_exists")
-    waiter.wait(TableName=dynamodb_table_name)
+        yield
 
 
-@pytest.fixture(scope="session")
-def _ensure_projects_table(
-    dynamodb_endpoint_url: str | None, projects_table_name: str
-) -> None:
-    kwargs: dict = {
-        "service_name": "dynamodb",
-        "region_name": "us-west-2",
-        "aws_access_key_id": "test",
-        "aws_secret_access_key": "test",
-    }
-    if dynamodb_endpoint_url is not None:
-        kwargs["endpoint_url"] = dynamodb_endpoint_url
+class Member:
+    """A signed-in member with a ready-to-use client."""
 
-    client = boto3.client(**kwargs)
+    def __init__(self, name: str, groups: list[str] | None = None):
+        self.id = f"user-{name.lower()}"
+        self.name = name
+        principal = Principal(
+            sub=self.id, email=f"{name.lower()}@example.edu", name=name, groups=groups or ["user"]
+        )
+        token = LocalTokenVerifier(settings.LOCAL_JWT_SECRET).issue(principal, 60)
+        self.client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
+        # First authenticated request provisions the profile.
+        assert self.client.get("/api/v1/users/me").status_code == 200
 
-    client.create_table(
-        TableName=projects_table_name,
-        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
-        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
-        ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
-    )
-
-    waiter = client.get_waiter("table_exists")
-    waiter.wait(TableName=projects_table_name)
+    def __getattr__(self, method: str):
+        return getattr(self.client, method)
 
 
-@pytest.fixture()
-def api_client(
-    monkeypatch: pytest.MonkeyPatch,
-    dynamodb_endpoint_url: str | None,
-    dynamodb_table_name: str,
-    projects_table_name: str,
-    _ensure_table: None,
-    _ensure_projects_table: None,
-) -> TestClient:
-    monkeypatch.setenv("AWS_REGION", "us-west-2")
-    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test")
-    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "test")
-    monkeypatch.setenv("USERS_TABLE_NAME", dynamodb_table_name)
-    monkeypatch.setenv("PROJECTS_TABLE_NAME", projects_table_name)
-    if dynamodb_endpoint_url is None:
-        monkeypatch.delenv("DYNAMODB_ENDPOINT_URL", raising=False)
-    else:
-        monkeypatch.setenv("DYNAMODB_ENDPOINT_URL", dynamodb_endpoint_url)
-
-    from app.main import app
-
+@pytest.fixture
+def anon() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture
+def ada() -> Member:
+    return Member("Ada")
+
+
+@pytest.fixture
+def ben() -> Member:
+    return Member("Ben")
+
+
+@pytest.fixture
+def cy() -> Member:
+    return Member("Cy")
+
+
+PROJECT = {
+    "title": "Campus Quant Lab",
+    "subtitle": "Backtest student-run strategies",
+    "description": "We research and paper-trade factor strategies.",
+    "category": "Finance & Quant",
+    "tags": ["Python", "Quant"],
+    "city": "New York, NY",
+    "uni": "NYU",
+    "max_members": 3,
+    "open_roles": [{"title": "Backend engineer", "skills": ["Backend"]}],
+}
+
+
+@pytest.fixture
+def project(ada: Member) -> dict:
+    response = ada.post("/api/v1/projects", json=PROJECT)
+    assert response.status_code == 201, response.text
+    return response.json()

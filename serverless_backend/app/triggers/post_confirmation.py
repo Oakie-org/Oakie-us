@@ -1,119 +1,52 @@
-"""
-Cognito PostConfirmation Trigger.
-Triggered after a user is confirmed (SignUp or ConfirmSignUp).
-Syncs user attributes to DynamoDB and assigns default Cognito group.
+"""Cognito PostConfirmation trigger.
+
+Runs once a sign-up is confirmed: provisions the member's profile and adds them
+to the default `user` group. It must always return the event, and must never
+raise, or Cognito would block the registration.
 """
 
-import os
-from datetime import datetime, timezone
+import logging
 from typing import Any
 
 import boto3
 
-# Initialize clients outside handler for reuse across invocations
-dynamodb = boto3.resource("dynamodb")
-cognito = boto3.client("cognito-idp")
+from app.core.security import GlobalRole
+from app.services import users
 
-table_name = os.environ.get("USER_TABLE_NAME")
-table = dynamodb.Table(table_name) if table_name else None
-
-
-def _iso_now() -> str:
-    """Return current UTC time in ISO format."""
-    return datetime.now(timezone.utc).isoformat()
+logger = logging.getLogger(__name__)
+_cognito = None
 
 
-def _add_user_to_default_group(user_pool_id: str, username: str) -> bool:
-    """
-    Add user to the 'user' Cognito group.
-    Returns True on success, False on failure (non-blocking).
-    """
-    if not user_pool_id or not username:
-        print("Warning: Missing user_pool_id or username, skipping group assignment")
-        return False
-
-    try:
-        cognito.admin_add_user_to_group(
-            UserPoolId=user_pool_id,
-            Username=username,
-            GroupName="user",  # Default group for all new users
-        )
-        print(f"Successfully added user '{username}' to 'user' group")
-        return True
-    except cognito.exceptions.ResourceNotFoundException:
-        print("Warning: 'user' group not found in Cognito. Please deploy SAM template.")
-        return False
-    except Exception as e:
-        # Log but don't fail - group assignment is non-critical
-        print(f"Warning: Failed to add user to group: {e}")
-        return False
+def _add_to_default_group(user_pool_id: str, username: str) -> None:
+    global _cognito
+    if _cognito is None:
+        _cognito = boto3.client("cognito-idp")
+    _cognito.admin_add_user_to_group(
+        UserPoolId=user_pool_id, Username=username, GroupName=GlobalRole.USER.value
+    )
 
 
 def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
-    """
-    Cognito PostConfirmation Trigger handler.
-
-    Actions:
-    1. Sync user to DynamoDB with global_role field
-    2. Add user to 'user' Cognito group (for JWT cognito:groups claim)
-    """
-    print(f"PostConfirmation event: {event}")
-
-    # 1. Validate trigger source
-    trigger_source = event.get("triggerSource")
-    if trigger_source not in [
-        "PostConfirmation_ConfirmSignUp",
-        "PostConfirmation_ConfirmForgotPassword",
-    ]:
-        # Not a confirmation event, pass through
+    if event.get("triggerSource") != "PostConfirmation_ConfirmSignUp":
         return event
 
-    if not table:
-        print("Error: USER_TABLE_NAME environment variable not set")
+    attributes = event.get("request", {}).get("userAttributes", {})
+    user_id = attributes.get("sub")
+    if not user_id:
+        logger.error("PostConfirmation event without a sub")
         return event
-
-    # 2. Extract user attributes
-    # UserPoolId is always in the event from Cognito
-    user_pool_id = event.get("userPoolId")
-    request = event.get("request", {})
-    user_attrs = request.get("userAttributes", {})
-
-    user_sub = user_attrs.get("sub")
-    email = user_attrs.get("email")
-    cognito_username = event.get("userName")
-    nickname = user_attrs.get("nickname") or user_attrs.get("name") or "New User"
-
-    if not user_sub or not email:
-        print("Error: Missing sub or email in event")
-        return event
-
-    # 3. Sync to DynamoDB
-    now = _iso_now()
-    item = {
-        "PK": f"USER#{user_sub}",
-        "type": "USER",
-        "email": email,
-        "nickname": nickname,
-        "email_verified": user_attrs.get("email_verified", "false"),
-        "cognito_username": cognito_username,
-        "global_role": "user",  # Default role for all new users
-        "created_at": now,
-        "updated_at": now,
-    }
 
     try:
-        # Use condition to prevent overwriting existing users (idempotency)
-        table.put_item(Item=item, ConditionExpression="attribute_not_exists(PK)")
-        print(f"Successfully synced user {user_sub} to DynamoDB")
-    except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
-        print(f"User {user_sub} already exists in DynamoDB. Skipping sync.")
-    except Exception as e:
-        # Log but don't block user registration
-        print(f"Error syncing user to DynamoDB: {e}")
+        users.provision(
+            user_id, attributes.get("email"), attributes.get("name") or attributes.get("nickname")
+        )
+    except Exception:
+        # The API self-heals a missing profile on first request.
+        logger.exception("Could not provision profile for %s", user_id)
 
-    # 4. Add user to default Cognito group
-    if user_pool_id and cognito_username:
-        _add_user_to_default_group(user_pool_id, cognito_username)
+    try:
+        _add_to_default_group(event["userPoolId"], event["userName"])
+    except Exception:
+        logger.exception("Could not add %s to the default group", user_id)
 
-    # 5. Return event to Cognito (required)
     return event

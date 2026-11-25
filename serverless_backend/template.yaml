@@ -1,7 +1,19 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Oakie Backend (FastAPI + Lambda + DynamoDB + Cognito)
+  Oakie backend: FastAPI on Lambda behind an HTTP API, one DynamoDB table,
+  Cognito for identity and S3 for uploads.
+
+Parameters:
+  AllowedOrigins:
+    Type: CommaDelimitedList
+    Default: "http://localhost:5173"
+    Description: Web origins allowed to call the API and upload to the bucket.
+  ProjectCreationMinRole:
+    Type: String
+    Default: user
+    AllowedValues: [user, creator, moderator, admin]
+    Description: Lowest Cognito group allowed to publish a project.
 
 Globals:
   Function:
@@ -10,80 +22,62 @@ Globals:
     Runtime: python3.11
     Architectures:
       - x86_64
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref OakieTable
 
 Resources:
   # -------------------------------------------------------------------------
-  # DynamoDB Table (Users)
+  # DynamoDB: single table. Key layout is documented in app/db/schema.py and
+  # must stay in sync with it.
   # -------------------------------------------------------------------------
   OakieTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
-      TableName: Oakie-Users
-      AttributeDefinitions:
-        - AttributeName: PK
-          AttributeType: S
-      KeySchema:
-        - AttributeName: PK
-          KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-
-  # -------------------------------------------------------------------------
-  # DynamoDB Table (Projects)
-  # -------------------------------------------------------------------------
-  OakieProjectsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: Oakie-Projects-v2
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
-        - AttributeName: PK
-          AttributeType: S
-        - AttributeName: SK
-          AttributeType: S
-        - AttributeName: type
-          AttributeType: S
-        - AttributeName: gsi1_sk
-          AttributeType: S
+        - { AttributeName: PK, AttributeType: S }
+        - { AttributeName: SK, AttributeType: S }
+        - { AttributeName: gsi1_pk, AttributeType: S }
+        - { AttributeName: gsi1_sk, AttributeType: S }
+        - { AttributeName: gsi2_pk, AttributeType: S }
+        - { AttributeName: gsi2_sk, AttributeType: S }
       KeySchema:
-        - AttributeName: PK
-          KeyType: HASH
-        - AttributeName: SK
-          KeyType: RANGE
-      BillingMode: PAY_PER_REQUEST
+        - { AttributeName: PK, KeyType: HASH }
+        - { AttributeName: SK, KeyType: RANGE }
       GlobalSecondaryIndexes:
-        - IndexName: ProjectsByType
+        - IndexName: GSI1
           KeySchema:
-            - AttributeName: type
-              KeyType: HASH
-            - AttributeName: gsi1_sk
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+            - { AttributeName: gsi1_pk, KeyType: HASH }
+            - { AttributeName: gsi1_sk, KeyType: RANGE }
+          Projection: { ProjectionType: ALL }
+        - IndexName: GSI2
+          KeySchema:
+            - { AttributeName: gsi2_pk, KeyType: HASH }
+            - { AttributeName: gsi2_sk, KeyType: RANGE }
+          Projection: { ProjectionType: ALL }
 
   # -------------------------------------------------------------------------
-  # S3 Bucket (Uploads - project covers, avatars)
+  # S3: image uploads (browser-direct presigned POST, public read)
   # -------------------------------------------------------------------------
   OakieUploadsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub oakie-uploads-${AWS::AccountId}
       CorsConfiguration:
         CorsRules:
-          - AllowedHeaders:
-              - "*"
-            AllowedMethods:
-              - GET
-              - PUT
-            AllowedOrigins:
-              - "*"
+          - AllowedHeaders: ["*"]
+            AllowedMethods: [GET, POST]
+            AllowedOrigins: !Ref AllowedOrigins
             MaxAge: 3000
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
         BlockPublicPolicy: false
-        IgnorePublicAcls: false
         RestrictPublicBuckets: false
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: BucketOwnerPreferred
 
   OakieUploadsBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -97,76 +91,7 @@ Resources:
             Resource: !Sub ${OakieUploadsBucket.Arn}/*
 
   # -------------------------------------------------------------------------
-  # Lambda Trigger: Post Confirmation (Sync to DDB)
-  # -------------------------------------------------------------------------
-  PostConfirmationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: .
-      Handler: app.triggers.post_confirmation.handler
-      Environment:
-        Variables:
-          USER_TABLE_NAME: !Ref OakieTable
-          # Note: User Pool ID is extracted from the event, not env var
-          # This breaks circular dependency with OakieUserPool
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref OakieTable
-        # Permission to add users to any Cognito group in this account
-        # Using wildcard to avoid circular dependency
-        - Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:AdminAddUserToGroup
-              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*
-
-  # -------------------------------------------------------------------------
-  # Cognito User Pool Groups (Role-Based Access Control)
-  # -------------------------------------------------------------------------
-  # Precedence: lower number = higher priority (appears first in cognito:groups claim)
-
-  SuperAdminGroup:
-    Type: AWS::Cognito::UserPoolGroup
-    Properties:
-      GroupName: super_admin
-      UserPoolId: !Ref OakieUserPool
-      Description: Super administrators with full platform access
-      Precedence: 0
-
-  AdminGroup:
-    Type: AWS::Cognito::UserPoolGroup
-    Properties:
-      GroupName: admin
-      UserPoolId: !Ref OakieUserPool
-      Description: Platform administrators - user and content management
-      Precedence: 1
-
-  ModeratorGroup:
-    Type: AWS::Cognito::UserPoolGroup
-    Properties:
-      GroupName: moderator
-      UserPoolId: !Ref OakieUserPool
-      Description: Content moderators - review projects and handle reports
-      Precedence: 2
-
-  CreatorGroup:
-    Type: AWS::Cognito::UserPoolGroup
-    Properties:
-      GroupName: creator
-      UserPoolId: !Ref OakieUserPool
-      Description: Verified creators - can create and manage projects
-      Precedence: 10
-
-  UserGroup:
-    Type: AWS::Cognito::UserPoolGroup
-    Properties:
-      GroupName: user
-      UserPoolId: !Ref OakieUserPool
-      Description: Standard users - browse and apply to projects
-      Precedence: 100
-
-  # -------------------------------------------------------------------------
-  # Cognito User Pool
+  # Cognito: user pool, web client, role groups, PostConfirmation trigger
   # -------------------------------------------------------------------------
   OakieUserPool:
     Type: AWS::Cognito::UserPool
@@ -174,10 +99,8 @@ Resources:
       UserPoolName: Oakie-UserPool
       LambdaConfig:
         PostConfirmation: !GetAtt PostConfirmationFunction.Arn
-      UsernameAttributes:
-        - email
-      AutoVerifiedAttributes:
-        - email
+      UsernameAttributes: [email]
+      AutoVerifiedAttributes: [email]
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -186,18 +109,52 @@ Resources:
           RequireSymbols: false
           RequireUppercase: true
 
-  # -------------------------------------------------------------------------
-  # Cognito User Pool Domain (For Hosted UI)
-  # -------------------------------------------------------------------------
-  OakieUserPoolDomain:
-    Type: AWS::Cognito::UserPoolDomain
+  OakieUserClient:
+    Type: AWS::Cognito::UserPoolClient
     Properties:
-      # Domain prefix must be unique across AWS region.
-      # Using 'oakie-login-${AWS::AccountId}' to ensure uniqueness.
-      Domain: !Sub oakie-login-${AWS::AccountId}
       UserPoolId: !Ref OakieUserPool
+      ClientName: Oakie-Web
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
 
-  # Permission for Cognito to invoke Lambda
+  # Lower precedence number = higher priority in the cognito:groups claim.
+  SuperAdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { GroupName: super_admin, UserPoolId: !Ref OakieUserPool, Precedence: 0 }
+  AdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { GroupName: admin, UserPoolId: !Ref OakieUserPool, Precedence: 1 }
+  ModeratorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { GroupName: moderator, UserPoolId: !Ref OakieUserPool, Precedence: 2 }
+  CreatorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { GroupName: creator, UserPoolId: !Ref OakieUserPool, Precedence: 10 }
+  UserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { GroupName: user, UserPoolId: !Ref OakieUserPool, Precedence: 100 }
+
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.triggers.post_confirmation.handler
+      Environment:
+        Variables:
+          # The trigger never verifies tokens, but shares the app's settings module.
+          AUTH_MODE: cognito
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OakieTable
+        # The pool is referenced by wildcard to avoid a circular dependency with
+        # OakieUserPool; the trigger reads the pool id from the event.
+        - Statement:
+            - Effect: Allow
+              Action: cognito-idp:AdminAddUserToGroup
+              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*
+
   PostConfirmationInvocationPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -207,88 +164,11 @@ Resources:
       SourceArn: !GetAtt OakieUserPool.Arn
 
   # -------------------------------------------------------------------------
-  # Cognito User Pool Client (Public for Web/Mobile)
-  # -------------------------------------------------------------------------
-  OakieUserClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      UserPoolId: !Ref OakieUserPool
-      ClientName: Oakie-Web
-      GenerateSecret: false # Public client for SPA/Mobile
-      ExplicitAuthFlows:
-        - ALLOW_USER_PASSWORD_AUTH   # For simple password auth (testing)
-        - ALLOW_USER_SRP_AUTH         # For SRP auth (frontend)
-        - ALLOW_REFRESH_TOKEN_AUTH    # For token refresh
-      SupportedIdentityProviders:
-        - COGNITO
-      CallbackURLs:
-        - http://localhost:3000/ # For local dev
-        - https://oakie.com/ # Placeholder for production
-      LogoutURLs:
-        - http://localhost:3000/
-      AllowedOAuthFlows:
-        - code
-        - implicit
-      AllowedOAuthFlowsUserPoolClient: true
-      AllowedOAuthScopes:
-        - email
-        - openid
-        - profile
-
-  # -------------------------------------------------------------------------
-  # Lambda Function (FastAPI Monolith)
-  # -------------------------------------------------------------------------
-  FastAPIFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: .
-      Handler: app.main.handler
-      Environment:
-        Variables:
-          USERS_TABLE_NAME: !Ref OakieTable
-          PROJECTS_TABLE_NAME: !Ref OakieProjectsTable
-          UPLOADS_BUCKET_NAME: !Ref OakieUploadsBucket
-          COGNITO_USER_POOL_ID: !Ref OakieUserPool
-          COGNITO_CLIENT_ID: !Ref OakieUserClient
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref OakieTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref OakieProjectsTable
-        - S3CrudPolicy:
-            BucketName: !Ref OakieUploadsBucket
-      Events:
-        HttpApiEvent:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref OakieApi
-        PublicRoot:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref OakieApi
-            Path: /
-            Method: GET
-            Auth:
-              Authorizer: NONE
-        PublicProjectsList:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref OakieApi
-            Path: /api/v1/projects
-            Method: GET
-            Auth:
-              Authorizer: NONE
-        PublicProjectsDetail:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref OakieApi
-            Path: /api/v1/projects/{id}
-            Method: GET
-            Auth:
-              Authorizer: NONE
-
-  # -------------------------------------------------------------------------
-  # API Gateway (HTTP API)
+  # API: one Lambda serves every route.
+  #
+  # The gateway's JWT authorizer guards everything by default. Routes that
+  # anonymous visitors may read are opened below; the app still verifies any
+  # token it is sent, so these stay safe for signed-in callers too.
   # -------------------------------------------------------------------------
   OakieApi:
     Type: AWS::Serverless::HttpApi
@@ -298,34 +178,83 @@ Resources:
         DefaultAuthorizer: CognitoAuthorizer
         Authorizers:
           CognitoAuthorizer:
+            IdentitySource: "$request.header.Authorization"
             JwtConfiguration:
               issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${OakieUserPool}"
               audience:
                 - !Ref OakieUserClient
-            IdentitySource: "$request.header.Authorization"
       CorsConfiguration:
-        AllowMethods:
-          - GET
-          - POST
-          - PUT
-          - DELETE
-          - PATCH
-          - OPTIONS
-        AllowHeaders:
-          - "*"
-        AllowOrigins:
-          - "*"
+        AllowMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+        AllowHeaders: [authorization, content-type]
+        AllowOrigins: !Ref AllowedOrigins
+
+  FastAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.main.handler
+      Environment:
+        Variables:
+          AUTH_MODE: cognito
+          UPLOADS_BUCKET_NAME: !Ref OakieUploadsBucket
+          COGNITO_USER_POOL_ID: !Ref OakieUserPool
+          COGNITO_CLIENT_ID: !Ref OakieUserClient
+          CORS_ORIGINS: !Join [",", !Ref AllowedOrigins]
+          PROJECT_CREATION_MIN_ROLE: !Ref ProjectCreationMinRole
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OakieTable
+        - S3WritePolicy:
+            BucketName: !Ref OakieUploadsBucket
+      Events:
+        Protected:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi }
+        PublicCatalog:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/meta, Auth: { Authorizer: NONE } }
+        PublicStats:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/stats/overview, Auth: { Authorizer: NONE } }
+        PublicProjects:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/projects, Auth: { Authorizer: NONE } }
+        PublicProject:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/projects/{project_id}", Auth: { Authorizer: NONE } }
+        PublicProjectMembers:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/projects/{project_id}/members", Auth: { Authorizer: NONE } }
+        PublicProjectTimeline:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/projects/{project_id}/timeline", Auth: { Authorizer: NONE } }
+        PublicTalent:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/talent, Auth: { Authorizer: NONE } }
+        PublicUser:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/users/{user_id}", Auth: { Authorizer: NONE } }
+        PublicUserProjects:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/users/{user_id}/projects", Auth: { Authorizer: NONE } }
+        PublicUserContributions:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/users/{user_id}/contributions", Auth: { Authorizer: NONE } }
+        PublicContributionProof:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/contributions/{code}", Auth: { Authorizer: NONE } }
 
 Outputs:
   ApiUrl:
-    Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${OakieApi}.execute-api.${AWS::Region}.amazonaws.com/"
+    Description: API Gateway endpoint (frontend VITE_API_BASE_URL)
+    Value: !Sub "https://${OakieApi}.execute-api.${AWS::Region}.amazonaws.com"
   UserPoolId:
-    Description: "Cognito User Pool ID"
+    Description: Cognito User Pool ID (frontend VITE_COGNITO_USER_POOL_ID)
     Value: !Ref OakieUserPool
   ClientId:
-    Description: "Cognito App Client ID"
+    Description: Cognito app client ID (frontend VITE_COGNITO_CLIENT_ID)
     Value: !Ref OakieUserClient
-  HostedUIUrl:
-    Description: "Hosted UI Login URL"
-    Value: !Sub "https://${OakieUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com/login?client_id=${OakieUserClient}&response_type=token&scope=email+openid+profile&redirect_uri=http://localhost:3000/"
+  TableName:
+    Value: !Ref OakieTable
+  UploadsBucket:
+    Value: !Ref OakieUploadsBucket

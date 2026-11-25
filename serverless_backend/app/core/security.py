@@ -1,213 +1,177 @@
-"""
-JWT Token verification for Cognito tokens with role-based access control.
+"""Token verification and the authenticated principal.
 
-For local dev, we decode the JWT and extract claims including cognito:groups.
-In production (API Gateway), the JWT is validated by the authorizer,
-but we still need to parse claims for permission checks.
+API Gateway's JWT authorizer already rejects unauthenticated calls to protected
+routes, but routes with optional auth (public pages that personalise for the
+viewer) bypass it, so the application always verifies the token itself.
 """
+
+from datetime import UTC, datetime, timedelta
+from enum import StrEnum
+from functools import lru_cache
+from typing import Protocol
 
 import jwt
-from jwt import PyJWKClient
-from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Optional
-from pydantic import BaseModel
-from enum import Enum
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, Field
 
 from app.core.config import settings
+from app.core.errors import Unauthorized
+
+LOCAL_ISSUER = "oakie-local"
 
 
-class GlobalRole(str, Enum):
-    """
-    Global user roles managed via Cognito Groups.
-    Lower precedence = higher priority in cognito:groups claim.
-    """
+class GlobalRole(StrEnum):
+    """Platform-wide roles, managed as Cognito groups."""
 
-    SUPER_ADMIN = "super_admin"  # Precedence 0: Full platform access
-    ADMIN = "admin"  # Precedence 1: User & content management
-    MODERATOR = "moderator"  # Precedence 2: Content review
-    CREATOR = "creator"  # Precedence 10: Can create projects
-    USER = "user"  # Precedence 100: Standard user (default)
+    SUPER_ADMIN = "super_admin"
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    CREATOR = "creator"
+    USER = "user"
 
 
-# Security scheme for FastAPI docs
-security = HTTPBearer(auto_error=False)
+# Highest privilege first.
+ROLE_ORDER = [
+    GlobalRole.SUPER_ADMIN,
+    GlobalRole.ADMIN,
+    GlobalRole.MODERATOR,
+    GlobalRole.CREATOR,
+    GlobalRole.USER,
+]
 
 
-class TokenPayload(BaseModel):
-    """
-    Decoded JWT payload from Cognito with role information.
+class Principal(BaseModel):
+    """The caller, as established by a verified token."""
 
-    Attributes:
-        sub: User ID (Cognito UUID)
-        email: User email
-        name: User display name
-        cognito_username: Cognito username (usually same as email)
-        cognito_groups: List of Cognito groups user belongs to (roles)
-    """
-
-    sub: str  # User ID (Cognito UUID)
-    email: Optional[str] = None
-    name: Optional[str] = None
-    cognito_username: Optional[str] = None
-    cognito_groups: list[str] = []  # Roles from Cognito groups
-
-    def has_role(self, role: GlobalRole) -> bool:
-        """Check if user belongs to specified role group."""
-        return role.value in self.cognito_groups
-
-    def has_any_role(self, roles: list[GlobalRole]) -> bool:
-        """Check if user belongs to any of the specified role groups."""
-        role_values = {r.value for r in roles}
-        return any(g in role_values for g in self.cognito_groups)
+    sub: str
+    email: str | None = None
+    name: str | None = None
+    groups: list[str] = Field(default_factory=list)
 
     @property
-    def primary_role(self) -> GlobalRole:
-        """
-        Get user's highest priority role.
-        cognito:groups is ordered by precedence (lowest first = highest priority).
-        """
-        if not self.cognito_groups:
-            return GlobalRole.USER
+    def roles(self) -> list[GlobalRole]:
+        known = {role.value for role in GlobalRole}
+        roles = [GlobalRole(group) for group in self.groups if group in known]
+        return roles or [GlobalRole.USER]
 
-        # Try to parse first group as GlobalRole
-        first_group = self.cognito_groups[0]
-        try:
-            return GlobalRole(first_group)
-        except ValueError:
-            # Unknown group, default to USER
-            return GlobalRole.USER
+    def has_at_least(self, minimum: GlobalRole) -> bool:
+        """True when any of the caller's roles ranks at or above `minimum`."""
+        threshold = ROLE_ORDER.index(minimum)
+        return any(ROLE_ORDER.index(role) <= threshold for role in self.roles)
 
+    @property
     def is_admin(self) -> bool:
-        """Check if user is admin or super_admin."""
-        return self.has_any_role([GlobalRole.ADMIN, GlobalRole.SUPER_ADMIN])
-
-    def is_super_admin(self) -> bool:
-        """Check if user is super_admin."""
-        return self.has_role(GlobalRole.SUPER_ADMIN)
-
-    def is_moderator_or_above(self) -> bool:
-        """Check if user is moderator, admin, or super_admin."""
-        return self.has_any_role(
-            [GlobalRole.MODERATOR, GlobalRole.ADMIN, GlobalRole.SUPER_ADMIN]
-        )
-
-    def is_creator_or_above(self) -> bool:
-        """Check if user can create projects (creator, moderator, admin, super_admin)."""
-        return self.has_any_role(
-            [
-                GlobalRole.CREATOR,
-                GlobalRole.MODERATOR,
-                GlobalRole.ADMIN,
-                GlobalRole.SUPER_ADMIN,
-            ]
-        )
+        return self.has_at_least(GlobalRole.ADMIN)
 
 
-# Cache for JWKS client
-_jwks_client: Optional[PyJWKClient] = None
+class TokenVerifier(Protocol):
+    def verify(self, token: str) -> Principal: ...
 
 
-def get_jwks_client() -> PyJWKClient:
-    """Get or create JWKS client for Cognito."""
-    global _jwks_client
-    if _jwks_client is None:
-        if not settings.COGNITO_USER_POOL_ID:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="COGNITO_USER_POOL_ID not configured",
+def _principal_from_claims(claims: dict) -> Principal:
+    groups = claims.get("cognito:groups") or []
+    return Principal(
+        sub=claims["sub"],
+        email=claims.get("email"),
+        name=claims.get("name"),
+        groups=groups if isinstance(groups, list) else [],
+    )
+
+
+class CognitoTokenVerifier:
+    """Verifies Cognito access and ID tokens against the pool's JWKS."""
+
+    def __init__(self, region: str, user_pool_id: str, client_id: str):
+        self._issuer = f"https://cognito-idp.{region}.amazonaws.com/{user_pool_id}"
+        self._client_id = client_id
+        self._jwks = jwt.PyJWKClient(f"{self._issuer}/.well-known/jwks.json")
+
+    def verify(self, token: str) -> Principal:
+        try:
+            signing_key = self._jwks.get_signing_key_from_jwt(token)
+            claims = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=["RS256"],
+                issuer=self._issuer,
+                # Access tokens carry `client_id` instead of `aud`; checked below.
+                options={"verify_aud": False, "require": ["exp", "iss", "sub"]},
             )
-        region = settings.AWS_REGION
-        pool_id = settings.COGNITO_USER_POOL_ID
-        jwks_url = f"https://cognito-idp.{region}.amazonaws.com/{pool_id}/.well-known/jwks.json"
-        _jwks_client = PyJWKClient(jwks_url)
-    return _jwks_client
+        except jwt.ExpiredSignatureError as exc:
+            raise Unauthorized("Token has expired") from exc
+        except jwt.PyJWTError as exc:
+            raise Unauthorized("Invalid token") from exc
+
+        token_use = claims.get("token_use")
+        client = claims.get("client_id") if token_use == "access" else claims.get("aud")
+        if token_use not in ("access", "id") or client != self._client_id:
+            raise Unauthorized("Invalid token")
+        return _principal_from_claims(claims)
 
 
-def verify_token(token: str) -> TokenPayload:
-    """
-    Verify JWT token and return decoded payload with role information.
-    Uses Cognito JWKS for signature verification.
-    """
-    try:
-        jwks_client = get_jwks_client()
-        signing_key = jwks_client.get_signing_key_from_jwt(token)
+class LocalTokenVerifier:
+    """HS256 tokens minted by the dev-only identity provider."""
 
-        # Decode and verify the token
-        payload = jwt.decode(
-            token,
-            signing_key.key,
-            algorithms=["RS256"],
-            audience=settings.COGNITO_CLIENT_ID,
-            options={"verify_exp": True},
-        )
+    def __init__(self, secret: str):
+        self._secret = secret
 
-        # Extract cognito:groups (list of role names)
-        cognito_groups = payload.get("cognito:groups", [])
-        if not isinstance(cognito_groups, list):
-            cognito_groups = []
+    def issue(self, principal: Principal, ttl_minutes: int) -> str:
+        now = datetime.now(UTC)
+        claims = {
+            "iss": LOCAL_ISSUER,
+            "sub": principal.sub,
+            "email": principal.email,
+            "name": principal.name,
+            "cognito:groups": principal.groups,
+            "iat": now,
+            "exp": now + timedelta(minutes=ttl_minutes),
+        }
+        return jwt.encode(claims, self._secret, algorithm="HS256")
 
-        return TokenPayload(
-            sub=payload.get("sub", ""),
-            email=payload.get("email"),
-            name=payload.get("name"),
-            cognito_username=payload.get("cognito:username"),
-            cognito_groups=cognito_groups,
-        )
-
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
-        )
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}",
-        )
+    def verify(self, token: str) -> Principal:
+        try:
+            claims = jwt.decode(
+                token,
+                self._secret,
+                algorithms=["HS256"],
+                issuer=LOCAL_ISSUER,
+                options={"require": ["exp", "iss", "sub"]},
+            )
+        except jwt.ExpiredSignatureError as exc:
+            raise Unauthorized("Token has expired") from exc
+        except jwt.PyJWTError as exc:
+            raise Unauthorized("Invalid token") from exc
+        return _principal_from_claims(claims)
 
 
-async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-) -> TokenPayload:
-    """
-    FastAPI dependency to get current authenticated user from JWT.
-    Returns TokenPayload with user info and roles.
+@lru_cache
+def get_verifier() -> TokenVerifier:
+    if settings.AUTH_MODE == "local":
+        return LocalTokenVerifier(settings.LOCAL_JWT_SECRET)
+    if not settings.COGNITO_USER_POOL_ID or not settings.COGNITO_CLIENT_ID:
+        raise RuntimeError("COGNITO_USER_POOL_ID and COGNITO_CLIENT_ID are required")
+    return CognitoTokenVerifier(
+        settings.AWS_REGION, settings.COGNITO_USER_POOL_ID, settings.COGNITO_CLIENT_ID
+    )
 
-    Usage:
-        @router.get("/protected")
-        async def protected_route(user: TokenPayload = Depends(get_current_user)):
-            print(user.sub, user.email, user.cognito_groups)
-    """
+
+_bearer = HTTPBearer(auto_error=False)
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+) -> Principal:
     if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    return verify_token(credentials.credentials)
+        raise Unauthorized("Sign in to continue")
+    return get_verifier().verify(credentials.credentials)
 
 
-async def get_current_user_optional(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-) -> Optional[TokenPayload]:
-    """
-    FastAPI dependency that returns None for unauthenticated requests.
-    Useful for endpoints that have different behavior for auth/unauth users.
-
-    Usage:
-        @router.get("/projects/{id}")
-        async def get_project(
-            id: str,
-            user: Optional[TokenPayload] = Depends(get_current_user_optional)
-        ):
-            # Can check if user is member for private projects
-    """
+def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+) -> Principal | None:
+    """Anonymous callers get None. A present-but-invalid token is still a 401,
+    so the client learns its session expired instead of silently browsing as a guest."""
     if not credentials:
         return None
-
-    try:
-        return verify_token(credentials.credentials)
-    except HTTPException:
-        return None
+    return get_verifier().verify(credentials.credentials)

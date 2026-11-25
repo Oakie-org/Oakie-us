@@ -1,12 +1,7 @@
-fastapi
-uvicorn
-mangum
-# boto3  <-- Provided by AWS Lambda Runtime
-pydantic
-pydantic-settings
-python-jose[cryptography]
-python-multipart
-requests
-httpx
-email-validator
-PyJWT
+# Runtime dependencies bundled into the Lambda package.
+# boto3 is provided by the Lambda runtime; it is pinned in requirements-dev.txt for local use.
+fastapi>=0.115
+mangum>=0.19
+pydantic>=2.9
+pydantic-settings>=2.6
+PyJWT[crypto]>=2.9

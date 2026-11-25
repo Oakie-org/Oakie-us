@@ -1,37 +1,43 @@
-# Oakie Serverless Execution Timeline
+# Oakie execution timeline
 
-## Week 0: Foundation & Core Loops (Current Focus)
-**Goal**: Implement Registration/Login, Project Browsing/Creation, and Personal Homepage.
-**Tech**: Python FastAPI, AWS Lambda, DynamoDB, AWS Cognito.
+Status after the architecture rebuild. "Built" means implemented in the API and
+the web app, covered by backend tests and exercised locally. Nothing here has
+been redeployed to AWS yet (see `docs/architecture.md`, "Deploying to AWS").
 
-### Key Deliverables
-1.  **Authentication (Cognito Integration)**
-    *   Register/Login via Cognito (Email/Password or Phone).
-    *   `PostConfirmation` Lambda to sync User Profile to DynamoDB.
-    *   FastAPI Dependency `get_current_user` reading JWT claims.
-2.  **Project Discovery (Read)**
-    *   `GET /projects`: List with pagination and basic filtering (Newest, Category).
-    *   `GET /projects/{id}`: Detail view.
-    *   `GET /stats/overview`: Simple counters for Landing Page.
-3.  **Project Creation (Write)**
-    *   `POST /projects`: Create a new project (Owner = Current User).
-    *   `POST /uploads/sign`: Signed URL for image uploads (Cover/Avatar).
-4.  **User Profile (Personal Homepage)**
-    *   `GET /users/me`: My profile & settings.
-    *   `GET /users/{id}`: Public profile view.
-    *   `PATCH /users/me`: Update bio, nickname, avatar.
+## Week 0: foundation and core loop — built
 
-## Week 1: Applications & Interaction
-*   **Application Flow**: Apply to projects (`POST /projects/{id}/apply`), Appicant/Owner views.
-*   **Talent Directory**: `GET /talent` with filters.
-*   **Interactions**: simple "Ping" or "Invite" mechanism.
+- Cognito sign-up/sign-in with PostConfirmation profile provisioning; local dev identity provider.
+- Projects: publish, edit, delete, browse with search and filters, cursor pagination, visibility levels.
+- Profiles: private and public views, editing, avatar and banner uploads via presigned S3 POST.
+- Platform stats and option catalog.
 
-## Week 2: Social & Messaging
-*   **Messaging**: One-on-one chat (`/conversations`).
-*   **Notifications**: Activity feed (Application updates, Invites).
-*   **Social**: Follow/Unfollow users/projects.
+## Week 1: applications and interaction — built
 
-## Week 3: Polish & Scale
-*   **Search**: Optimized storage/query for keywords (CloudSearch or DynamoDB Filters).
-*   **Caching**: DAF (DynamoDB Accelerator) or internal memory cache for config APIs.
-*   **Async**: EventBridge implementation for decoupled notifications.
+- Apply, withdraw, approve, decline; team-size enforcement; owner and applicant views.
+- Talent directory with skill, school, city and "open to" filters.
+- Team management: project admins, removing members, leaving.
+
+## Week 2: social and messaging — built
+
+- One-to-one conversations with unread counts (polling).
+- Notifications for applications, decisions, follows, project updates and task assignment.
+- Follow users, like and follow projects.
+
+## Week 3: polish and scale — partly built
+
+- Built: search over denormalised text, in-memory caching of platform stats,
+  a single notification seam ready for EventBridge.
+- Next: move notification fan-out to EventBridge; real-time messages (API Gateway
+  WebSockets); a dedicated search index once listings outgrow filtered queries.
+
+## Collaboration space and proof — built
+
+- Project timeline (updates, milestones, releases) and a task board with owners and due dates.
+- Contribution records: one verifiable record per member per project, with a public
+  verification page (`/verify/<code>`).
+
+## Not started
+
+- Incubation channel (investors, mentors, incubators): planned in the README, no design yet.
+- Email notifications, moderation tools, admin console.
+- Migrating data from the pre-rebuild tables; first deploy of the new stack.

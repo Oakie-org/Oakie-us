@@ -1,8 +1,9 @@
-boto3
-boto3-stubs[dynamodb]
+-r requirements.txt
+boto3>=1.35
+uvicorn>=0.32
+# In-memory AWS (DynamoDB + S3) for tests and scripts/dev_server.py
+moto[dynamodb,s3,server]>=5.0
+pytest>=8.3
+httpx>=0.27
+ruff>=0.9
 pre-commit
-ruff
-absolufy-imports
-pytest
-testcontainers
-moto[dynamodb]

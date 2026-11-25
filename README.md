@@ -67,151 +67,116 @@
 
 ---
 
-## 🌟 技术栈 | Tech Stack (New Serverless Architecture)
+## 🌟 技术栈 | Tech Stack
 
-本项目已从传统的 Java/Spring Boot 架构迁移至 **AWS Serverless** 架构，以实现更高的扩展性和成本效益。
+| 类别         | 技术                                           | 说明                                        |
+| ------------ | ---------------------------------------------- | ------------------------------------------- |
+| **Frontend** | React 19 · TypeScript · Vite · Tailwind CSS v4 | 单页应用，TanStack Query 管理服务端状态     |
+| **Backend**  | Python 3.11 · FastAPI · Mangum                 | 单个 Lambda 承载全部路由                    |
+| **Database** | Amazon DynamoDB                                | 单表设计 + 2 个 GSI，事务维护计数器         |
+| **Auth**     | Amazon Cognito（JWT）                          | API Gateway JWT Authorizer + 应用内二次校验 |
+| **Storage**  | Amazon S3                                      | 浏览器直传（Presigned POST）                |
+| **Infra**    | AWS SAM                                        | `serverless_backend/template.yaml`          |
 
-| 类别            | 技术                           | 说明                                   |
-| --------------- | ------------------------------ | -------------------------------------- |
-| **Backend**     | Python · FastAPI               | 高性能异步 Web 框架，运行于 AWS Lambda |
-| **Database**    | Amazon DynamoDB                | Serverless NoSQL 数据库，毫秒级响应    |
-| **Compute**     | AWS Lambda                     | 按需运行，自动扩缩容                   |
-| **API Gateway** | Amazon API Gateway             | HTTP API 入口，负责路由和限流          |
-| **Auth**        | JWT + Custom Authorizer        | 基于 Token 的无状态认证                |
-| **Infra**       | AWS SAM / Serverless Framework | 基础设施即代码 (IaC)                   |
-
-> **注意**: 旧的 Java/Spring Boot 实现已归档至 `archived_java_impl/` 目录。
+> 旧的 Java/Spring Boot 实现已归档至 `archived_java_impl/`。
 
 ---
 
 ## 📂 项目结构 | Project Structure
 
 ```text
-Dada_Island/
-├── serverless_backend/       # Python/FastAPI 源代码
+Oakie-us/
+├── serverless_backend/
 │   ├── app/
-│   │   ├── api/              # API 路由与控制器
-│   │   ├── core/             # 配置与安全工具
-│   │   ├── db/               # 数据库访问层 (DynamoDB)
-│   │   ├── models/           # Pydantic 数据模型
-│   │   └── main.py           # 应用入口
-│   ├── tests/                # 单元测试
-│   └── requirements.txt      # Python 依赖
-├── serverless_analysis_zh.md # 架构分析报告 (中文)
-├── progress_report.md        # 迁移进度报告
-├── archived_java_impl/       # [归档] 旧 Java 实现
-└── docs/                     # 项目文档
+│   │   ├── api/v1/endpoints/   # 路由层：只管 HTTP
+│   │   ├── services/           # 服务层：业务规则、权限、通知
+│   │   ├── repositories/       # 仓储层：DynamoDB 键与查询
+│   │   ├── db/                 # 单表网关与表结构定义
+│   │   ├── models/             # Pydantic 数据模型
+│   │   ├── core/               # 配置、鉴权、错误、ID
+│   │   ├── triggers/           # Cognito PostConfirmation
+│   │   └── local/              # 仅本地：开发用登录与演示数据
+│   ├── scripts/dev_server.py   # 一条命令启动本地后端（无需 AWS）
+│   ├── tests/                  # pytest（内存 DynamoDB）
+│   └── template.yaml           # SAM 模板
+├── frontend/
+│   └── src/
+│       ├── app/                # 路由、外壳、主题
+│       ├── auth/               # 登录（Cognito / 本地）
+│       ├── lib/                # API 客户端、查询 hooks、类型
+│       ├── components/         # 设计系统组件与业务组件
+│       └── pages/              # 页面
+├── docs/                       # 架构说明、设计系统
+├── docs_for_ai/                # AI 协作简报、API 约定、路线图
+└── scripts/                    # 开发脚本
 ```
 
 ---
 
 ## 🚀 快速开始 | Getting Started
 
+**本地开发不需要 AWS 账号。** 后端会启动一个内存版的 DynamoDB/S3 模拟器，并内置演示数据和本地登录。
+
 ### 前置要求
 
 - Python 3.11+
-- AWS 账号 (用于部署，本地开发可选)
+- Node.js 20+
 
-### 本地开发
-
-如果你是刚克隆项目，推荐先运行一键初始化脚本（会创建后端 venv、安装 Python 依赖与前端 node_modules）：
+### 一键安装与启动
 
 ```bash
-./scripts/setup-dev.sh
+./scripts/setup-dev.sh   # 创建后端 venv、安装前后端依赖
+./scripts/dev.sh         # 同时启动后端 (:8000) 和前端 (:5173)
 ```
 
-项目已集成 `pre-commit` 自动格式化：首次克隆后运行一次（脚本也会自动尝试安装）：
+打开 <http://localhost:5173>，在登录页点击 **Fill in the demo account** 即可用演示账号登录。
+演示数据保存在内存中，后端重启后会重置。
+
+### 分别启动
 
 ```bash
-pre-commit install
+# 后端：API http://127.0.0.1:8000/docs
+serverless_backend/venv/bin/python serverless_backend/scripts/dev_server.py
+
+# 前端：http://localhost:5173（/api 自动代理到后端）
+cd frontend && npm run dev
 ```
 
-之后每次 `git commit` 会自动执行：
-
-- Python: `absolufy-imports`（相对导入转绝对导入）、`ruff check --fix`（自动修复/规范化）、`ruff format`（格式化）
-- Frontend: `prettier` + `eslint`
-
-脚本结束后请手动激活虚拟环境再启动服务：
+### 检查
 
 ```bash
-cd serverless_backend
-source venv/bin/activate
+serverless_backend/venv/bin/python -m pytest          # 后端测试（仓库根目录运行）
+serverless_backend/venv/bin/python -m ruff check .    # Python 规范
+cd frontend && npm run lint && npm run build          # 前端规范与构建
 ```
 
-1.  **进入后端目录**:
+### 连接真实 AWS
 
-    ```bash
-    cd serverless_backend
-    ```
-
-2.  **创建并激活虚拟环境**:
-
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate  # macOS/Linux
-    # venv\Scripts\activate   # Windows
-    ```
-
-3.  **安装依赖**:
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **运行本地服务器**:
-
-    ```bash
-    uvicorn app.main:app --reload
-    ```
-
-    访问文档: `http://127.0.0.1:8000/docs`
-
-5.  **运行测试**:
-    ```bash
-    PYTHONPATH=. pytest
-    ```
+复制 `frontend/.env.example` 为 `frontend/.env`，填入 SAM 部署输出的 API 地址与 Cognito 配置，并设置 `VITE_AUTH_MODE=cognito`。
+部署前请先阅读 [`docs/architecture.md`](./docs/architecture.md) 的「Deploying to AWS」一节（新栈名为 `oakie-v2`，旧表数据不会自动迁移）。
 
 ---
 
 ## 📚 文档 | Documentation
 
-- [Serverless 架构分析报告](./serverless_analysis_zh.md)
-- [迁移进度报告](./progress_report.md)
-- [API 规范](./docs/api-spec.md)
+- [架构说明](./docs/architecture.md)：分层、单表数据模型、鉴权、API 一览、部署注意事项
+- [设计系统](./docs/design-system.md)：配色、字体、交互规范
+- [路线图](./docs_for_ai/project-timeline.md)：已完成与待办
+- [Serverless 架构分析报告](./serverless_analysis看我.md)
 
 ---
 
 ## 📅 规划与进度 | Planning & Timeline
 
-> 基于周迭代的开发计划 (Ref: `docs/project-timeline.md`)
-
-- [x] **Week 0: 基础设施与认证 (Foundation & Auth)**
-
-  - [x] Serverless 架构迁移 (Lambda + FastAPI).
-  - [x] 集成 AWS Cognito (User Pool, Hosted UI).
-  - [x] 实现 PostConfirmation Trigger (同步用户画像到 DynamoDB).
-  - [x] 配置 API Gateway JWT Authorizer.
-  - [x] 实现 `/auth/me` 端点.
-
-- [ ] **Week 0: 核心业务 MVP**
-
-  - [ ] Project API (`GET /projects`, `POST /projects`).
-  - [ ] User Profile API (`GET /users/{id}`, `PATCH /users/me`).
-  - [ ] S3 图片上传签名 (`/uploads/sign`).
-
-- [ ] **Week 1: 申请与互动 (Interaction)**
-
-  - [ ] 项目申请流程 (`Apply`, `Approve`, `Reject`).
-  - [ ] 人才库目录 (`Talent Directory`).
-
-- [ ] **Week 2: 社交与消息 (Social)**
-
-  - [ ] 站内信/私聊 (`Conversations`).
-  - [ ] 活动通知流 (`Activity Feed`).
-
-- [ ] **Week 3: 优化与扩展 (Scale)**
-  - [ ] 搜索优化 (Search).
-  - [ ] 缓存机制 (Caching).
+- [x] **基础设施与认证**：Lambda + FastAPI、Cognito、PostConfirmation 同步用户、JWT 校验、本地开发模式
+- [x] **核心业务**：项目发布 / 编辑 / 浏览 / 搜索筛选、个人主页与资料编辑、S3 图片上传
+- [x] **申请与互动**：申请 / 通过 / 拒绝 / 撤回、团队人数上限、人才库目录
+- [x] **社交与消息**：私信、通知、关注用户、点赞与关注项目
+- [x] **项目协作空间**：项目动态时间线、任务看板与分配
+- [x] **项目认证记录**：每位成员在每个项目的可验证贡献记录（`/verify/<code>`）
+- [ ] **扩展**：EventBridge 异步通知、WebSocket 实时消息、独立搜索服务
+- [ ] **创业孵化通道**：对接投资人、导师与孵化器（规划中）
+- [ ] **重新部署到 AWS**：新栈首次部署与旧数据迁移
 
 ---
 

@@ -1,80 +1,26 @@
-# Oakie AI Brief
+# Oakie AI brief
 
-## Rules & Context
+Oakie (搭搭岛 / DadaIsland) connects students and young creators across disciplines
+(engineering, quant finance, media, design, events) so they can form teams, build
+real projects and earn verifiable contribution records.
 
-- **Architecture**: Serverless Microservices using AWS Lambda, Python 3.11+, and FastAPI.
-- **Data**: Amazon DynamoDB (NoSQL) for business data; AWS Cognito for identity management.
-- **Code Style**: Python formatting (Black/Isort), Pydantic for Validation, Type Hints everywhere.
-- **API Modeling Rule**: For API Pydantic models, create a `*Base` model for shared fields (e.g. `ProjectBase`) and extend specific request/response models from it (e.g. `ProjectCreate(ProjectBase)`, `ProjectPublic(ProjectBase)`).
-- **Principles**: Single Responsibility, Stateless Compute, Event-Driven (where applicable).
-- **Project**: Oakie connects students and young creators so they can meet teammates, build internet projects, and earn verifiable contribution records.
+Read these before changing code:
 
-## 1. API Essentials
+- [`docs/architecture.md`](../docs/architecture.md): layers, data model, auth, API surface, how to run.
+- [`docs/design-system.md`](../docs/design-system.md): tokens, type, interaction rules for any UI work.
+- [`project-timeline.md`](./project-timeline.md): what is built and what is next.
 
-- `/api/v1` prefix.
-- **FastAPI** handles routing and validation.
-- **Mangum** adapts FastAPI for Lambda.
-- **API Gateway** handles entry point and JWT Authorizer (Cognito).
+## Rules
 
-### Auth & Session (AWS Cognito)
-
-- **Identity**: AWS Cognito User Pool handles Users/Password/OTP/MFA.
-- **Tokens**: Access/ID Tokens issued by Cognito. API Gateway validates them automatically (`Authorizer`).
-- **Profile Config**: `PostConfirmation` Lambda trigger creates initial user profile in DynamoDB upon registration.
-- **Auth Flow**:
-  - Frontend interacts directly with AWS Cognito for Registration/Login (Hosted UI or Amplify SDK).
-  - Cognito triggers `PostConfirmation` Lambda to sync User Profile to DynamoDB.
-  - Frontend obtains JWT (Access Token) and sends it in `Authorization` header to Backend.
-  - Backend validates Token via API Gateway Authorizer and reads user data from DynamoDB.
-
-### RBAC (Role-Based Access Control)
-
-- **Cognito Groups**: `super_admin` (0), `admin` (1), `moderator` (2), `creator` (10), `user` (100)
-- **JWT claim**: `cognito:groups` contains user's role(s)
-- **Backend guards**: `app/core/permissions.py` - `require_admin()`, `require_creator_or_above()`
-- **Project visibility**: `public` | `members_only` | `private` (private hidden from list, 404 for non-owners)
-
-### Core Domains (FastAPI Routers)
-
-- `landing`: `/stats/overview` (counters), `/projects/trending`.
-- `projects`: CRUD for Projects (`/projects`). Stored in DynamoDB `Projects` table.
-  - **Features**: Team Management (Roles/Skills), Interactive Timeline (Milestones/Updates).
-- `applications`: Manage join requests. Stored in DynamoDB `Applications` table.
-- `users`: User profiles (`/users/{id}`). Stored in DynamoDB `Users` table (PK = Cognito Sub).
-- `meta`: Enums for frontend forms (Skills, Cities, Stages).
-
-## 2. Progress & Goals
-
-### Current Stack (Migrated)
-
-- **Backend**: Python / FastAPI / Mangum / Boto3.
-- **Database**: DynamoDB (Single-table or multi-table design per access pattern).
-- **Auth**: AWS Cognito User Pool.
-- **Infra**: AWS SAM / Serverless Framework (assumed).
-
-### Timeline Targets (docs/project-timeline.md)
-
-- **Week 0 (Current)**:
-  - **Goal**: End-to-end "Register -> Login -> View Projects -> Create Project -> View Profile".
-  - **Deliverables**:
-    - functional `/auth` endpoints (Cognito wrapped).
-    - `/projects` list & detail & create.
-    - `/users/me` profile.
-- **Week 1**: Applications & Talent Directory.
-- **Week 2**: Messaging & Notifications.
-- **Week 3**: Async Events, Caching, Polish.
-
-## 3. Database Schema (DynamoDB NoSQL)
-
-- **Users Table**: PK=`User#<CognitoSub>`, Attributes: `nickname`, `avatar`, `skills[]`, `bio`.
-- **Projects Table**: PK=`Project#<UUID>`, Attributes: `title`, `subtitle` (short intro), `description`, `tags[]` (Generic: Tech/Content), `status`, `owner_id`, `members[]`.
-  - GSI: `OwnerIndex` (query by `owner_id`).
-  - GSI: `CategoryIndex` (filter by category).
-- **Applications Table**: PK=`App#<UUID>`, Attributes: `project_id`, `applicant_id`, `status`.
-- **Single-Table Design Consideration**: May consolidate if access patterns require complex joins, but keeping separate tables is fine for MVP speed.
-
-## 4. Running Tests (Backend)
-
-- Install dev deps: `cd serverless_backend && source venv/bin/activate && pip install -r requirements-dev.txt`
-- Run tests: `PYTHONPATH=. pytest`
-- DynamoDB for tests: prefers DynamoDB Local via Docker; falls back to Moto (in-memory) if Docker isn’t available.
+- **Backend**: Python 3.11, FastAPI on Lambda (Mangum), DynamoDB single table, Cognito, S3, SAM.
+  Routers stay thin; rules go in `app/services/`; only `app/repositories/` knows the table layout;
+  only `app/db/table.py` calls boto3 for DynamoDB.
+- **API models**: Pydantic v2. Put shared fields in a `*Base` model and extend it
+  (`ProjectBase` → `ProjectCreate`, `ProjectPublic`). Update models never accept ids, owners or counters.
+- **Errors**: raise the domain errors in `app/core/errors.py`, not `HTTPException`.
+- **New entity or access pattern**: add it to the key table in `app/db/schema.py` first.
+- **Frontend**: screens use hooks from `src/lib/queries.ts`, primitives from `src/components/ui/`,
+  and semantic colour tokens only. Types in `src/lib/types.ts` mirror the API's snake_case.
+- **Tests**: `python -m pytest` from the repo root (moto, no Docker). Add a test with every backend rule.
+- **Checks before finishing**: `ruff check . && ruff format --check .`, `pytest`,
+  and in `frontend/`: `npm run lint && npm run build`.

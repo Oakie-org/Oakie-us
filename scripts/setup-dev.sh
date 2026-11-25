@@ -1,78 +1,45 @@
 #!/usr/bin/env bash
+# One-time setup: backend virtualenv, backend and frontend dependencies, git hooks.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-echo "==> DadaIsland local dev setup"
-echo "Repo: $ROOT_DIR"
-
 BACKEND_DIR="$ROOT_DIR/serverless_backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
-
-if [[ ! -d "$BACKEND_DIR" ]]; then
-  echo "Error: backend directory not found at $BACKEND_DIR" >&2
-  exit 1
-fi
-
-if [[ ! -d "$FRONTEND_DIR" ]]; then
-  echo "Error: frontend directory not found at $FRONTEND_DIR" >&2
-  exit 1
-fi
-
-echo
-echo "==> Backend (Python/FastAPI)"
-
-PYTHON_BIN=""
-if command -v python3.11 >/dev/null 2>&1; then
-  PYTHON_BIN="python3.11"
-elif command -v python3 >/dev/null 2>&1; then
-  PYTHON_BIN="python3"
-else
-  echo "Error: python3 not found. Install Python 3.11+ first." >&2
-  exit 1
-fi
-
-PY_VERSION="$("$PYTHON_BIN" -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
-echo "Using Python: $PYTHON_BIN ($PY_VERSION)"
-
 VENV_DIR="$BACKEND_DIR/venv"
-if [[ ! -d "$VENV_DIR" ]]; then
-  echo "Creating venv at $VENV_DIR"
-  "$PYTHON_BIN" -m venv "$VENV_DIR"
-else
-  echo "Venv already exists at $VENV_DIR"
-fi
 
-echo "Installing backend dependencies..."
-"$VENV_DIR/bin/pip" install --upgrade pip >/dev/null
-"$VENV_DIR/bin/pip" install -r "$BACKEND_DIR/requirements.txt" -r "$BACKEND_DIR/requirements-dev.txt"
-
-if [[ -d "$ROOT_DIR/.git" && -x "$VENV_DIR/bin/pre-commit" ]]; then
-  echo "Installing pre-commit hooks..."
-  (cd "$ROOT_DIR" && "$VENV_DIR/bin/pre-commit" install)
-fi
-
-echo
-echo "==> Frontend (React/Vite)"
-
-if ! command -v node >/dev/null 2>&1; then
-  echo "Error: node not found. Install Node.js 20+ first." >&2
+echo "==> Backend (Python / FastAPI)"
+PYTHON_BIN=""
+for candidate in python3.11 python3.12 python3.13 python3; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    PYTHON_BIN="$candidate"
+    break
+  fi
+done
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo "Error: Python 3.11+ is required." >&2
   exit 1
 fi
+if ! "$PYTHON_BIN" -c 'import sys; sys.exit(sys.version_info < (3, 11))'; then
+  echo "Error: $PYTHON_BIN is older than Python 3.11." >&2
+  exit 1
+fi
+echo "Using $("$PYTHON_BIN" --version)"
 
-NODE_VERSION="$(node -v)"
-echo "Using Node: $NODE_VERSION"
+[[ -d "$VENV_DIR" ]] || "$PYTHON_BIN" -m venv "$VENV_DIR"
+"$VENV_DIR/bin/python" -m pip install --quiet --upgrade pip
+"$VENV_DIR/bin/python" -m pip install --quiet -r "$BACKEND_DIR/requirements-dev.txt"
 
-echo "Installing frontend dependencies..."
-(cd "$FRONTEND_DIR" && npm install)
+if [[ -d "$ROOT_DIR/.git" ]]; then
+  (cd "$ROOT_DIR" && "$VENV_DIR/bin/pre-commit" install >/dev/null) || true
+fi
+
+echo "==> Frontend (React / Vite)"
+if ! command -v node >/dev/null 2>&1; then
+  echo "Error: Node.js 20+ is required." >&2
+  exit 1
+fi
+echo "Using Node $(node -v)"
+(cd "$FRONTEND_DIR" && npm install --no-audit --no-fund)
 
 echo
-echo "==> Setup complete"
-echo "Next steps:"
-echo "  Backend:"
-echo "    cd serverless_backend"
-echo "    source venv/bin/activate"
-echo "    uvicorn app.main:app --reload"
-echo "  Frontend:"
-echo "    cd frontend"
-echo "    npm run dev"
+echo "Setup complete. Start everything with:  ./scripts/dev.sh"

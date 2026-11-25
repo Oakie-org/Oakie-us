@@ -37,6 +37,13 @@ export function toneFor(category: string): BlockTone {
   return BY_CATEGORY[category] ?? TONES.sand;
 }
 
+export const ACCENTS = Object.keys(TONES) as (keyof typeof TONES)[];
+
+/** A member's chosen accent, or undefined when they have not picked one. */
+export function toneNamed(name: string | undefined): BlockTone | undefined {
+  return name && name in TONES ? TONES[name as keyof typeof TONES] : undefined;
+}
+
 export const AVATAR_TONES: BlockTone[] = [
   TONES.sky,
   TONES.lilac,

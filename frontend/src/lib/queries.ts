@@ -6,6 +6,7 @@ import {
   useInfiniteQuery,
   useMutation,
   useQuery,
+  keepPreviousData,
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
@@ -19,6 +20,7 @@ import type {
   ConversationThread,
   CursorPage,
   InboxSummary,
+  Invitation,
   Me,
   Member,
   Message,
@@ -26,9 +28,11 @@ import type {
   ProfileUpdate,
   Project,
   ProjectDetail,
+  ProjectFacets,
   ProjectInput,
   ProjectMembership,
   ProjectRole,
+  SearchSuggestions,
   StatsOverview,
   Task,
   TaskInput,
@@ -48,6 +52,11 @@ export const keys = {
   timeline: (id: string) => ["projects", id, "timeline"] as const,
   tasks: (id: string) => ["projects", id, "tasks"] as const,
   applications: (id: string) => ["projects", id, "applications"] as const,
+  facets: (filters: object) => ["projects", "facets", filters] as const,
+  suggest: (q: string) => ["search", "suggest", q] as const,
+  invitations: (id: string) => ["projects", id, "invitations"] as const,
+  myInvitations: ["me", "invitations"] as const,
+  followers: (id: string, kind: string) => ["users", id, kind] as const,
   followed: ["projects", "followed"] as const,
   myApplications: ["me", "applications"] as const,
   talent: (filters: object) => ["talent", filters] as const,
@@ -87,11 +96,38 @@ export interface ProjectFilters {
   city?: string;
   uni?: string;
   tag?: string;
+  skill?: string;
+  remote?: boolean;
+  open_only?: boolean;
+  within_days?: number;
+}
+
+/** Filter options with live counts for the same filters the listing takes. */
+export function useProjectFacets(filters: ProjectFilters) {
+  return useQuery({
+    queryKey: keys.facets(filters),
+    queryFn: () => api.get<ProjectFacets>("/projects/facets", { ...filters }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Typeahead. Stale requests are cancelled by the query's abort signal. */
+export function useSuggestions(q: string) {
+  const term = q.trim();
+  return useQuery({
+    queryKey: keys.suggest(term.toLowerCase()),
+    queryFn: () =>
+      api.get<SearchSuggestions>("/search/suggest", { q: term, limit: 4 }),
+    enabled: term.length >= 2,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useProjects(filters: ProjectFilters, pageSize = 12) {
   return useInfiniteQuery({
     queryKey: keys.projects({ ...filters, pageSize }),
+    placeholderData: keepPreviousData,
     queryFn: ({ pageParam }) =>
       api.get<CursorPage<Project>>("/projects", {
         ...filters,
@@ -107,6 +143,7 @@ export function useProject(id: string) {
   return useQuery({
     queryKey: keys.project(id),
     queryFn: () => api.get<ProjectDetail>(`/projects/${id}`),
+    enabled: Boolean(id),
   });
 }
 
@@ -482,6 +519,81 @@ export function useFollowUser(id: string) {
   });
 }
 
+export function useFollowList(
+  id: string,
+  kind: "followers" | "following",
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: keys.followers(id, kind),
+    queryFn: () => api.get<UserSummary[]>(`/users/${id}/${kind}`),
+    enabled: enabled && Boolean(id),
+  });
+}
+
+// --------------------------------------------------------------- invitations
+
+export function useInvitations(projectId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.invitations(projectId),
+    queryFn: () => api.get<Invitation[]>(`/projects/${projectId}/invitations`),
+    enabled,
+  });
+}
+
+export function useMyInvitations(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.myInvitations,
+    queryFn: () => api.get<Invitation[]>("/users/me/invitations"),
+    enabled,
+  });
+}
+
+export function useInvite(projectId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      user_id: string;
+      role_title: string;
+      message: string;
+    }) => api.post<Invitation>(`/projects/${projectId}/invitations`, input),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: keys.invitations(projectId) }),
+  });
+}
+
+export function useRevokeInvitation(projectId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteeId: string) =>
+      api.delete<void>(`/projects/${projectId}/invitations/${inviteeId}`),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: keys.invitations(projectId) }),
+  });
+}
+
+export function useAnswerInvitation() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      accept,
+    }: {
+      projectId: string;
+      accept: boolean;
+    }) =>
+      api.post<Invitation>(`/projects/${projectId}/invitations/me/decision`, {
+        accept,
+      }),
+    onSuccess: (_data, { projectId }) => {
+      client.invalidateQueries({ queryKey: keys.myInvitations });
+      client.invalidateQueries({ queryKey: keys.me });
+      client.invalidateQueries({ queryKey: ["users"] });
+      return client.invalidateQueries({ queryKey: keys.project(projectId) });
+    },
+  });
+}
+
 export interface TalentFilters {
   q?: string;
   skill?: string;
@@ -493,6 +605,7 @@ export interface TalentFilters {
 export function useTalent(filters: TalentFilters) {
   return useInfiniteQuery({
     queryKey: keys.talent(filters),
+    placeholderData: keepPreviousData,
     queryFn: ({ pageParam }) =>
       api.get<CursorPage<UserSummary>>("/talent", {
         ...filters,

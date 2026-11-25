@@ -58,6 +58,22 @@ class ConversationThread(BaseModel):
     next_cursor: str | None = None
 
 
+class ProjectHit(BaseModel):
+    id: str
+    title: str
+    subtitle: str = ""
+    category: str = ""
+    status: str = ""
+
+
+class SearchSuggestions(BaseModel):
+    """Typeahead results: a few of each kind, never a full result list."""
+
+    projects: list[ProjectHit]
+    people: list[UserSummary]
+    skills: list[str]
+
+
 class StatsOverview(BaseModel):
     projects: int = 0
     members: int = 0

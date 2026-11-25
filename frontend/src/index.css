@@ -93,6 +93,32 @@
   --animate-rise: rise 420ms var(--ease-out-soft) both;
   --animate-fade: fade 200ms ease-out both;
   --animate-pop: pop 180ms var(--ease-out-soft) both;
+  --animate-drawer: drawer 280ms var(--ease-out-soft) both;
+  --animate-sheet: sheet 280ms var(--ease-out-soft) both;
+  --animate-step: step 260ms var(--ease-out-soft) both;
+  --animate-burst: burst 420ms var(--ease-out-soft);
+
+  @keyframes drawer {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes sheet {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes step {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+  }
+  @keyframes burst {
+    40% {
+      transform: scale(1.35);
+    }
+  }
 
   @keyframes rise {
     from {

@@ -42,6 +42,12 @@ class ApplicationStatus(StrEnum):
     WITHDRAWN = "withdrawn"
 
 
+class InvitationStatus(StrEnum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+
+
 class TaskStatus(StrEnum):
     BACKLOG = "backlog"
     IN_PROGRESS = "in_progress"

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LogOut,
@@ -5,6 +6,7 @@ import {
   ShieldCheck,
   ShieldOff,
   UserMinus,
+  UserPlus,
 } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
@@ -12,6 +14,7 @@ import { useMembers, useRemoveMember, useUpdateMember } from "@/lib/queries";
 import type { Member, ProjectDetail } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { Chip } from "@/components/ui/badge";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import {
   Menu,
@@ -21,6 +24,7 @@ import {
 } from "@/components/ui/overlay";
 import { useToast } from "@/components/ui/toast";
 import { PersonLine } from "@/components/cards";
+import { InviteDialog } from "@/pages/project/InviteDialog";
 
 const ROLE_LABEL = {
   owner: "Owner",
@@ -33,6 +37,7 @@ export function TeamTab({ project }: { project: ProjectDetail }) {
   const navigate = useNavigate();
   const toast = useToast();
   const members = useMembers(project.id);
+  const [inviting, setInviting] = useState(false);
   const update = useUpdateMember(project.id);
   const remove = useRemoveMember(project.id);
 
@@ -138,32 +143,63 @@ export function TeamTab({ project }: { project: ProjectDetail }) {
     );
   }
 
+  const seats = Math.max(0, project.max_members - project.current_members);
   return (
-    <ul className="grid gap-3 md:grid-cols-2">
-      {members.data.map((member) => (
-        <li
-          key={member.user.id}
-          className="flex items-center justify-between gap-3 rounded-card bg-surface p-4"
-        >
-          <PersonLine
-            person={member.user}
-            detail={`${
-              member.title || member.user.headline || "Team member"
-            } · since ${formatDate(member.joined_at, {
-              month: "short",
-              year: "numeric",
-            })}`}
-          />
-          <div className="flex shrink-0 items-center gap-1">
-            {member.role !== "member" && (
-              <Chip tone={member.role === "owner" ? "primary" : "neutral"}>
-                {ROLE_LABEL[member.role]}
-              </Chip>
-            )}
-            {actionsFor(member)}
-          </div>
-        </li>
-      ))}
-    </ul>
+    <>
+      {canManage && project.status !== "Completed" && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-card border border-dashed border-ink-soft p-4">
+          <p className="text-[0.95rem]">
+            <span className="font-display font-semibold">
+              {seats} {seats === 1 ? "seat" : "seats"} open.
+            </span>{" "}
+            <span className="text-ink-soft">
+              {seats
+                ? "Know someone who fits? Don't wait for them to find you."
+                : "Raise the team size to bring in more people."}
+            </span>
+          </p>
+          {seats > 0 ? (
+            <Button onClick={() => setInviting(true)}>
+              <UserPlus aria-hidden /> Invite people
+            </Button>
+          ) : (
+            <ButtonLink to={`/projects/${project.id}/edit`} variant="outline">
+              Edit team size
+            </ButtonLink>
+          )}
+        </div>
+      )}
+      <ul className="grid gap-3 md:grid-cols-2">
+        {members.data.map((member) => (
+          <li
+            key={member.user.id}
+            className="flex items-center justify-between gap-3 rounded-card bg-surface p-4"
+          >
+            <PersonLine
+              person={member.user}
+              detail={`${
+                member.title || member.user.headline || "Team member"
+              } · since ${formatDate(member.joined_at, {
+                month: "short",
+                year: "numeric",
+              })}`}
+            />
+            <div className="flex shrink-0 items-center gap-1">
+              {member.role !== "member" && (
+                <Chip tone={member.role === "owner" ? "primary" : "neutral"}>
+                  {ROLE_LABEL[member.role]}
+                </Chip>
+              )}
+              {actionsFor(member)}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <InviteDialog
+        project={project}
+        open={inviting}
+        onOpenChange={setInviting}
+      />
+    </>
   );
 }

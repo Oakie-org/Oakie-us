@@ -25,6 +25,14 @@ export interface UserSummary {
   uni: string;
   skills: string[];
   open_to: string[];
+  availability: string;
+  accent: string;
+  verified_school: boolean;
+}
+
+export interface ProfileLink {
+  label: string;
+  url: string;
 }
 
 export interface UserProfile {
@@ -39,6 +47,11 @@ export interface UserProfile {
   website: string;
   avatar_url: string | null;
   banner_url: string | null;
+  links: ProfileLink[];
+  accent: string;
+  pinned_project_ids: string[];
+  availability: string;
+  verified_school: boolean;
   num_projects: number;
   num_followers: number;
   num_following: number;
@@ -64,6 +77,10 @@ export type ProfileUpdate = Partial<
     | "website"
     | "avatar_url"
     | "banner_url"
+    | "links"
+    | "accent"
+    | "pinned_project_ids"
+    | "availability"
   >
 >;
 
@@ -104,6 +121,53 @@ export interface ProjectViewer {
   has_liked: boolean;
   is_following: boolean;
   application_status: ApplicationStatus | null;
+  invitation: Invitation | null;
+}
+
+export type InvitationStatus = "pending" | "accepted" | "declined";
+
+export interface Invitation {
+  project_id: string;
+  invitee_id: string;
+  inviter_id: string;
+  status: InvitationStatus;
+  role_title: string;
+  message: string;
+  created_at: string;
+  decided_at: string | null;
+  invitee: UserSummary | null;
+  inviter: UserSummary | null;
+  project_title: string | null;
+  project_subtitle: string | null;
+  project_category: string | null;
+}
+
+export interface FacetOption {
+  value: string;
+  count: number;
+}
+
+export interface ProjectFacets {
+  total: number;
+  category: FacetOption[];
+  status: FacetOption[];
+  skill: FacetOption[];
+  uni: FacetOption[];
+  city: FacetOption[];
+}
+
+export interface ProjectHit {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  status: string;
+}
+
+export interface SearchSuggestions {
+  projects: ProjectHit[];
+  people: UserSummary[];
+  skills: string[];
 }
 
 export interface ProjectDetail extends Project {

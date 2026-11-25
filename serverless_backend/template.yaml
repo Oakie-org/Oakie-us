@@ -219,6 +219,18 @@ Resources:
         PublicProjects:
           Type: HttpApi
           Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/projects, Auth: { Authorizer: NONE } }
+        PublicProjectFacets:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/projects/facets, Auth: { Authorizer: NONE } }
+        PublicSearchSuggest:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: /api/v1/search/suggest, Auth: { Authorizer: NONE } }
+        PublicUserFollowers:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/users/{user_id}/followers", Auth: { Authorizer: NONE } }
+        PublicUserFollowing:
+          Type: HttpApi
+          Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/users/{user_id}/following", Auth: { Authorizer: NONE } }
         PublicProject:
           Type: HttpApi
           Properties: { ApiId: !Ref OakieApi, Method: GET, Path: "/api/v1/projects/{project_id}", Auth: { Authorizer: NONE } }

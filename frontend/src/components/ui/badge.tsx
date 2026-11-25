@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  BadgeCheck,
   CheckCircle2,
   CircleDashed,
   Lightbulb,
@@ -65,6 +66,50 @@ export function StatusBadge({
     >
       <Icon className="size-3.5" aria-hidden />
       {status}
+    </span>
+  );
+}
+
+const STATUS_DOT: Record<ProjectStatus, string> = {
+  Recruiting: "bg-primary",
+  "In Progress": "bg-block-orange",
+  Idea: "bg-block-lilac",
+  Completed: "bg-ink-soft",
+};
+
+/** Status as a dot and a word: readable in a scan without shouting. */
+export function StatusDot({
+  status,
+  className,
+}: {
+  status: ProjectStatus;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 text-[0.8125rem] font-medium text-ink-soft",
+        className,
+      )}
+    >
+      <span
+        className={cn("size-2 rounded-full", STATUS_DOT[status])}
+        aria-hidden
+      />
+      {status}
+    </span>
+  );
+}
+
+/** Marks a member whose account was confirmed with a school email address. */
+export function VerifiedMark({ className }: { className?: string }) {
+  return (
+    <span
+      title="School email verified"
+      className={cn("inline-flex shrink-0 text-primary", className)}
+    >
+      <BadgeCheck className="size-[1.1em]" aria-hidden />
+      <span className="sr-only">School email verified</span>
     </span>
   );
 }

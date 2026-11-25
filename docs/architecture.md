@@ -53,6 +53,14 @@ the same `TransactWriteItems` call as the item that changes them, so they cannot
 A team can never exceed `max_members`: the membership write carries the condition
 `current_members < max_members`.
 
+Discovery has one definition: `services/projects.ProjectQuery` holds every
+listing filter (`q`, `category`, `status`, `skill`, `uni`, `city`, `tag`,
+`remote`, `open_only`, `within_days`) and produces the predicate used by the
+listing, by `GET /projects/facets` and by `GET /search/suggest`, so the three can
+never disagree. Facet counts apply every active filter except the facet's own,
+which keeps alternatives to the current choice visible. Facets read the whole
+listing partition; that is the first thing to move to a search service.
+
 Search is a filter over `GSI1` against a denormalised lowercase `search_text`
 attribute. `Table.query_page` keeps reading until a page is full and derives the
 cursor from the last item returned, so filtered pagination never skips or repeats.
@@ -70,6 +78,10 @@ This is right for the current scale; a dedicated search service is the upgrade p
   Settings refuse to start in this mode on Lambda.
 - **Global roles** are Cognito groups (`super_admin` › `admin` › `moderator` ›
   `creator` › `user`). `PROJECT_CREATION_MIN_ROLE` sets who may publish (default `user`).
+- **School verification**: a profile is `verified_school` when the address the
+  identity provider confirmed is on an academic domain (`.edu`, `.edu.cn`,
+  `.ac.uk`, …; see `services/users.is_school_email`). It is set once at
+  provisioning and cannot be edited through the API.
 - **Project roles** (`owner`, `admin`, `member`) are stored on the membership item.
   `services/projects.load()` returns a `ProjectAccess` that every project
   operation uses for its checks; private projects read as 404 to outsiders.
@@ -83,17 +95,18 @@ EventBridge from that one function.
 
 ### API surface (`/api/v1`)
 
-| Area         | Endpoints                                                                                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform     | `GET /meta`, `GET /stats/overview`, `POST /uploads/sign`                                                                                                                              |
-| Projects     | `GET, POST /projects`, `GET /projects/following`, `GET, PATCH, DELETE /projects/{id}`, `PUT, DELETE /projects/{id}/like`, `PUT, DELETE /projects/{id}/follow`                         |
-| Team         | `GET /projects/{id}/members`, `PATCH, DELETE /projects/{id}/members/{user_id}`                                                                                                        |
-| Applications | `POST, GET /projects/{id}/applications`, `DELETE /projects/{id}/applications/me`, `POST /projects/{id}/applications/{applicant_id}/decision`                                          |
-| Timeline     | `GET, POST /projects/{id}/timeline`, `PATCH, DELETE /projects/{id}/timeline/{post_id}`                                                                                                |
-| Tasks        | `GET, POST /projects/{id}/tasks`, `PATCH, DELETE /projects/{id}/tasks/{task_id}`                                                                                                      |
-| People       | `GET /talent`, `GET, PATCH /users/me`, `GET /users/me/applications`, `GET /users/{id}`, `GET /users/{id}/projects`, `GET /users/{id}/contributions`, `PUT, DELETE /users/{id}/follow` |
-| Proof        | `GET /contributions/{code}` (public verification of a contribution record)                                                                                                            |
-| Inbox        | `GET /inbox/summary`, `GET /notifications`, `POST /notifications/read`, `GET, POST /conversations`, `GET /conversations/{id}`, `POST /conversations/{id}/messages`                    |
+| Area         | Endpoints                                                                                                                                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform     | `GET /meta`, `GET /stats/overview`, `GET /search/suggest`, `POST /uploads/sign`                                                                                                                                                                 |
+| Projects     | `GET, POST /projects`, `GET /projects/facets`, `GET /projects/following`, `GET, PATCH, DELETE /projects/{id}`, `PUT, DELETE /projects/{id}/like`, `PUT, DELETE /projects/{id}/follow`                                                           |
+| Team         | `GET /projects/{id}/members`, `PATCH, DELETE /projects/{id}/members/{user_id}`                                                                                                                                                                  |
+| Applications | `POST, GET /projects/{id}/applications`, `DELETE /projects/{id}/applications/me`, `POST /projects/{id}/applications/{applicant_id}/decision`                                                                                                    |
+| Invitations  | `POST, GET /projects/{id}/invitations`, `POST /projects/{id}/invitations/me/decision`, `DELETE /projects/{id}/invitations/{invitee_id}`, `GET /users/me/invitations`                                                                            |
+| Timeline     | `GET, POST /projects/{id}/timeline`, `PATCH, DELETE /projects/{id}/timeline/{post_id}`                                                                                                                                                          |
+| Tasks        | `GET, POST /projects/{id}/tasks`, `PATCH, DELETE /projects/{id}/tasks/{task_id}`                                                                                                                                                                |
+| People       | `GET /talent`, `GET, PATCH /users/me`, `GET /users/me/applications`, `GET /users/{id}`, `GET /users/{id}/projects`, `GET /users/{id}/contributions`, `GET /users/{id}/followers`, `GET /users/{id}/following`, `PUT, DELETE /users/{id}/follow` |
+| Proof        | `GET /contributions/{code}` (public verification of a contribution record)                                                                                                                                                                      |
+| Inbox        | `GET /inbox/summary`, `GET /notifications`, `POST /notifications/read`, `GET, POST /conversations`, `GET /conversations/{id}`, `POST /conversations/{id}/messages`                                                                              |
 
 Lists use cursor pagination: `{ "items": [...], "next_cursor": "..." | null }`.
 Interactive docs are at `/docs` on a running server.

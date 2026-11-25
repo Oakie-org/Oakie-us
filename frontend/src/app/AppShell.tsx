@@ -32,6 +32,7 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@/components/ui/overlay";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { Logo } from "@/components/Logo";
 
 const ICON_BUTTON =
@@ -189,6 +190,7 @@ export default function AppShell() {
           </nav>
 
           <div className="ml-auto flex items-center gap-1">
+            <GlobalSearch />
             <ThemeButton />
             {status === "signedIn" && (
               <>

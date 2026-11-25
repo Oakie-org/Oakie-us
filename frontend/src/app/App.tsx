@@ -15,6 +15,8 @@ const Explore = lazy(() => import("@/pages/Explore"));
 const Talent = lazy(() => import("@/pages/Talent"));
 const ProjectDetail = lazy(() => import("@/pages/ProjectDetail"));
 const ProjectEditor = lazy(() => import("@/pages/ProjectEditor"));
+const ProjectWizard = lazy(() => import("@/pages/ProjectWizard"));
+const EmbedProfile = lazy(() => import("@/pages/EmbedProfile"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Messages = lazy(() => import("@/pages/Messages"));
@@ -95,6 +97,7 @@ export default function App() {
                     path="/register"
                     element={<AuthPage mode="register" />}
                   />
+                  <Route path="/embed/u/:id" element={<EmbedProfile />} />
                   <Route element={<AppShell />}>
                     <Route index element={<HomeRoute />} />
                     <Route path="explore" element={<Explore />} />
@@ -103,7 +106,7 @@ export default function App() {
                       path="projects/new"
                       element={
                         <RequireAuth>
-                          <ProjectEditor />
+                          <ProjectWizard />
                         </RequireAuth>
                       }
                     />

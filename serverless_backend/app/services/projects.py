@@ -1,5 +1,7 @@
 """Projects: publishing, discovery, access control, team and reactions."""
 
+from collections import Counter
+from datetime import UTC, datetime, timedelta
 from typing import NamedTuple
 
 from app.core.config import settings
@@ -7,12 +9,22 @@ from app.core.errors import BadRequest, Conflict, Forbidden, NotFound
 from app.core.ids import new_id, now_iso, proof_code
 from app.core.security import GlobalRole, Principal
 from app.db.table import Item
-from app.models.common import ApplicationStatus, CursorPage, ProjectRole, ProjectVisibility
+from app.models.common import (
+    ApplicationStatus,
+    CursorPage,
+    InvitationStatus,
+    ProjectRole,
+    ProjectStatus,
+    ProjectVisibility,
+)
 from app.models.project import (
+    FacetOption,
+    InvitationPublic,
     MemberPublic,
     MemberUpdate,
     ProjectCreate,
     ProjectDetail,
+    ProjectFacets,
     ProjectMembership,
     ProjectPublic,
     ProjectUpdate,
@@ -72,23 +84,124 @@ def load(project_id: str, viewer: Principal | None) -> ProjectAccess:
 # ---------------------------------------------------------------- queries
 
 
-def list_projects(
-    *,
-    status: str | None,
-    category: str | None,
-    city: str | None,
-    uni: str | None,
-    tag: str | None,
-    q: str | None,
-    limit: int,
-    cursor: str | None,
-) -> CursorPage[ProjectPublic]:
-    condition = repo.listing_filter(
-        status=status, category=category, city=city, uni=uni, tag=tag, q=q
+class ProjectQuery(NamedTuple):
+    """Every way the listing can be narrowed. One definition serves the list,
+    the facet counts and search suggestions, so they can never disagree."""
+
+    status: str | None = None
+    category: str | None = None
+    city: str | None = None
+    uni: str | None = None
+    tag: str | None = None
+    q: str | None = None
+    skill: str | None = None
+    remote: bool | None = None
+    open_only: bool = False
+    within_days: int | None = None
+
+    def matcher(self, *, ignore: str | None = None):
+        """A predicate for these filters. `ignore` drops one facet, which is how
+        a facet's own options are counted without it narrowing itself."""
+
+        def want(name: str) -> str | None:
+            value = None if name == ignore else getattr(self, name)
+            return value.strip().lower() if isinstance(value, str) and value.strip() else None
+
+        status, category = want("status"), want("category")
+        city, uni, skill = want("city"), want("uni"), want("skill")
+        needles = [needle for needle in (want("tag"), want("q")) if needle]
+        cutoff = None
+        if self.within_days:
+            cutoff = (datetime.now(UTC) - timedelta(days=self.within_days)).isoformat(
+                timespec="milliseconds"
+            )
+
+        def matches(project: Item) -> bool:
+            if status and project["status"].lower() != status:
+                return False
+            if category and project["category"].lower() != category:
+                return False
+            if city and city not in (project.get("city") or "").lower():
+                return False
+            if uni and uni not in (project.get("uni") or "").lower():
+                return False
+            text = project.get("search_text", "")
+            if any(needle not in text for needle in needles):
+                return False
+            if skill and skill not in _wanted_skills(project):
+                return False
+            if self.remote is not None and bool(project.get("remote_ok")) != self.remote:
+                return False
+            if self.open_only and not _is_open(project):
+                return False
+            if cutoff and project["created_at"] < cutoff:
+                return False
+            return True
+
+        return matches
+
+
+def _wanted_skills(project: Item) -> set[str]:
+    return {
+        skill.lower()
+        for role in project.get("open_roles") or []
+        for skill in role.get("skills") or []
+    }
+
+
+def _is_open(project: Item) -> bool:
+    return (
+        project["status"] != ProjectStatus.COMPLETED
+        and project["current_members"] < project["max_members"]
     )
-    page = repo.list_page(limit, cursor, condition)
+
+
+def list_projects(query: ProjectQuery, limit: int, cursor: str | None) -> CursorPage[ProjectPublic]:
+    page = repo.list_page(limit, cursor, query.matcher())
     return CursorPage(
         items=[ProjectPublic(**item) for item in page.items], next_cursor=page.next_cursor
+    )
+
+
+def _tally(values: list[str], limit: int | None = None) -> list[FacetOption]:
+    """Options by popularity, grouped case-insensitively under their commonest spelling."""
+    spellings: dict[str, Counter[str]] = {}
+    for value in values:
+        if value and value.strip():
+            spellings.setdefault(value.strip().lower(), Counter())[value.strip()] += 1
+    options = [
+        FacetOption(value=counts.most_common(1)[0][0], count=sum(counts.values()))
+        for counts in spellings.values()
+    ]
+    options.sort(key=lambda option: (-option.count, option.value.lower()))
+    return options[:limit] if limit else options
+
+
+def facets(query: ProjectQuery) -> ProjectFacets:
+    """Counts for each filter option, as if it were applied on top of the other
+    active filters. A facet never narrows its own options, so alternatives to
+    the current choice stay visible."""
+    listed = repo.list_all()
+
+    def pool(facet: str) -> list[Item]:
+        return [project for project in listed if query.matcher(ignore=facet)(project)]
+
+    return ProjectFacets(
+        total=sum(1 for project in listed if query.matcher()(project)),
+        category=_tally([p["category"] for p in pool("category")]),
+        status=_tally([p["status"] for p in pool("status")]),
+        skill=_tally(
+            [
+                skill
+                for p in pool("skill")
+                for skill in {
+                    s for role in p.get("open_roles") or [] for s in role.get("skills") or []
+                }
+            ],
+            limit=24,
+        ),
+        uni=_tally([p.get("uni") or "" for p in pool("uni")], limit=24),
+        city=_tally([p.get("city") or "" for p in pool("city")], limit=24),
     )
 
 
@@ -101,6 +214,12 @@ def get_detail(project_id: str, viewer: Principal | None) -> ProjectDetail:
         state.is_following = repo.has_reaction(project_id, "FOLLOW", viewer.sub)
         application = repo.get_application(project_id, viewer.sub)
         state.application_status = ApplicationStatus(application["status"]) if application else None
+        invitation = repo.get_invitation(project_id, viewer.sub)
+        if invitation and invitation["status"] == InvitationStatus.PENDING and not access.role:
+            inviter = users.summaries([invitation["inviter_id"]]).get(invitation["inviter_id"])
+            state.invitation = InvitationPublic(
+                **invitation, inviter=inviter, project_title=project["title"]
+            )
     owner = users.summaries([project["owner_id"]]).get(project["owner_id"])
     return ProjectDetail(**project, owner=owner, viewer=state)
 

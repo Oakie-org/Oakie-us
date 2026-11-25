@@ -59,6 +59,50 @@ export function Dialog({
   );
 }
 
+interface DrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Read by screen readers; the visible heading is part of `children`. */
+  label: string;
+  children: ReactNode;
+  className?: string;
+}
+
+/**
+ * A panel that slides over the right edge (a tall bottom sheet on phones).
+ * Used to peek at something without losing your place in the list behind it.
+ */
+export function Drawer({
+  open,
+  onOpenChange,
+  label,
+  children,
+  className,
+}: DrawerProps) {
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-block-ink/40" />
+        <DialogPrimitive.Content
+          aria-describedby={undefined}
+          className={cn(
+            "fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] animate-sheet flex-col overflow-hidden rounded-t-card bg-paper outline-none",
+            "sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[min(34rem,calc(100vw-3rem))] sm:animate-drawer sm:rounded-none sm:border-l sm:border-line",
+            className,
+          )}
+        >
+          <DialogPrimitive.Title className="sr-only">
+            {label}
+          </DialogPrimitive.Title>
+          {children}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
+export const DrawerClose = DialogPrimitive.Close;
+
 export const Menu = MenuPrimitive.Root;
 export const MenuTrigger = MenuPrimitive.Trigger;
 

@@ -8,6 +8,9 @@ from app.models.project import (
     ApplicationCreate,
     ApplicationDecision,
     ApplicationPublic,
+    InvitationCreate,
+    InvitationDecision,
+    InvitationPublic,
     TaskCreate,
     TaskPublic,
     TaskUpdate,
@@ -15,7 +18,7 @@ from app.models.project import (
     TimelinePostPublic,
     TimelinePostUpdate,
 )
-from app.services import applications, workspace
+from app.services import applications, invitations, workspace
 
 router = APIRouter()
 
@@ -52,6 +55,40 @@ def decide_application(
     user: Principal = Depends(get_current_user),
 ):
     return applications.decide(project_id, applicant_id, user, payload.approve)
+
+
+# ------------------------------------------------------------- invitations
+
+
+@router.post(
+    "/{project_id}/invitations",
+    response_model=InvitationPublic,
+    status_code=status.HTTP_201_CREATED,
+)
+def invite_to_project(
+    project_id: str, payload: InvitationCreate, user: Principal = Depends(get_current_user)
+):
+    """Ask a member to join. Owner and project admins only."""
+    return invitations.invite(project_id, user, payload)
+
+
+@router.get("/{project_id}/invitations", response_model=list[InvitationPublic])
+def list_invitations(project_id: str, user: Principal = Depends(get_current_user)):
+    return invitations.list_for_project(project_id, user)
+
+
+@router.post("/{project_id}/invitations/me/decision", response_model=InvitationPublic)
+def answer_invitation(
+    project_id: str, payload: InvitationDecision, user: Principal = Depends(get_current_user)
+):
+    return invitations.respond(project_id, user, payload.accept)
+
+
+@router.delete("/{project_id}/invitations/{invitee_id}", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_invitation(
+    project_id: str, invitee_id: str, user: Principal = Depends(get_current_user)
+):
+    invitations.revoke(project_id, invitee_id, user)
 
 
 # ---------------------------------------------------------------- timeline

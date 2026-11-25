@@ -36,6 +36,18 @@ been redeployed to AWS yet (see `docs/architecture.md`, "Deploying to AWS").
 - Contribution records: one verifiable record per member per project, with a public
   verification page (`/verify/<code>`).
 
+## Discovery, invitations and profile design — built
+
+- Global search palette with typeahead across projects, people and skills.
+- Explore filters with live facet counts: discipline, skill needed, stage, school,
+  city, open seats, remote, posted within; applied-filter chips; preview drawer.
+- Five-step project wizard with autosaved drafts and a live preview.
+- Invitations: managers invite members to a seat; invitees accept or decline from
+  the dashboard or the project page; pending invitations can be cancelled.
+- Profiles: links, accent colour, featured projects, availability, follower and
+  following lists, profile strength, share link and embeddable card.
+- School-email verification badge derived from the confirmed address.
+
 ## Not started
 
 - Incubation channel (investors, mentors, incubators): planned in the README, no design yet.

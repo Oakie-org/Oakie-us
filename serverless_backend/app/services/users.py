@@ -6,8 +6,29 @@ from app.core.security import Principal
 from app.db.table import Item
 from app.models.common import CursorPage
 from app.models.user import UserPrivate, UserPublic, UserSummary, UserUpdate
+from app.repositories import projects as projects_repo
 from app.repositories import users as users_repo
 from app.services import notifications
+
+_SCHOOL_SUFFIXES = (
+    ".edu",
+    ".edu.cn",
+    ".edu.au",
+    ".edu.hk",
+    ".edu.sg",
+    ".ac.uk",
+    ".ac.jp",
+    ".ac.kr",
+)
+
+
+def is_school_email(email: str | None) -> bool:
+    """True for addresses on an academic domain. The identity provider has
+    already confirmed the address belongs to the member before we see it."""
+    domain = (email or "").rpartition("@")[2].strip().lower()
+    return bool(domain) and (
+        domain.endswith(_SCHOOL_SUFFIXES) or ".edu." in domain or ".ac." in domain
+    )
 
 
 def provision(user_id: str, email: str | None, name: str | None) -> Item:
@@ -32,6 +53,11 @@ def provision(user_id: str, email: str | None, name: str | None) -> Item:
         "num_projects": 0,
         "num_followers": 0,
         "num_following": 0,
+        "links": [],
+        "accent": "",
+        "pinned_project_ids": [],
+        "availability": "",
+        "verified_school": is_school_email(email),
         "created_at": now_iso(),
     }
     if users_repo.create(profile):
@@ -52,7 +78,16 @@ def get_me(principal: Principal) -> UserPrivate:
 
 def update_me(principal: Principal, payload: UserUpdate) -> UserPrivate:
     profile = ensure_profile(principal)
-    fields = payload.model_dump(exclude_unset=True)
+    fields = payload.model_dump(exclude_unset=True, exclude_none=True, mode="json")
+    # Images are the one thing a member can clear by sending null.
+    for image in ("avatar_url", "banner_url"):
+        if image in payload.model_fields_set:
+            fields[image] = getattr(payload, image)
+    if "pinned_project_ids" in fields:
+        mine = {m["project_id"] for m in projects_repo.memberships_of(principal.sub)}
+        fields["pinned_project_ids"] = [
+            pid for pid in dict.fromkeys(fields["pinned_project_ids"]) if pid in mine
+        ]
     if fields:
         profile = users_repo.update(profile, fields)
     return UserPrivate(**profile, roles=[role.value for role in principal.roles])
@@ -121,6 +156,23 @@ def follow(principal: Principal, target_id: str) -> None:
         link=f"/u/{principal.sub}",
         actor_id=principal.sub,
     )
+
+
+def _ordered(user_ids: list[str]) -> list[UserSummary]:
+    found = summaries(user_ids)
+    return [found[uid] for uid in user_ids if uid in found]
+
+
+def followers(user_id: str) -> list[UserSummary]:
+    if not users_repo.get(user_id):
+        raise NotFound("User not found")
+    return _ordered(users_repo.follower_ids(user_id)[:200])
+
+
+def following(user_id: str) -> list[UserSummary]:
+    if not users_repo.get(user_id):
+        raise NotFound("User not found")
+    return _ordered(users_repo.following_ids(user_id)[:200])
 
 
 def unfollow(principal: Principal, target_id: str) -> None:

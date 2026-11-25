@@ -1,17 +1,30 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, FolderPlus, Hourglass, Sparkles } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  FolderPlus,
+  Hourglass,
+  MailOpen,
+  Sparkles,
+} from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
+import { profileStrength } from "@/lib/profile";
 import {
+  useAnswerInvitation,
   useFollowedProjects,
   useMyApplications,
+  useMyInvitations,
   useProjects,
   useUserProjects,
 } from "@/lib/queries";
-import type { Application, ApplicationStatus } from "@/lib/types";
+import type { Application, ApplicationStatus, Invitation } from "@/lib/types";
 import { cn, timeAgo } from "@/lib/utils";
 import { Chip } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import { ProjectPreview } from "@/components/ProjectPreview";
 import { EmptyState, Skeleton } from "@/components/ui/feedback";
 import { ProjectCard, ProjectCardSkeleton } from "@/components/cards";
 import { Section, useTitle } from "@/components/page";
@@ -58,13 +71,86 @@ function ApplicationRow({ application }: { application: Application }) {
   );
 }
 
+function InvitationRow({ invitation }: { invitation: Invitation }) {
+  const answer = useAnswerInvitation();
+  const toast = useToast();
+  const respond = (accept: boolean) =>
+    answer.mutate(
+      { projectId: invitation.project_id, accept },
+      {
+        onSuccess: () =>
+          toast.success(
+            accept
+              ? `You joined ${invitation.project_title}`
+              : "Invitation declined",
+          ),
+        onError: (error) => toast.error(error),
+      },
+    );
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-4 rounded-card border-2 border-primary bg-surface p-4 sm:p-5">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <MailOpen className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+        <div className="min-w-0">
+          <p>
+            <span className="font-semibold">
+              {invitation.inviter?.name ?? "A team"}
+            </span>{" "}
+            invited you to join{" "}
+            <Link
+              to={`/projects/${invitation.project_id}`}
+              className="font-display font-semibold underline-offset-2 hover:underline"
+            >
+              {invitation.project_title}
+            </Link>
+            {invitation.role_title && (
+              <>
+                {" "}
+                as{" "}
+                <span className="font-semibold">{invitation.role_title}</span>
+              </>
+            )}
+          </p>
+          {invitation.message && (
+            <p className="mt-1 line-clamp-2 text-[0.95rem] text-ink-soft">
+              “{invitation.message}”
+            </p>
+          )}
+          <p className="mt-1 text-sm text-ink-soft">
+            {timeAgo(invitation.created_at)}
+          </p>
+        </div>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          loading={answer.isPending && answer.variables?.accept === false}
+          onClick={() => respond(false)}
+        >
+          Decline
+        </Button>
+        <Button
+          size="sm"
+          loading={answer.isPending && answer.variables?.accept === true}
+          onClick={() => respond(true)}
+        >
+          <Check aria-hidden /> Accept
+        </Button>
+      </div>
+    </li>
+  );
+}
+
 export default function Dashboard() {
   useTitle("Home");
   const { me } = useAuth();
   const mine = useUserProjects(me?.id);
   const applications = useMyApplications(Boolean(me));
   const followed = useFollowedProjects(Boolean(me));
-  const fresh = useProjects({ status: "Recruiting" }, 6);
+  const fresh = useProjects({ open_only: true }, 6);
+  const invitations = useMyInvitations(Boolean(me));
+  const [previewing, setPreviewing] = useState<string | null>(null);
 
   if (!me) return <Skeleton className="h-40 rounded-card" />;
 
@@ -72,7 +158,8 @@ export default function Dashboard() {
   const suggestions = (fresh.data?.pages[0]?.items ?? [])
     .filter((project) => !myIds.has(project.id))
     .slice(0, 3);
-  const profileThin = !me.headline || me.skills.length === 0;
+  const strength = profileStrength(me);
+  const profileThin = strength.percent < 60;
   const firstName = me.name.split(" ")[0];
 
   return (
@@ -90,18 +177,40 @@ export default function Dashboard() {
             <Sparkles className="mt-0.5 size-6 shrink-0" aria-hidden />
             <div>
               <p className="font-display text-lg font-semibold">
-                Teams can't find you yet
+                Your profile is {strength.percent}% there
               </p>
               <p className="text-block-ink/80">
-                Add a headline and a few skills so you show up when people
-                search.
+                Next: {strength.next?.label.toLowerCase()}. {strength.next?.why}
               </p>
             </div>
           </div>
-          <ButtonLink to="/settings" variant="ink">
-            Finish your profile
+          <ButtonLink
+            to={`/settings#${strength.next?.key ?? ""}`}
+            variant="ink"
+          >
+            Continue
           </ButtonLink>
         </div>
+      )}
+
+      {Boolean(invitations.data?.length) && (
+        <Section
+          title={
+            invitations.data!.length === 1
+              ? "You have an invitation"
+              : `You have ${invitations.data!.length} invitations`
+          }
+          className="mt-10"
+        >
+          <ul className="flex flex-col gap-3">
+            {invitations.data!.map((invitation) => (
+              <InvitationRow
+                key={invitation.project_id}
+                invitation={invitation}
+              />
+            ))}
+          </ul>
+        </Section>
       )}
 
       <Section title="Your projects" className="mt-10">
@@ -172,9 +281,9 @@ export default function Dashboard() {
       )}
 
       <Section
-        title="Recruiting now"
+        title="Teams with open seats"
         action={
-          <ButtonLink to="/explore?status=Recruiting" variant="ghost" size="sm">
+          <ButtonLink to="/explore?open=1" variant="ghost" size="sm">
             See all <ArrowRight aria-hidden />
           </ButtonLink>
         }
@@ -192,11 +301,16 @@ export default function Dashboard() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {suggestions.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onPreview={setPreviewing}
+              />
             ))}
           </div>
         )}
       </Section>
+      <ProjectPreview id={previewing} onClose={() => setPreviewing(null)} />
     </>
   );
 }

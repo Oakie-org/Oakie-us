@@ -1,18 +1,18 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap, Heart, MapPin, Users } from "lucide-react";
+import { GraduationCap, MapPin, Users } from "lucide-react";
 
 import type { Project, UserSummary } from "@/lib/types";
 import { toneFor } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { Chip, StatusBadge } from "@/components/ui/badge";
+import { Chip, StatusDot, VerifiedMark } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/feedback";
 import { ProjectCover } from "@/components/ProjectCover";
 
 const CARD =
   "group flex h-full flex-col overflow-hidden rounded-card border-2 border-transparent bg-surface " +
-  "transition-[border-color,transform] duration-200 ease-out-soft hover:-translate-y-1 hover:border-ink focus-visible:border-ink";
+  "transition-[border-color,transform] duration-200 ease-out-soft hover:-translate-y-0.5 hover:border-ink active:translate-y-0 focus-visible:border-ink";
 
 export function CategoryLabel({
   category,
@@ -37,85 +37,135 @@ export function CategoryLabel({
   );
 }
 
-export function ProjectCard({
-  project,
-  footer,
-}: {
+/** "3 seats open", "Team full", "Completed": the one fact that decides whether to click. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function seatsLabel(
+  project: Pick<Project, "status" | "max_members" | "current_members">,
+): { text: string; open: boolean } {
+  if (project.status === "Completed") return { text: "Completed", open: false };
+  const open = Math.max(0, project.max_members - project.current_members);
+  if (open === 0) return { text: "Team full", open: false };
+  return { text: `${open} ${open === 1 ? "seat" : "seats"} open`, open: true };
+}
+
+interface ProjectCardProps {
   project: Project;
   footer?: ReactNode;
-}) {
-  const openSeats = Math.max(0, project.max_members - project.current_members);
+  /** When given, a plain click peeks at the project instead of leaving the list. */
+  onPreview?: (id: string) => void;
+}
+
+/**
+ * Information first: what it is, who it needs, where, and whether there is a
+ * seat. Colour is limited to the small cover tile so a list can be scanned.
+ */
+export function ProjectCard({ project, footer, onPreview }: ProjectCardProps) {
+  const seats = seatsLabel(project);
+  const recruiting =
+    project.open_roles.length > 0 && project.status !== "Completed";
+  const place =
+    project.uni || project.city || (project.remote_ok ? "Remote" : "");
   return (
-    <Link to={`/projects/${project.id}`} className={CARD}>
-      <div className="relative aspect-[2/1] overflow-hidden">
-        <ProjectCover
-          project={project}
-          className="transition-transform duration-500 ease-out-soft group-hover:scale-[1.04]"
-        />
-        <StatusBadge
-          status={project.status}
-          className="absolute left-3 top-3"
-        />
-      </div>
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        <CategoryLabel category={project.category} />
-        <h3 className="text-xl leading-snug">{project.title}</h3>
-        {project.subtitle && (
-          <p className="line-clamp-2 text-[0.95rem] text-ink-soft">
-            {project.subtitle}
-          </p>
-        )}
-        {project.open_roles.length > 0 && project.status !== "Completed" && (
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {project.open_roles.slice(0, 2).map((role) => (
-              <Chip key={role.title} tone="primary">
-                {role.title}
-              </Chip>
-            ))}
-            {project.open_roles.length > 2 && (
-              <Chip tone="outline">+{project.open_roles.length - 2}</Chip>
-            )}
-          </div>
-        )}
-        <div className="mt-auto flex items-center justify-between gap-3 pt-3 text-sm text-ink-soft">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <MapPin className="size-4 shrink-0" aria-hidden />
-            <span className="truncate">
-              {project.uni || project.city || "Remote"}
-            </span>
-          </span>
-          <span className="flex shrink-0 items-center gap-3">
-            <span
-              className="flex items-center gap-1"
-              title={`${openSeats} open ${openSeats === 1 ? "seat" : "seats"}`}
-            >
-              <Users className="size-4" aria-hidden />
-              <span className="sr-only">Team size</span>
-              {project.current_members}/{project.max_members}
-            </span>
-            <span className="flex items-center gap-1">
-              <Heart className="size-4" aria-hidden />
-              <span className="sr-only">Likes</span>
-              {project.likes}
-            </span>
-          </span>
+    <Link
+      to={`/projects/${project.id}`}
+      className={cn(CARD, "gap-3 p-5")}
+      onClick={(event) => {
+        // Modified clicks keep their browser meaning (new tab, new window).
+        if (
+          !onPreview ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey ||
+          event.button !== 0
+        )
+          return;
+        event.preventDefault();
+        onPreview(project.id);
+      }}
+    >
+      <div className="flex items-start gap-3.5">
+        <div className="size-12 shrink-0 overflow-hidden rounded-xl">
+          <ProjectCover project={project} columns={2} rows={2} />
         </div>
-        {footer}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="truncate text-[0.8125rem] text-ink-soft">
+              {project.category}
+            </span>
+            <StatusDot status={project.status} />
+          </div>
+          <h3 className="mt-0.5 truncate text-lg leading-snug">
+            {project.title}
+          </h3>
+        </div>
       </div>
+
+      <p className="line-clamp-2 min-h-[2.85em] text-[0.95rem] leading-snug text-ink-soft">
+        {project.subtitle || project.description}
+      </p>
+
+      <div className="min-h-[3.4rem]">
+        {recruiting ? (
+          <>
+            <p className="text-xs font-semibold tracking-wide text-ink-soft uppercase">
+              Looking for
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {project.open_roles.slice(0, 2).map((role) => (
+                <Chip key={role.title}>{role.title}</Chip>
+              ))}
+              {project.open_roles.length > 2 && (
+                <Chip tone="outline">+{project.open_roles.length - 2}</Chip>
+              )}
+            </div>
+          </>
+        ) : (
+          project.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-[1.4rem]">
+              {project.tags.slice(0, 3).map((tag) => (
+                <Chip key={tag} tone="outline">
+                  {tag}
+                </Chip>
+              ))}
+            </div>
+          )
+        )}
+      </div>
+
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-3 text-sm text-ink-soft">
+        <span className="flex min-w-0 items-center gap-1.5">
+          {place && <MapPin className="size-4 shrink-0" aria-hidden />}
+          <span className="truncate">{place}</span>
+        </span>
+        <span
+          className={cn(
+            "flex shrink-0 items-center gap-1.5",
+            seats.open && "font-semibold text-ink",
+          )}
+        >
+          <Users className="size-4" aria-hidden />
+          {seats.text}
+        </span>
+      </div>
+      {footer}
     </Link>
   );
 }
 
 export function ProjectCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-card bg-surface">
-      <Skeleton className="aspect-[2/1] rounded-none" />
-      <div className="space-y-3 p-5">
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-1/2" />
+    <div className="space-y-4 rounded-card bg-surface p-5">
+      <div className="flex items-center gap-3.5">
+        <Skeleton className="size-12 rounded-xl" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-5 w-3/4" />
+        </div>
       </div>
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-7 w-2/3" />
+      <Skeleton className="h-4 w-1/2" />
     </div>
   );
 }
@@ -126,7 +176,10 @@ export function PersonCard({ person }: { person: UserSummary }) {
       <div className="flex items-center gap-3">
         <Avatar user={person} size="lg" />
         <div className="min-w-0">
-          <h3 className="truncate text-lg leading-tight">{person.name}</h3>
+          <h3 className="flex items-center gap-1.5 text-lg leading-tight">
+            <span className="truncate">{person.name}</span>
+            {person.verified_school && <VerifiedMark />}
+          </h3>
           {(person.uni || person.city) && (
             <p className="mt-0.5 flex items-center gap-1.5 text-sm text-ink-soft">
               {person.uni ? (
@@ -195,8 +248,9 @@ export function PersonLine({
     >
       <Avatar user={person} size={size} />
       <span className="min-w-0">
-        <span className="block truncate font-display font-semibold group-hover:underline">
-          {person.name}
+        <span className="flex items-center gap-1 font-display font-semibold">
+          <span className="truncate group-hover:underline">{person.name}</span>
+          {person.verified_school && <VerifiedMark />}
         </span>
         {detail !== undefined ? (
           <span className="block truncate text-sm text-ink-soft">{detail}</span>

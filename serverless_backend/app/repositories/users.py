@@ -103,6 +103,12 @@ def unfollow(follower_id: str, target_id: str) -> None:
     )
 
 
+def follower_ids(user_id: str) -> list[str]:
+    items = get_table().query_all(keys.user(user_id), "FOLLOWER#", forward=False)
+    items.sort(key=lambda item: item["created_at"], reverse=True)
+    return [item["follower_id"] for item in items]
+
+
 def following_ids(user_id: str) -> list[str]:
     items = get_table().query_all(keys.user(user_id), "FOLLOWING#", index=GSI2, forward=False)
     return [item["target_id"] for item in items]

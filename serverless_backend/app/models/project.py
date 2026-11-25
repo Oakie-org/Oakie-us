@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 from app.models.common import (
     ApplicationStatus,
+    InvitationStatus,
     Label,
     ProjectRole,
     ProjectStatus,
@@ -67,6 +68,32 @@ class ProjectPublic(ProjectBase):
     updated_at: str
 
 
+class InvitationCreate(BaseModel):
+    user_id: str
+    role_title: ShortText = ""
+    message: str = Field(default="", max_length=600)
+
+
+class InvitationDecision(BaseModel):
+    accept: bool
+
+
+class InvitationPublic(BaseModel):
+    project_id: str
+    invitee_id: str
+    inviter_id: str
+    status: InvitationStatus
+    role_title: str = ""
+    message: str = ""
+    created_at: str
+    decided_at: str | None = None
+    invitee: UserSummary | None = None
+    inviter: UserSummary | None = None
+    project_title: str | None = None
+    project_subtitle: str | None = None
+    project_category: str | None = None
+
+
 class ProjectViewer(BaseModel):
     """How the caller relates to a project. All false/None for anonymous callers."""
 
@@ -74,6 +101,8 @@ class ProjectViewer(BaseModel):
     has_liked: bool = False
     is_following: bool = False
     application_status: ApplicationStatus | None = None
+    # A pending invitation from the team, if there is one.
+    invitation: InvitationPublic | None = None
 
 
 class ProjectDetail(ProjectPublic):
@@ -86,6 +115,23 @@ class ProjectMembership(ProjectPublic):
 
     role: ProjectRole
     member_title: str = ""
+
+
+class FacetOption(BaseModel):
+    value: str
+    count: int
+
+
+class ProjectFacets(BaseModel):
+    """Filter options with the number of projects each would leave, given the
+    other filters already applied."""
+
+    total: int
+    category: list[FacetOption]
+    status: list[FacetOption]
+    skill: list[FacetOption]
+    uni: list[FacetOption]
+    city: list[FacetOption]
 
 
 # ---------------------------------------------------------------- members

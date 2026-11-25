@@ -9,6 +9,7 @@ keys and indexes. This definition is what local development and tests create.
 | Project             | PROJECT#<pid>   | METADATA              | PROJECT / <priority>#<created_at>#<pid>|                                         |
 | Project member      | PROJECT#<pid>   | MEMBER#<uid>          |                                        | USER#<uid> / MEMBER#<joined_at>#<pid>   |
 | Application         | PROJECT#<pid>   | APPLICATION#<uid>     |                                        | USER#<uid> / APPLICATION#<created_at>   |
+| Invitation          | PROJECT#<pid>   | INVITE#<uid>          |                                        | USER#<uid> / INVITE#<created_at>#<pid>  |
 | Timeline post       | PROJECT#<pid>   | TIMELINE#<post_id>    |                                        |                                         |
 | Task                | PROJECT#<pid>   | TASK#<task_id>        |                                        | USER#<assignee> / TASK#<pid>#<task_id>  |
 | Project like        | PROJECT#<pid>   | LIKE#<uid>            |                                        |                                         |

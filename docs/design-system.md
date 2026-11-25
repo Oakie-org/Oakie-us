@@ -73,3 +73,37 @@ banner) has a recognisable face without anyone having to design one.
   the layout, an explanation plus a next step, and a retry.
 - Dragging on the task board is a shortcut; the card menu offers the same moves from the keyboard.
 - Light and dark themes are both first-class; the choice is stored and applied before first paint.
+
+## Information first
+
+Lists exist to be scanned. A visitor should learn what a project is, who it
+needs and whether there is a seat without reading a paragraph or decoding a colour.
+
+- **Colour is identity, not decoration.** In lists, a project's block colour is
+  confined to its 48px cover tile. Status is a dot and a word (`StatusDot`), not a
+  filled badge. Chips are neutral; `primary-soft` is reserved for what the viewer
+  has chosen (applied filters, selected options).
+- **One emphasised fact per card**: open seats. Everything else is `ink-soft`.
+- **Card order**: discipline and status → title → one line → "Looking for" roles →
+  place and seats. The same order is used in the preview drawer and the wizard's
+  live preview.
+- Large generated covers are kept for detail pages and profile banners, at a
+  reduced height, where there is one subject on screen.
+
+## Patterns
+
+- **Search**: the top-bar field opens a palette (`⌘K`, `Ctrl+K` or `/`) with
+  grouped suggestions after two characters, debounced 200ms; Enter runs the full
+  search. Explore's own field filters the list in place, debounced 250ms.
+- **Filters** apply instantly and live in the URL. Options come from
+  `/projects/facets` with counts; applied filters are listed as removable chips
+  with "Clear all". While results reload, the old list dims instead of emptying.
+- **Preview**: clicking a project in a list opens a drawer (`?preview=<id>`), so
+  Back closes it and scroll position is kept; modified clicks and "Full page" go
+  to the project's own URL.
+- **Creating a project** is five short steps with a live card preview, a
+  "Step N of 5" count, autosave to `localStorage` and smart defaults from the
+  profile. Only the name and the description are required; optional steps can be
+  skipped. Publishing lands on the project with three next steps (invite, post, share).
+- **Profiles** carry a strength meter that names the single next step, and can be
+  shared as a link or embedded as a card (`/embed/u/<id>`).

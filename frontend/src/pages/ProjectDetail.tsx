@@ -14,15 +14,20 @@ import {
   Heart,
   Hourglass,
   Lock,
+  MailOpen,
   MapPin,
+  Megaphone,
   Pencil,
   Share2,
+  UserPlus,
   Wifi,
+  X,
 } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { ApiError } from "@/lib/api";
 import {
+  useAnswerInvitation,
   useProject,
   useProjectReaction,
   useWithdrawApplication,
@@ -39,10 +44,111 @@ import { ProjectCover } from "@/components/ProjectCover";
 import NotFound from "@/pages/NotFound";
 import { ApplicationsTab } from "@/pages/project/ApplicationsTab";
 import { ApplyDialog } from "@/pages/project/ApplyDialog";
+import { InviteDialog } from "@/pages/project/InviteDialog";
 import { BoardTab } from "@/pages/project/BoardTab";
 import { OverviewTab } from "@/pages/project/OverviewTab";
 import { TeamTab } from "@/pages/project/TeamTab";
 import { UpdatesTab } from "@/pages/project/UpdatesTab";
+
+/** Shown to someone the team invited: the answer is one click. */
+function InvitationBanner({ project }: { project: Project }) {
+  const answer = useAnswerInvitation();
+  const toast = useToast();
+  const invitation = project.viewer.invitation;
+  if (!invitation) return null;
+  const respond = (accept: boolean) =>
+    answer.mutate(
+      { projectId: project.id, accept },
+      {
+        onSuccess: () =>
+          toast.success(
+            accept ? `Welcome to ${project.title}` : "Invitation declined",
+          ),
+        onError: (error) => toast.error(error),
+      },
+    );
+  return (
+    <section className="mb-6 flex animate-rise flex-wrap items-center justify-between gap-4 rounded-card border-2 border-primary bg-primary-soft p-5 text-on-primary-soft">
+      <div className="flex min-w-0 items-start gap-3">
+        <MailOpen className="mt-0.5 size-6 shrink-0" aria-hidden />
+        <div className="min-w-0">
+          <p className="font-display text-lg font-semibold">
+            {invitation.inviter?.name ?? "The team"} invited you to join
+            {invitation.role_title ? ` as ${invitation.role_title}` : ""}
+          </p>
+          {invitation.message && <p className="mt-1">“{invitation.message}”</p>}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          variant="ghost"
+          loading={answer.isPending && answer.variables?.accept === false}
+          onClick={() => respond(false)}
+        >
+          Decline
+        </Button>
+        <Button
+          loading={answer.isPending && answer.variables?.accept === true}
+          onClick={() => respond(true)}
+        >
+          <Check aria-hidden /> Accept and join
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+/** Right after publishing: the three things that turn a page into a team. */
+function NextSteps({
+  project,
+  onInvite,
+  onShare,
+  onDismiss,
+}: {
+  project: Project;
+  onInvite: () => void;
+  onShare: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <section className="mb-6 animate-rise rounded-card bg-surface p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl">
+            {project.title} is live. Now find your first teammate.
+          </h2>
+          <p className="mt-1 text-ink-soft">
+            Projects that do these in the first day fill their seats much
+            sooner.
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Dismiss"
+          onClick={onDismiss}
+        >
+          <X aria-hidden />
+        </Button>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        <Button variant="outline" className="justify-start" onClick={onInvite}>
+          <UserPlus aria-hidden /> Invite someone
+        </Button>
+        <ButtonLink
+          to="?tab=updates"
+          variant="outline"
+          className="justify-start"
+        >
+          <Megaphone aria-hidden /> Post a first update
+        </ButtonLink>
+        <Button variant="outline" className="justify-start" onClick={onShare}>
+          <Share2 aria-hidden /> Share the link
+        </Button>
+      </div>
+    </section>
+  );
+}
 
 type TabId = "overview" | "updates" | "team" | "board" | "applications";
 
@@ -65,6 +171,7 @@ function JoinAction({
       </span>
     );
   }
+  if (viewer.invitation) return null; // The invitation banner carries the answer buttons.
   if (viewer.application_status === "pending") {
     return (
       <span className="flex flex-wrap items-center gap-2">
@@ -100,7 +207,8 @@ function JoinAction({
 
 export default function ProjectDetail() {
   const { id = "" } = useParams();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  const [inviting, setInviting] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { status } = useAuth();
@@ -164,10 +272,29 @@ export default function ProjectDetail() {
     }
   }
 
+  const dismissCreated = () =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("created");
+        return next;
+      },
+      { replace: true },
+    );
+
   return (
     <>
-      <div className="relative aspect-[2/1] overflow-hidden rounded-card sm:aspect-[3/1] lg:aspect-[4/1]">
-        <ProjectCover project={project} />
+      <InvitationBanner project={project} />
+      {params.has("created") && canManage && (
+        <NextSteps
+          project={project}
+          onInvite={() => setInviting(true)}
+          onShare={() => void share()}
+          onDismiss={dismissCreated}
+        />
+      )}
+      <div className="relative h-20 overflow-hidden rounded-card sm:h-28">
+        <ProjectCover project={project} columns={12} rows={2} />
       </div>
 
       <header className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -236,7 +363,10 @@ export default function ProjectDetail() {
             }
           >
             <Heart
-              className={cn(viewer.has_liked && "fill-accent text-accent")}
+              key={String(viewer.has_liked)}
+              className={cn(
+                viewer.has_liked && "animate-burst fill-accent text-accent",
+              )}
               aria-hidden
             />
             {project.likes}
@@ -324,6 +454,13 @@ export default function ProjectDetail() {
         role={applyRole}
         onClose={() => setApplyRole(null)}
       />
+      {canManage && (
+        <InviteDialog
+          project={project}
+          open={inviting}
+          onOpenChange={setInviting}
+        />
+      )}
     </>
   );
 }

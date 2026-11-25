@@ -1,14 +1,18 @@
 import { useSearchParams } from "react-router-dom";
-import { Search, UserSearch, X } from "lucide-react";
+import { Search, UserSearch } from "lucide-react";
 
 import { useDebouncedParam, useSetParam } from "@/lib/hooks";
 import { useCatalog, useTalent, type TalentFilters } from "@/lib/queries";
 import { pluralize } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState } from "@/components/ui/feedback";
-import { Input, Select } from "@/components/ui/field";
+import { Input } from "@/components/ui/field";
 import { PersonCard, PersonCardSkeleton } from "@/components/cards";
-import { FilterPills, LoadMore, PageHeader, useTitle } from "@/components/page";
+import {
+  AppliedFilters,
+  FacetMenu,
+  type AppliedFilter,
+} from "@/components/filters";
+import { LoadMore, useTitle } from "@/components/page";
 
 export default function Talent() {
   useTitle("People");
@@ -17,24 +21,44 @@ export default function Talent() {
   const setFilter = useSetParam();
   const { data: catalog } = useCatalog();
 
+  const [uni, setUni] = useDebouncedParam("uni", 250);
+  const [city, setCity] = useDebouncedParam("city", 250);
   const filters: TalentFilters = {
-    q: params.get("q") ?? undefined,
-    skill: params.get("skill") ?? undefined,
-    open_to: params.get("open_to") ?? undefined,
+    q: params.get("q") || undefined,
+    skill: params.get("skill") || undefined,
+    open_to: params.get("open_to") || undefined,
+    uni: params.get("uni") || undefined,
+    city: params.get("city") || undefined,
   };
-  const active = Object.values(filters).filter(Boolean).length;
+  const applied: AppliedFilter[] = [
+    ["q", filters.q && `“${filters.q}”`],
+    ["skill", filters.skill],
+    ["open_to", filters.open_to && `Open to ${filters.open_to}`],
+    ["uni", filters.uni && `School: ${filters.uni}`],
+    ["city", filters.city && `City: ${filters.city}`],
+  ]
+    .filter((entry): entry is [string, string] => Boolean(entry[1]))
+    .map(([key, label]) => ({
+      key,
+      label,
+      onRemove: () => setFilter(key, ""),
+    }));
+  const options = (values: string[] | undefined) =>
+    (values ?? []).map((value) => ({ value, count: 0 }));
   const query = useTalent(filters);
   const people = query.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
     <>
-      <PageHeader
-        title="Find your people"
-        lead="The engineer for your strategy, the editor for your script, the co-founder for your idea. Filter by what they do and what they're open to."
-      />
+      <header>
+        <h1 className="text-3xl sm:text-4xl">Find your people</h1>
+        <p className="mt-1.5 text-ink-soft">
+          Filter by what they do, where they are and what they're open to.
+        </p>
+      </header>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="sticky top-16 z-30 -mx-4 mt-6 flex flex-col gap-3 border-b border-line bg-paper px-4 py-3 sm:-mx-6 sm:px-6">
+        <div className="flex flex-col gap-3">
           <div className="relative flex-1">
             <Search
               className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-ink-soft"
@@ -46,52 +70,61 @@ export default function Talent() {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name, school, city or skill"
               aria-label="Search people"
-              className="pl-12"
+              className="h-12 pl-12"
               maxLength={80}
             />
           </div>
-          <div className="sm:w-52">
-            <Select
-              aria-label="Open to"
+          <div
+            role="group"
+            aria-label="Filters"
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+          >
+            <FacetMenu
+              label="Skill"
+              value={filters.skill ?? ""}
+              options={options(catalog?.skills)}
+              onChange={(value) => setFilter("skill", value)}
+              hideCounts
+            />
+            <FacetMenu
+              label="Open to"
               value={filters.open_to ?? ""}
-              onChange={(event) => setFilter("open_to", event.target.value)}
-            >
-              <option value="">Open to anything</option>
-              {catalog?.open_to.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              options={options(catalog?.open_to)}
+              onChange={(value) => setFilter("open_to", value)}
+              hideCounts
+            />
+            <input
+              value={uni}
+              onChange={(event) => setUni(event.target.value)}
+              placeholder="School"
+              aria-label="School"
+              maxLength={80}
+              className="h-10 w-36 shrink-0 rounded-full border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
+            />
+            <input
+              value={city}
+              onChange={(event) => setCity(event.target.value)}
+              placeholder="City"
+              aria-label="City"
+              maxLength={80}
+              className="h-10 w-36 shrink-0 rounded-full border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
+            />
           </div>
         </div>
-        <FilterPills
-          label="Skill"
-          allLabel="All skills"
-          options={catalog?.skills ?? []}
-          value={filters.skill ?? ""}
-          onChange={(value) => setFilter("skill", value)}
-        />
       </div>
 
-      <div
-        className="mb-4 mt-8 flex min-h-9 items-center justify-between gap-3"
-        aria-live="polite"
-      >
-        <p className="text-sm text-ink-soft">
+      <div className="mb-4 mt-5 flex min-h-8 flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="text-sm font-medium" aria-live="polite">
           {query.isPending
             ? "Finding people…"
             : `${pluralize(people.length, "person", "people")}${
-                query.hasNextPage ? " so far" : ""
+                query.hasNextPage ? "+" : ""
               }`}
         </p>
-        {active > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setParams({}, { replace: true })}
-          >
-            <X aria-hidden /> Clear filters
-          </Button>
-        )}
+        <AppliedFilters
+          filters={applied}
+          onClear={() => setParams({}, { replace: true })}
+        />
       </div>
 
       {query.isError ? (
@@ -112,7 +145,7 @@ export default function Talent() {
         </EmptyState>
       ) : (
         <>
-          <div className="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {people.map((person) => (
               <PersonCard key={person.id} person={person} />
             ))}

@@ -1,6 +1,8 @@
 """Projects and everything stored in a project's partition:
 members, applications, timeline posts, tasks, likes and follows."""
 
+from collections.abc import Callable
+
 from boto3.dynamodb.conditions import Attr, ConditionBase
 
 from app.db import keys
@@ -14,7 +16,9 @@ _COUNTER = {"LIKE": "likes", "FOLLOW": "follows"}
 def _search_text(project: Item) -> str:
     parts = [str(project.get(field) or "") for field in _SEARCHABLE]
     parts += project.get("tags") or []
-    parts += [role.get("title", "") for role in project.get("open_roles") or []]
+    for role in project.get("open_roles") or []:
+        parts.append(role.get("title", ""))
+        parts += role.get("skills") or []
     return " ".join(parts).lower()
 
 
@@ -84,7 +88,10 @@ def delete(project_id: str) -> None:
     table.update(*keys.STATS, add={"projects": -1}, must_exist=False)
 
 
-def list_page(limit: int, cursor: str | None, filter_expression: ConditionBase) -> Page:
+_LISTED: ConditionBase = Attr("visibility").ne("private")
+
+
+def list_page(limit: int, cursor: str | None, predicate: Callable[[Item], bool] | None) -> Page:
     """Listable projects: featured first, then newest."""
     return get_table().query_page(
         keys.ALL_PROJECTS,
@@ -92,28 +99,17 @@ def list_page(limit: int, cursor: str | None, filter_expression: ConditionBase) 
         forward=False,
         limit=limit,
         cursor=cursor,
-        filter_expression=filter_expression,
+        filter_expression=_LISTED,
+        predicate=predicate,
     )
 
 
-def listing_filter(
-    *,
-    status: str | None,
-    category: str | None,
-    city: str | None,
-    uni: str | None,
-    tag: str | None,
-    q: str | None,
-) -> ConditionBase:
-    condition: ConditionBase = Attr("visibility").ne("private")
-    for attr, value in (("status", status), ("category", category)):
-        if value:
-            condition &= Attr(attr).eq(value)
-    # Free-text facets match case-insensitively against the denormalised text.
-    for value in (city, uni, tag, q):
-        if value and value.strip():
-            condition &= Attr("search_text").contains(value.strip().lower())
-    return condition
+def list_all() -> list[Item]:
+    """Every listable project. Used for facet counts; bounded by the listing's
+    size, which is the point at which a search service takes over."""
+    return get_table().query_all(
+        keys.ALL_PROJECTS, index=GSI1, forward=False, filter_expression=_LISTED
+    )
 
 
 # ---------------------------------------------------------------- members
@@ -232,6 +228,43 @@ def applications_of(user_id: str) -> list[Item]:
 
 def count_application() -> None:
     get_table().update(*keys.STATS, add={"applications": 1}, must_exist=False)
+
+
+# ------------------------------------------------------------ invitations
+
+
+def get_invitation(project_id: str, user_id: str) -> Item | None:
+    return get_table().get(keys.project(project_id), f"INVITE#{user_id}")
+
+
+def put_invitation(invitation: Item) -> None:
+    project_id, user_id = invitation["project_id"], invitation["invitee_id"]
+    get_table().put(
+        {
+            **invitation,
+            "PK": keys.project(project_id),
+            "SK": f"INVITE#{user_id}",
+            "type": "INVITATION",
+            "gsi2_pk": keys.user(user_id),
+            "gsi2_sk": f"INVITE#{invitation['created_at']}#{project_id}",
+        }
+    )
+
+
+def update_invitation(project_id: str, user_id: str, fields: Item) -> Item | None:
+    return get_table().update(keys.project(project_id), f"INVITE#{user_id}", set_=fields)
+
+
+def delete_invitation(project_id: str, user_id: str) -> None:
+    get_table().delete(keys.project(project_id), f"INVITE#{user_id}")
+
+
+def list_invitations(project_id: str) -> list[Item]:
+    return get_table().query_all(keys.project(project_id), "INVITE#")
+
+
+def invitations_of(user_id: str) -> list[Item]:
+    return get_table().query_all(keys.user(user_id), "INVITE#", index=GSI2, forward=False)
 
 
 # --------------------------------------------------------------- timeline

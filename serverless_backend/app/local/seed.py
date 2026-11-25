@@ -5,14 +5,16 @@ from app.core.security import Principal
 from app.local import auth
 from app.models.project import (
     ApplicationCreate,
+    InvitationCreate,
     OpenRole,
     ProjectCreate,
     TaskCreate,
     TimelinePostCreate,
 )
-from app.models.user import UserUpdate
+from app.models.user import ProfileLink, UserUpdate
 from app.repositories import projects as projects_repo
-from app.services import applications, messaging, projects, users, workspace
+from app.repositories import users as users_repo
+from app.services import applications, invitations, messaging, projects, users, workspace
 
 # Local-only demo accounts; the password is the same for all of them.
 DEMO_PASSWORD = "oakie-demo-2026"
@@ -143,6 +145,24 @@ def run() -> None:
         )
         people[handle] = principal
 
+    # Demo accounts use one mail domain; mark a few as school-verified so the
+    # badge is visible locally. In production the flag comes from the confirmed address.
+    for handle in ("maya", "leo", "priya", "omar"):
+        profile = users_repo.get(people[handle].sub)
+        if profile:
+            users_repo.update(profile, {"verified_school": True})
+    users.update_me(
+        people["maya"],
+        UserUpdate(
+            availability="8-10 hrs / week",
+            accent="coral",
+            links=[
+                ProfileLink(label="Portfolio", url="https://example.com/maya"),
+                ProfileLink(label="GitHub", url="https://github.com/example"),
+            ],
+        ),
+    )
+
     created: dict[str, str] = {}
     for owner, fields in PROJECTS:
         project = projects.create(people[owner], ProjectCreate(**fields))
@@ -174,6 +194,22 @@ def run() -> None:
 
     dormswap = created["DormSwap"]
     maya, omar, jun = people["maya"], people["omar"], people["jun"]
+    invitations.invite(
+        created["QuietHours"],
+        omar,
+        InvitationCreate(
+            user_id=maya.sub,
+            role_title="Product designer",
+            message="Your DormSwap cards are exactly the feel we want. "
+            "Two weeks of design, then we ship.",
+        ),
+    )
+    invitations.invite(
+        dormswap,
+        maya,
+        InvitationCreate(user_id=people["priya"].sub, role_title="Trust & safety data", message=""),
+    )
+    users.update_me(maya, UserUpdate(pinned_project_ids=[dormswap]))
     for title, content, kind in [
         ("Pilot campus confirmed", "NYU housing agreed to let us run the two-week pilot in "
          "three residence halls. Launch date is the first week of May.", "milestone"),

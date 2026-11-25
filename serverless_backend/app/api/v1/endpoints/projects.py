@@ -9,6 +9,7 @@ from app.models.project import (
     MemberUpdate,
     ProjectCreate,
     ProjectDetail,
+    ProjectFacets,
     ProjectPublic,
     ProjectUpdate,
 )
@@ -17,22 +18,38 @@ from app.services import projects
 router = APIRouter()
 
 
-@router.get("", response_model=CursorPage[ProjectPublic])
-def list_projects(
+def listing_query(
     status: ProjectStatus | None = None,
     category: str | None = None,
-    city: str | None = None,
-    uni: str | None = None,
-    tag: str | None = None,
+    city: str | None = Query(None, max_length=80),
+    uni: str | None = Query(None, max_length=80),
+    tag: str | None = Query(None, max_length=40),
     q: str | None = Query(None, max_length=80),
+    skill: str | None = Query(None, max_length=40, description="A skill an open role asks for"),
+    remote: bool | None = Query(None, description="Only teams that welcome remote members"),
+    open_only: bool = Query(False, description="Only teams with a free seat"),
+    within_days: int | None = Query(None, ge=1, le=365, description="Posted in the last N days"),
+) -> projects.ProjectQuery:
+    return projects.ProjectQuery(
+        status=status, category=category, city=city, uni=uni, tag=tag, q=q,
+        skill=skill, remote=remote, open_only=open_only, within_days=within_days,
+    )  # fmt: skip
+
+
+@router.get("", response_model=CursorPage[ProjectPublic])
+def list_projects(
+    query: projects.ProjectQuery = Depends(listing_query),
     cursor: str | None = None,
     limit: int = Query(12, ge=1, le=50),
 ):
     """Public and members-only projects, featured first, then newest."""
-    return projects.list_projects(
-        status=status, category=category, city=city, uni=uni, tag=tag, q=q,
-        limit=limit, cursor=cursor,
-    )  # fmt: skip
+    return projects.list_projects(query, limit, cursor)
+
+
+@router.get("/facets", response_model=ProjectFacets)
+def project_facets(query: projects.ProjectQuery = Depends(listing_query)):
+    """Filter options with counts, for the same filters the listing accepts."""
+    return projects.facets(query)
 
 
 @router.post("", response_model=ProjectPublic, status_code=status.HTTP_201_CREATED)

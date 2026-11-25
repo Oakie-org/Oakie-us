@@ -4,9 +4,14 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.core.security import Principal, get_current_user, get_current_user_optional
 from app.models.common import CursorPage
-from app.models.project import ApplicationPublic, ContributionRecord, ProjectMembership
+from app.models.project import (
+    ApplicationPublic,
+    ContributionRecord,
+    InvitationPublic,
+    ProjectMembership,
+)
 from app.models.user import UserPrivate, UserPublic, UserSummary, UserUpdate
-from app.services import applications, projects, users, workspace
+from app.services import applications, invitations, projects, users, workspace
 
 router = APIRouter()
 
@@ -42,6 +47,12 @@ def my_applications(user: Principal = Depends(get_current_user)):
     return applications.list_mine(user)
 
 
+@router.get("/users/me/invitations", response_model=list[InvitationPublic])
+def my_invitations(user: Principal = Depends(get_current_user)):
+    """Invitations waiting for an answer."""
+    return invitations.list_mine(user)
+
+
 @router.get("/users/{user_id}", response_model=UserPublic)
 def read_user(user_id: str, user: Principal | None = Depends(get_current_user_optional)):
     return users.get_public(user_id, user)
@@ -55,6 +66,16 @@ def user_projects(user_id: str, user: Principal | None = Depends(get_current_use
 @router.get("/users/{user_id}/contributions", response_model=list[ContributionRecord])
 def user_contributions(user_id: str, user: Principal | None = Depends(get_current_user_optional)):
     return workspace.contributions_of(user_id, user)
+
+
+@router.get("/users/{user_id}/followers", response_model=list[UserSummary])
+def user_followers(user_id: str):
+    return users.followers(user_id)
+
+
+@router.get("/users/{user_id}/following", response_model=list[UserSummary])
+def user_following(user_id: str):
+    return users.following(user_id)
 
 
 @router.put("/users/{user_id}/follow", status_code=status.HTTP_204_NO_CONTENT)

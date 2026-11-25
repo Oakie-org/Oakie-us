@@ -33,7 +33,7 @@ def test_application_flow_approve(ada, ben, project):
     assert detail["current_members"] == 2
     assert detail["viewer"] == {
         "role": "member", "has_liked": False, "is_following": False,
-        "application_status": "approved",
+        "application_status": "approved", "invitation": None,
     }  # fmt: skip
     members = ben.get(f"{base}/members").json()
     assert [(m["user"]["name"], m["title"]) for m in members] == [

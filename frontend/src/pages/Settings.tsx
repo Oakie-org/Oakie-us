@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, Plus, Trash2 } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
-import { useCatalog, useUpdateMe } from "@/lib/queries";
-import type { Me, ProfileUpdate } from "@/lib/types";
+import { ACCENTS, toneNamed } from "@/lib/categories";
+import { profileStrength, safeUrl } from "@/lib/profile";
+import { useCatalog, useUpdateMe, useUserProjects } from "@/lib/queries";
+import type { Me, ProfileLink, ProfileUpdate } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -34,7 +36,38 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
     website: me.website,
     avatar_url: me.avatar_url,
     banner_url: me.banner_url,
+    links: me.links,
+    accent: me.accent,
+    pinned_project_ids: me.pinned_project_ids,
+    availability: me.availability,
   });
+  const mine = useUserProjects(me.id);
+  const strength = profileStrength({ ...me, ...draft });
+  const setLink = (index: number, patch: Partial<ProfileLink>) =>
+    set(
+      "links",
+      draft.links.map((link, position) =>
+        position === index ? { ...link, ...patch } : link,
+      ),
+    );
+  const togglePin = (id: string) =>
+    set(
+      "pinned_project_ids",
+      draft.pinned_project_ids.includes(id)
+        ? draft.pinned_project_ids.filter((pid) => pid !== id)
+        : [...draft.pinned_project_ids, id].slice(0, 3),
+    );
+
+  // Arriving from "Next: add a headline" lands on that field.
+  useEffect(() => {
+    const target = window.location.hash.slice(1);
+    if (!target) return;
+    const node = document.getElementById(`profile-${target}`);
+    node?.scrollIntoView({ block: "center" });
+    node
+      ?.querySelector<HTMLElement>("input, textarea, button")
+      ?.focus({ preventScroll: true });
+  }, []);
   const [nameTouched, setNameTouched] = useState(false);
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
@@ -45,7 +78,17 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
     setNameTouched(true);
     if (nameError) return;
     update.mutate(
-      { ...draft, name: draft.name.trim() },
+      {
+        ...draft,
+        name: draft.name.trim(),
+        // Half-filled link rows are dropped rather than rejected.
+        links: draft.links
+          .map((link) => ({
+            label: link.label.trim(),
+            url: safeUrl(link.url.trim()) ?? "",
+          }))
+          .filter((link) => link.label && link.url),
+      },
       {
         onSuccess: () => {
           toast.success("Profile saved");
@@ -57,7 +100,58 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-8">
-      <section className="flex flex-col gap-6 rounded-card bg-surface p-6 sm:p-8">
+      <section
+        className="rounded-card bg-surface p-6 sm:p-8"
+        aria-label="Profile strength"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl">
+            {strength.percent === 100
+              ? "Your profile is complete"
+              : "Profile strength"}
+          </h2>
+          <span className="font-display text-2xl font-semibold tabular-nums">
+            {strength.percent}%
+          </span>
+        </div>
+        <div
+          className="mt-3 h-2 overflow-hidden rounded-full bg-line"
+          aria-hidden
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out-soft"
+            style={{ width: `${strength.percent}%` }}
+          />
+        </div>
+        <ul className="mt-4 grid gap-x-6 gap-y-1.5 text-[0.95rem] sm:grid-cols-2">
+          {strength.steps.map((step) => (
+            <li
+              key={step.key}
+              className={cn(
+                "flex items-center gap-2",
+                step.done ? "text-ink-soft" : "font-medium",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded-full",
+                  step.done
+                    ? "bg-primary text-on-primary"
+                    : "border-2 border-dashed border-ink-soft",
+                )}
+              >
+                {step.done && <Check className="size-3.5" aria-hidden />}
+              </span>
+              {step.label}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section
+        id="profile-photo"
+        className="flex flex-col gap-6 rounded-card bg-surface p-6 sm:p-8"
+      >
         <h2 className="text-xl">Photos</h2>
         <ImagePicker
           label="Profile photo"
@@ -96,6 +190,7 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
 
       <section className="flex flex-col gap-5 rounded-card bg-surface p-6 sm:p-8">
         <h2 className="text-xl">About you</h2>
+        <span id="profile-headline" className="-mb-5" />
         <Field
           label="Name"
           required
@@ -114,6 +209,7 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
         </Field>
         <Field
           label="Headline"
+          className="scroll-mt-24"
           hint="One line that says what you do. Shown wherever your name appears."
         >
           {(control) => (
@@ -126,6 +222,7 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
             />
           )}
         </Field>
+        <span id="profile-bio" className="-my-2.5" />
         <Field label="Bio" hint={`${draft.bio.length}/1200`}>
           {(control) => (
             <Textarea
@@ -138,7 +235,7 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
             />
           )}
         </Field>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div id="profile-place" className="grid gap-5 sm:grid-cols-2">
           <Field label="School">
             {(control) => (
               <Input
@@ -162,23 +259,187 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
             )}
           </Field>
         </div>
-        <Field label="Website or portfolio">
+        <Field
+          label="Availability"
+          hint="How much time you can give a team right now."
+        >
           {(control) => (
             <Input
               {...control}
-              type="url"
-              inputMode="url"
-              value={draft.website}
-              onChange={(event) => set("website", event.target.value)}
-              maxLength={200}
-              placeholder="https://"
-              autoComplete="url"
+              value={draft.availability}
+              onChange={(event) => set("availability", event.target.value)}
+              maxLength={140}
+              placeholder="5-10 hrs / week"
+              list="availability-ideas"
             />
           )}
         </Field>
+        <datalist id="availability-ideas">
+          {[
+            "A few hours a week",
+            "5-10 hrs / week",
+            "10-20 hrs / week",
+            "Full-time this summer",
+            "Not available right now",
+          ].map((idea) => (
+            <option key={idea} value={idea} />
+          ))}
+        </datalist>
       </section>
 
-      <section className="flex flex-col gap-5 rounded-card bg-surface p-6 sm:p-8">
+      <section
+        id="profile-links"
+        className="flex flex-col gap-5 rounded-card bg-surface p-6 sm:p-8"
+      >
+        <div>
+          <h2 className="text-xl">Make it yours</h2>
+          <p className="mt-1 text-ink-soft">
+            Your profile doubles as a card you can link from a résumé or embed
+            on your own site.
+          </p>
+        </div>
+        <fieldset>
+          <legend className="font-display text-sm font-semibold">
+            Accent colour
+          </legend>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {["", ...ACCENTS].map((name) => (
+              <label
+                key={name || "auto"}
+                title={name || "Automatic"}
+                className={cn(
+                  "flex size-10 cursor-pointer items-center justify-center rounded-full border-2 transition-transform has-focus-visible:outline-3 has-focus-visible:outline-primary hover:scale-110",
+                  draft.accent === name ? "border-ink" : "border-transparent",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="accent"
+                  value={name}
+                  checked={draft.accent === name}
+                  onChange={() => set("accent", name)}
+                  className="sr-only"
+                  aria-label={name || "Automatic"}
+                />
+                <span
+                  className={cn(
+                    "flex size-7 items-center justify-center rounded-full text-[0.625rem] font-semibold text-block-ink",
+                    toneNamed(name)?.bg ?? "bg-sunken",
+                  )}
+                >
+                  {name ? "" : "Auto"}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div>
+          <p className="font-display text-sm font-semibold">Links</p>
+          <p className="text-sm text-ink-soft">
+            Portfolio, GitHub, a reel, a paper: whatever shows your work. Up to
+            6.
+          </p>
+          <div className="mt-2 flex flex-col gap-2">
+            {draft.links.map((link, index) => (
+              <div key={index} className="flex animate-pop gap-2">
+                <Input
+                  value={link.label}
+                  onChange={(event) =>
+                    setLink(index, { label: event.target.value })
+                  }
+                  maxLength={40}
+                  placeholder="Label"
+                  aria-label={`Link ${index + 1} label`}
+                  className="w-32 shrink-0 sm:w-40"
+                />
+                <Input
+                  value={link.url}
+                  onChange={(event) =>
+                    setLink(index, { url: event.target.value })
+                  }
+                  maxLength={200}
+                  placeholder="https://"
+                  type="url"
+                  inputMode="url"
+                  aria-label={`Link ${index + 1} address`}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Remove link ${index + 1}`}
+                  onClick={() =>
+                    set(
+                      "links",
+                      draft.links.filter((_, position) => position !== index),
+                    )
+                  }
+                >
+                  <Trash2 aria-hidden />
+                </Button>
+              </div>
+            ))}
+            {draft.links.length < 6 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="self-start"
+                onClick={() =>
+                  set("links", [...draft.links, { label: "", url: "" }])
+                }
+              >
+                <Plus aria-hidden /> Add a link
+              </Button>
+            )}
+          </div>
+        </div>
+        {Boolean(mine.data?.length) && (
+          <fieldset>
+            <legend className="font-display text-sm font-semibold">
+              Featured projects
+            </legend>
+            <p className="text-sm text-ink-soft">
+              Pin up to 3 to the top of your profile.
+            </p>
+            <div className="mt-2 flex flex-col gap-2">
+              {mine.data!.map((project) => {
+                const pinned = draft.pinned_project_ids.includes(project.id);
+                const full = !pinned && draft.pinned_project_ids.length >= 3;
+                return (
+                  <label
+                    key={project.id}
+                    className={cn(
+                      "flex min-h-12 items-center gap-3 rounded-2xl border-2 px-3.5 py-2 transition-colors",
+                      pinned ? "border-primary bg-primary-soft" : "border-line",
+                      full
+                        ? "opacity-50"
+                        : "cursor-pointer hover:border-ink-soft",
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={pinned}
+                      disabled={full}
+                      onChange={() => togglePin(project.id)}
+                      className="size-5 accent-(--primary)"
+                    />
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {project.title}
+                    </span>
+                    <span className="shrink-0 text-sm text-ink-soft">
+                      {project.member_title || project.role}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        )}
+      </section>
+
+      <section
+        id="profile-skills"
+        className="flex flex-col gap-5 rounded-card bg-surface p-6 sm:p-8"
+      >
         <h2 className="text-xl">How teams find you</h2>
         <Field label="Skills" hint="Press Enter to add. Up to 20.">
           {(control) => (
@@ -192,7 +453,7 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
             />
           )}
         </Field>
-        <fieldset>
+        <fieldset id="profile-open_to">
           <legend className="font-display text-sm font-semibold">
             Open to
           </legend>

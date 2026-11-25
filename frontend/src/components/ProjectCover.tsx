@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { AVATAR_TONES, toneFor } from "@/lib/categories";
+import { AVATAR_TONES, toneFor, type BlockTone } from "@/lib/categories";
 import { cn, hash } from "@/lib/utils";
 
 const INK = "var(--color-block-ink)";
@@ -70,6 +70,8 @@ interface ProjectCoverProps {
   /** Grid of 80px tiles; defaults suit a wide banner. */
   columns?: number;
   rows?: number;
+  /** Overrides the discipline colour (profile banners use the member's accent). */
+  tone?: BlockTone;
   className?: string;
 }
 
@@ -82,9 +84,10 @@ export function ProjectCover({
   project,
   columns = 6,
   rows = 2,
+  tone: chosen,
   className,
 }: ProjectCoverProps) {
-  const tone = toneFor(project.category);
+  const tone = chosen ?? toneFor(project.category);
   const tiles = useMemo(
     () => compose(project.id, tone.fill, columns, rows),
     [project.id, tone.fill, columns, rows],

@@ -16,7 +16,6 @@ import { Field, Input, Textarea } from "@/components/ui/field";
 import { ImagePicker } from "@/components/ui/image-picker";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader, useTitle } from "@/components/page";
-import { ProjectCover } from "@/components/ProjectCover";
 
 type Draft = Required<ProfileUpdate>;
 
@@ -170,20 +169,19 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
           }
         />
         <ImagePicker
-          label="Banner"
+          label="Banner (optional)"
+          hint="A picture of your own. Without one, your profile shows a band in your accent colour, or nothing at all."
           purpose="user_banner"
           value={draft.banner_url}
           onChange={(url) => set("banner_url", url)}
           preview={
-            <div className="h-16 w-40 overflow-hidden rounded-xl">
-              <ProjectCover
-                project={{
-                  id: me.id,
-                  category: "",
-                  image_url: draft.banner_url,
-                }}
+            draft.banner_url && (
+              <img
+                src={draft.banner_url}
+                alt=""
+                className="h-16 w-40 rounded-xl bg-sunken object-cover"
               />
-            </div>
+            )
           }
         />
       </section>
@@ -218,7 +216,7 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
               value={draft.headline}
               onChange={(event) => set("headline", event.target.value)}
               maxLength={140}
-              placeholder="Quant research @ student fund"
+              placeholder="Illustrator, open to side projects"
             />
           )}
         </Field>
@@ -236,7 +234,10 @@ function ProfileForm({ me, welcome }: { me: Me; welcome: boolean }) {
           )}
         </Field>
         <div id="profile-place" className="grid gap-5 sm:grid-cols-2">
-          <Field label="School">
+          <Field
+            label="Community"
+            hint="Optional. A school, company, club or studio you're part of."
+          >
             {(control) => (
               <Input
                 {...control}

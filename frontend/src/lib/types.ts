@@ -114,6 +114,8 @@ export interface Project extends ProjectInput {
   priority: number;
   created_at: string;
   updated_at: string;
+  /** Who posted it. Present wherever projects are listed. */
+  owner?: UserSummary | null;
 }
 
 export interface ProjectViewer {

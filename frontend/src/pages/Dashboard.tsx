@@ -26,7 +26,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { ProjectPreview } from "@/components/ProjectPreview";
 import { EmptyState, Skeleton } from "@/components/ui/feedback";
-import { ProjectCard, ProjectCardSkeleton } from "@/components/cards";
+import { ProjectFeed, ProjectFeedSkeleton } from "@/components/ProjectFeed";
 import { Section, useTitle } from "@/components/page";
 
 const APPLICATION_TONE: Record<ApplicationStatus, string> = {
@@ -215,11 +215,7 @@ export default function Dashboard() {
 
       <Section title="Your projects" className="mt-10">
         {mine.isPending ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }, (_, index) => (
-              <ProjectCardSkeleton key={index} />
-            ))}
-          </div>
+          <ProjectFeedSkeleton count={3} />
         ) : !mine.data?.length ? (
           <EmptyState
             icon={FolderPlus}
@@ -237,23 +233,16 @@ export default function Dashboard() {
             Post your own idea, or apply to a team that needs your skills.
           </EmptyState>
         ) : (
-          <div className="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {mine.data.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                footer={
-                  <div className="mt-3 border-t border-line pt-3">
-                    <Chip
-                      tone={project.role === "owner" ? "primary" : "neutral"}
-                    >
-                      {project.member_title || ROLE_LABEL[project.role]}
-                    </Chip>
-                  </div>
-                }
-              />
-            ))}
-          </div>
+          <ProjectFeed
+            projects={mine.data}
+            footer={(project) => (
+              <div className="mt-1 border-t border-line pt-3">
+                <Chip tone={project.role === "owner" ? "primary" : "neutral"}>
+                  {project.member_title || ROLE_LABEL[project.role]}
+                </Chip>
+              </div>
+            )}
+          />
         )}
       </Section>
 
@@ -272,11 +261,7 @@ export default function Dashboard() {
 
       {Boolean(followed.data?.length) && (
         <Section title="Projects you follow">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {followed.data!.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          <ProjectFeed projects={followed.data!} />
         </Section>
       )}
 
@@ -289,25 +274,13 @@ export default function Dashboard() {
         }
       >
         {fresh.isPending ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }, (_, index) => (
-              <ProjectCardSkeleton key={index} />
-            ))}
-          </div>
+          <ProjectFeedSkeleton count={3} />
         ) : suggestions.length === 0 ? (
           <EmptyState icon={Hourglass} title="No open teams right now">
             Check back soon, or start one yourself.
           </EmptyState>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {suggestions.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onPreview={setPreviewing}
-              />
-            ))}
-          </div>
+          <ProjectFeed projects={suggestions} onPreview={setPreviewing} />
         )}
       </Section>
       <ProjectPreview id={previewing} onClose={() => setPreviewing(null)} />

@@ -31,7 +31,7 @@ export function profileSteps(me: Me): ProfileStep[] {
     },
     {
       key: "place",
-      label: "Add your school or city",
+      label: "Add where you're based",
       why: "Most teams start local.",
       done: Boolean(me.uni || me.city),
     },

@@ -10,6 +10,7 @@ from app.models.project import (
     ProjectCreate,
     ProjectDetail,
     ProjectFacets,
+    ProjectListed,
     ProjectPublic,
     ProjectUpdate,
 )
@@ -36,7 +37,7 @@ def listing_query(
     )  # fmt: skip
 
 
-@router.get("", response_model=CursorPage[ProjectPublic])
+@router.get("", response_model=CursorPage[ProjectListed])
 def list_projects(
     query: projects.ProjectQuery = Depends(listing_query),
     cursor: str | None = None,
@@ -57,7 +58,7 @@ def create_project(payload: ProjectCreate, user: Principal = Depends(get_current
     return projects.create(user, payload)
 
 
-@router.get("/following", response_model=list[ProjectPublic])
+@router.get("/following", response_model=list[ProjectListed])
 def list_followed_projects(user: Principal = Depends(get_current_user)):
     return projects.following(user)
 

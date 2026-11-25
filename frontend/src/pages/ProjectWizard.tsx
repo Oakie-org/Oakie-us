@@ -38,7 +38,6 @@ import { ImagePicker } from "@/components/ui/image-picker";
 import { useToast } from "@/components/ui/toast";
 import { ProjectCard } from "@/components/cards";
 import { useTitle } from "@/components/page";
-import { ProjectCover } from "@/components/ProjectCover";
 
 const DRAFT_KEY = "oakie:project-draft";
 
@@ -333,10 +332,10 @@ export default function ProjectWizard() {
     title: input.title.trim() || "Your project name",
     subtitle:
       input.subtitle.trim() ||
-      input.description.trim() ||
-      "Your one-line summary appears here.",
+      (input.description.trim() ? "" : "Your one-line summary appears here."),
     id: "draft",
     owner_id: me?.id ?? "",
+    owner: me,
     current_members: 1,
     likes: 0,
     follows: 0,
@@ -669,14 +668,17 @@ export default function ProjectWizard() {
             {step === 3 && (
               <>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="School">
+                  <Field
+                    label="Community"
+                    hint="Optional. A school, company, club or lab, if the project belongs to one."
+                  >
                     {(control) => (
                       <Input
                         {...control}
                         value={input.uni}
                         onChange={(event) => set("uni", event.target.value)}
                         maxLength={140}
-                        placeholder="NYU"
+                        placeholder="NYU, a studio, a maker space…"
                       />
                     )}
                   </Field>
@@ -718,14 +720,19 @@ export default function ProjectWizard() {
                   )}
                 </Field>
                 <ImagePicker
-                  label="Cover image (optional: we generate one for you)"
+                  label="Picture (optional)"
+                  hint="A screenshot, a photo, a sketch: something real from the project. No picture is fine too, the card then shows more of your words."
                   purpose="project_cover"
                   value={input.image_url}
                   onChange={(url) => set("image_url", url)}
                   preview={
-                    <div className="size-14 overflow-hidden rounded-xl">
-                      <ProjectCover project={preview} columns={2} rows={2} />
-                    </div>
+                    input.image_url && (
+                      <img
+                        src={input.image_url}
+                        alt=""
+                        className="h-20 w-32 rounded-xl bg-sunken object-cover"
+                      />
+                    )
                   }
                 />
                 <fieldset>
@@ -792,11 +799,11 @@ export default function ProjectWizard() {
                       at: 2,
                     },
                     {
-                      done: Boolean(input.uni || input.city),
+                      done: Boolean(input.city || input.remote_ok),
                       label: "Place and visibility",
                       detail: [
+                        input.city || (input.remote_ok ? "Remote" : ""),
                         input.uni,
-                        input.city,
                         VISIBILITY.find(
                           (option) => option.value === input.visibility,
                         )?.label,

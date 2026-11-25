@@ -23,7 +23,6 @@ import { ImagePicker } from "@/components/ui/image-picker";
 import { Dialog } from "@/components/ui/overlay";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader, useTitle } from "@/components/page";
-import { ProjectCover } from "@/components/ProjectCover";
 import NotFound from "@/pages/NotFound";
 
 const BLANK: ProjectInput = {
@@ -303,20 +302,19 @@ function EditorForm({ project }: { project?: ProjectDetail }) {
           )}
         </Field>
         <ImagePicker
-          label="Cover image"
+          label="Picture (optional)"
+          hint="A screenshot, a photo, a sketch: something real from the project. No picture is fine too, the card then shows more of your words."
           purpose="project_cover"
           value={draft.image_url}
           onChange={(url) => set("image_url", url)}
           preview={
-            <div className="h-20 w-40 overflow-hidden rounded-xl">
-              <ProjectCover
-                project={{
-                  id: project?.id ?? (draft.title || "new-project"),
-                  category: draft.category,
-                  image_url: draft.image_url,
-                }}
+            draft.image_url && (
+              <img
+                src={draft.image_url}
+                alt=""
+                className="h-20 w-32 rounded-xl bg-sunken object-cover"
               />
-            </div>
+            )
           }
         />
       </section>
@@ -355,7 +353,10 @@ function EditorForm({ project }: { project?: ProjectDetail }) {
               </Select>
             )}
           </Field>
-          <Field label="School">
+          <Field
+            label="Community"
+            hint="Optional. A school, company, club or lab, if the project belongs to one."
+          >
             {(control) => (
               <Input
                 {...control}

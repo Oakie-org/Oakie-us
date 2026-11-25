@@ -101,15 +101,19 @@ export function StatusDot({
   );
 }
 
-/** Marks a member whose account was confirmed with a school email address. */
+/**
+ * Marks a community a member confirmed with an email address from it. It
+ * vouches for that one claim, not for the person, so it sits beside the
+ * community's name and never beside the member's.
+ */
 export function VerifiedMark({ className }: { className?: string }) {
   return (
     <span
-      title="School email verified"
+      title="Confirmed with an email address from this community"
       className={cn("inline-flex shrink-0 text-primary", className)}
     >
       <BadgeCheck className="size-[1.1em]" aria-hidden />
-      <span className="sr-only">School email verified</span>
+      <span className="sr-only">Confirmed by email</span>
     </span>
   );
 }

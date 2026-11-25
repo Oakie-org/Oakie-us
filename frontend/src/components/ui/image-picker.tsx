@@ -11,8 +11,10 @@ interface ImagePickerProps {
   onChange: (url: string | null) => void;
   purpose: UploadPurpose;
   label: string;
-  /** Renders the current image (or its placeholder). */
+  /** Renders the current image, if there is one. */
   preview: ReactNode;
+  /** Replaces the default note about accepted formats. */
+  hint?: string;
 }
 
 /** Pick, upload and clear a single image, with progress and error feedback. */
@@ -22,6 +24,7 @@ export function ImagePicker({
   purpose,
   label,
   preview,
+  hint = "JPEG, PNG, WebP or GIF. Large photos are resized for you.",
 }: ImagePickerProps) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -77,9 +80,7 @@ export function ImagePicker({
           {error}
         </p>
       ) : (
-        <p className="text-sm text-ink-soft">
-          JPEG, PNG, WebP or GIF. Large photos are resized for you.
-        </p>
+        <p className="text-sm text-ink-soft">{hint}</p>
       )}
     </div>
   );

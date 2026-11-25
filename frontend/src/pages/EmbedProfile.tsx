@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 import {
   ArrowUpRight,
   Award,
+  Building2,
   FolderOpen,
-  GraduationCap,
   MapPin,
 } from "lucide-react";
 
@@ -64,7 +64,6 @@ export default function EmbedProfile() {
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 font-display text-lg font-semibold leading-tight">
               <span className="truncate">{profile.name}</span>
-              {profile.verified_school && <VerifiedMark />}
             </p>
             {profile.headline && (
               <p className="line-clamp-2 text-sm text-ink-soft">
@@ -74,16 +73,17 @@ export default function EmbedProfile() {
           </div>
         </div>
         <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">
-          {profile.uni && (
-            <span className="flex items-center gap-1">
-              <GraduationCap className="size-4" aria-hidden />
-              {profile.uni}
-            </span>
-          )}
           {profile.city && (
             <span className="flex items-center gap-1">
               <MapPin className="size-4" aria-hidden />
               {profile.city}
+            </span>
+          )}
+          {profile.uni && (
+            <span className="flex items-center gap-1">
+              <Building2 className="size-4" aria-hidden />
+              {profile.uni}
+              {profile.verified_school && <VerifiedMark />}
             </span>
           )}
         </p>

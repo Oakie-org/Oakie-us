@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1200" height="675" fill="#ffffff"/>
+  <text x="64" y="76" font-size="30" font-weight="700" fill="#17201c">12-month momentum, net of costs</text>
+  <text x="64" y="110" font-size="18" fill="#55615a">Growth of $1 · monthly rebalance · 2010–2025</text>
+  <g stroke="#e4e2d8" stroke-width="1">
+    <line x1="96" y1="170" x2="1136" y2="170"/><line x1="96" y1="280" x2="1136" y2="280"/>
+    <line x1="96" y1="390" x2="1136" y2="390"/><line x1="96" y1="500" x2="1136" y2="500"/>
+  </g>
+  <line x1="96" y1="580" x2="1136" y2="580" stroke="#17201c" stroke-width="1.5"/>
+  <g font-size="15" fill="#55615a">
+    <text x="80" y="175" text-anchor="end">4×</text><text x="80" y="285" text-anchor="end">3×</text>
+    <text x="80" y="395" text-anchor="end">2×</text><text x="80" y="505" text-anchor="end">1×</text>
+    <text x="96" y="610">2010</text><text x="430" y="610">2015</text><text x="776" y="610">2020</text><text x="1100" y="610">2025</text>
+  </g>
+  <path d="M96 500 L160 492 L224 470 L288 478 L352 452 L416 430 L480 440 L544 404 L608 380 L672 396 L736 350 L800 372 L864 318 L928 290 L992 304 L1056 250 L1136 214" fill="none" stroke="#0e6b55" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M96 500 L160 496 L224 484 L288 488 L352 472 L416 462 L480 468 L544 448 L608 436 L672 446 L736 420 L800 440 L864 404 L928 388 L992 398 L1056 366 L1136 344" fill="none" stroke="#9aa39d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+  <rect x="776" y="170" width="54" height="410" fill="#17201c" opacity="0.05"/>
+  <text x="803" y="160" font-size="14" fill="#55615a" text-anchor="middle">2020 drawdown</text>
+  <circle cx="1136" cy="214" r="6" fill="#0e6b55"/>
+  <text x="1124" y="196" font-size="18" font-weight="700" fill="#0e6b55" text-anchor="end">Strategy 3.6×</text>
+  <text x="1124" y="372" font-size="18" font-weight="700" fill="#6c766f" text-anchor="end">Benchmark 2.4×</text>
+  <text x="64" y="648" font-size="15" fill="#55615a">Turnover costs remove about a third of the gross return. Paper trading only.</text>
+</svg>

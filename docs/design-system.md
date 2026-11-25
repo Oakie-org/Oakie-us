@@ -55,11 +55,18 @@ label, unread items with a dot plus bold text and a screen-reader label.
   `prefers-reduced-motion` disables all of it.
 - Layout: one 72rem column, 16px gutters on phones and 24px from `sm`; grids go 1 → 2 → 3 columns.
 
-## Signature: generated covers
+## Pictures are content, never decoration
 
-`ProjectCover` composes a deterministic geometric cover from a project's id, in
-its discipline's colour, whenever no image is uploaded. Every project (and profile
-banner) has a recognisable face without anyone having to design one.
+A project shows a picture only when its team uploaded one: a screenshot, a
+photo, a sketch. There is no generated cover and no placeholder. A picture that
+every project gets says nothing about any of them, and a feed of them reads as
+one project repeated. A project without a picture is a text post, and its card
+quotes more of the text instead.
+
+The same holds for people: a profile banner is the member's own picture, or
+failing that a flat band in the accent colour they chose, or nothing. The only
+generated artwork left is the illustration on the sign-in page (`ProjectCover`),
+which decorates the product, not anyone's content.
 
 ## Interaction rules
 
@@ -79,16 +86,35 @@ banner) has a recognisable face without anyone having to design one.
 Lists exist to be scanned. A visitor should learn what a project is, who it
 needs and whether there is a seat without reading a paragraph or decoding a colour.
 
-- **Colour is identity, not decoration.** In lists, a project's block colour is
-  confined to its 48px cover tile. Status is a dot and a word (`StatusDot`), not a
-  filled badge. Chips are neutral; `primary-soft` is reserved for what the viewer
-  has chosen (applied filters, selected options).
-- **One emphasised fact per card**: open seats. Everything else is `ink-soft`.
-- **Card order**: discipline and status → title → one line → "Looking for" roles →
-  place and seats. The same order is used in the preview drawer and the wizard's
-  live preview.
-- Large generated covers are kept for detail pages and profile banners, at a
-  reduced height, where there is one subject on screen.
+- **A card is a preview of a post**, not a form with every slot filled. It is
+  as tall as what it has to say: nothing is padded or reserved to make cards
+  match, and lists are laid out as a masonry feed (`ProjectFeed`), 1 → 2 → 3
+  columns. Columns are balanced from an estimate of each card's height, so
+  loading more never reshuffles what is already on screen.
+- **Card order**: picture (only if uploaded) → status, discipline and age →
+  title → one-liner → opening paragraph (longer when there is no picture) →
+  "Looking for" → who posted it and where.
+- **Colour is quiet.** Status is a dot and a word (`StatusDot`). Chips are
+  neutral; `primary-soft` is reserved for what the viewer has chosen. On a
+  project the only colour comes from its own picture and its people's avatars.
+- **Roles are words, not tags.** "Looking for" is one inset block: role names
+  in bold, each kept on one line, with the open-seat count beside the label.
+  On the project page the same roles are rows with their skills and an Apply
+  button.
+- **A person, a time and a place on every card.** The owner's avatar and name,
+  how long ago it was posted, and the city (or "Remote").
+- **No credential on a card.** A project's and a person's place is a city. A
+  school, company or club is an optional "Community": one fact on the project
+  page or profile and a filter, never a headline, and never required. The
+  check mark (`VerifiedMark`) confirms that one community claim by email, so it
+  sits beside the community's name and nowhere near the person's.
+- **People are a grid, projects are a feed.** People are comparable (who, what
+  they do, what they are open to), so their cards share a row height. A person
+  card reads name and city → headline → skills as words → "Open to", the same
+  inset "ask" block a project uses for "Looking for".
+- The project page reads as the post in full: byline, the picture at full
+  size, the text, the roles, and a team panel that draws one avatar per member
+  and one dashed outline per open seat.
 
 ## Patterns
 

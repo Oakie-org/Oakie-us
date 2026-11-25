@@ -25,6 +25,7 @@ from app.models.project import (
     ProjectCreate,
     ProjectDetail,
     ProjectFacets,
+    ProjectListed,
     ProjectMembership,
     ProjectPublic,
     ProjectUpdate,
@@ -156,11 +157,15 @@ def _is_open(project: Item) -> bool:
     )
 
 
-def list_projects(query: ProjectQuery, limit: int, cursor: str | None) -> CursorPage[ProjectPublic]:
+def _listed(items: list[Item]) -> list[ProjectListed]:
+    """Attach each project's owner in one batch read."""
+    owners = users.summaries(list({item["owner_id"] for item in items}))
+    return [ProjectListed(**item, owner=owners.get(item["owner_id"])) for item in items]
+
+
+def list_projects(query: ProjectQuery, limit: int, cursor: str | None) -> CursorPage[ProjectListed]:
     page = repo.list_page(limit, cursor, query.matcher())
-    return CursorPage(
-        items=[ProjectPublic(**item) for item in page.items], next_cursor=page.next_cursor
-    )
+    return CursorPage(items=_listed(page.items), next_cursor=page.next_cursor)
 
 
 def _tally(values: list[str], limit: int | None = None) -> list[FacetOption]:
@@ -229,6 +234,7 @@ def projects_of(user_id: str, viewer: Principal | None) -> list[ProjectMembershi
     memberships = repo.memberships_of(user_id)
     found = repo.get_many([m["project_id"] for m in memberships])
     sees_private = bool(viewer and (viewer.sub == user_id or viewer.is_admin))
+    owners = users.summaries(list({project["owner_id"] for project in found.values()}))
     result = []
     for membership in memberships:
         project = found.get(membership["project_id"])
@@ -238,15 +244,18 @@ def projects_of(user_id: str, viewer: Principal | None) -> list[ProjectMembershi
             continue
         result.append(
             ProjectMembership(
-                **project, role=membership["role"], member_title=membership.get("title", "")
+                **project,
+                owner=owners.get(project["owner_id"]),
+                role=membership["role"],
+                member_title=membership.get("title", ""),
             )
         )
     return result
 
 
-def following(principal: Principal) -> list[ProjectPublic]:
+def following(principal: Principal) -> list[ProjectListed]:
     found = repo.get_many(repo.followed_project_ids(principal.sub))
-    return [ProjectPublic(**item) for item in found.values()]
+    return _listed(list(found.values()))
 
 
 # --------------------------------------------------------------- commands

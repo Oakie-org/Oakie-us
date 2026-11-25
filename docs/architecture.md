@@ -135,7 +135,7 @@ React 19, Vite, TypeScript, Tailwind CSS v4, TanStack Query, React Router.
 | `src/lib/queries.ts` | Every read and write as a TanStack Query hook; cache keys and invalidation in one place.                 |
 | `src/lib/types.ts`   | The API contract, mirroring the backend's snake_case JSON.                                               |
 | `src/components/ui/` | Design-system primitives (button, field, dialog, menu, toast, …).                                        |
-| `src/components/`    | Product components (project and person cards, generated covers, record card).                            |
+| `src/components/`    | Product components (project and person cards, the masonry feed, record card).                            |
 | `src/pages/`         | One file per screen; `pages/project/` holds the project tabs.                                            |
 
 Rules of thumb:

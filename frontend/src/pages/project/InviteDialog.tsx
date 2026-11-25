@@ -11,7 +11,6 @@ import {
 import type { ProjectDetail, UserSummary } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { VerifiedMark } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormError, Skeleton } from "@/components/ui/feedback";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
@@ -21,7 +20,7 @@ import { useToast } from "@/components/ui/toast";
 type InviteTarget = Pick<
   UserSummary,
   "id" | "name" | "headline" | "avatar_url"
-> & { verified_school?: boolean; skills?: string[] };
+> & { skills?: string[] };
 
 /** The second, small step: which seat, and a note. Shared by every place that invites. */
 export function InviteForm({
@@ -62,7 +61,6 @@ export function InviteForm({
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 font-display font-semibold">
             <span className="truncate">{person.name}</span>
-            {person.verified_school && <VerifiedMark />}
           </p>
           {person.headline && (
             <p className="truncate text-sm text-ink-soft">{person.headline}</p>
@@ -156,7 +154,7 @@ function Picker({
           type="search"
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Search by name, skill or school"
+          placeholder="Search by name, skill or city"
           aria-label="Search people to invite"
           className="pl-12"
           maxLength={80}
@@ -189,7 +187,6 @@ function Picker({
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1 font-display font-semibold">
                     <span className="truncate">{person.name}</span>
-                    {person.verified_school && <VerifiedMark />}
                   </p>
                   <p className="truncate text-sm text-ink-soft">
                     {person.skills.slice(0, 3).join(" · ") || person.headline}

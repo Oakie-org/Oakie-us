@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Award,
+  Building2,
   Check,
   Clock,
   Code2,
   Copy,
   FolderOpen,
-  GraduationCap,
   Link as LinkIcon,
   MapPin,
   MessageCircle,
@@ -45,9 +45,9 @@ import {
 import { Field, Textarea } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
 import { useToast } from "@/components/ui/toast";
-import { PersonLine, ProjectCard } from "@/components/cards";
+import { PersonLine } from "@/components/cards";
+import { ProjectFeed } from "@/components/ProjectFeed";
 import { Section, useTitle } from "@/components/page";
-import { ProjectCover } from "@/components/ProjectCover";
 import { RecordCard } from "@/components/RecordCard";
 import NotFound from "@/pages/NotFound";
 import { InviteForm } from "@/pages/project/InviteDialog";
@@ -169,9 +169,6 @@ function InviteToProject({
                 onClick={() => setChosen(project)}
                 className="flex w-full items-center gap-3 rounded-2xl border-2 border-line p-3 text-left transition-colors hover:border-ink"
               >
-                <span className="size-11 shrink-0 overflow-hidden rounded-xl">
-                  <ProjectCover project={project} columns={2} rows={2} />
-                </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-display font-semibold">
                     {project.title}
@@ -361,6 +358,10 @@ export default function Profile() {
     (project) => !pinned.includes(project),
   );
   const strength = isMe && me ? profileStrength(me) : null;
+  // A banner is the member's own picture, or failing that the colour they
+  // picked. With neither there is no banner: nothing is drawn to fill the gap.
+  const accent = toneNamed(profile.accent);
+  const hasBanner = Boolean(profile.banner_url || accent);
 
   function requireSignIn(action: () => void) {
     if (status === "signedIn") action();
@@ -370,24 +371,24 @@ export default function Profile() {
   return (
     <>
       <div className="overflow-hidden rounded-card bg-surface">
-        <div className="h-24 sm:h-32">
-          <ProjectCover
-            project={{
-              id: profile.id,
-              category: "",
-              image_url: profile.banner_url,
-            }}
-            tone={toneNamed(profile.accent)}
-            columns={12}
-            rows={2}
+        {profile.banner_url ? (
+          <img
+            src={profile.banner_url}
+            alt=""
+            className="h-28 w-full bg-sunken object-cover sm:h-40"
           />
-        </div>
+        ) : (
+          accent && <div className={cn("h-16 sm:h-20", accent.bg)} />
+        )}
         <div className="px-5 pb-6 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <Avatar
               user={profile}
               size="xl"
-              className="-mt-12 ring-4 ring-surface"
+              className={cn(
+                "ring-4 ring-surface",
+                hasBanner ? "-mt-12" : "mt-6",
+              )}
             />
             <div className="flex flex-wrap gap-2 pb-1">
               {isMe ? (
@@ -438,26 +439,12 @@ export default function Profile() {
             </div>
           </div>
 
-          <h1 className="mt-4 flex items-center gap-2 text-3xl sm:text-4xl">
-            {profile.name}
-            {profile.verified_school && (
-              <VerifiedMark className="text-[0.75em]" />
-            )}
-          </h1>
+          <h1 className="mt-4 text-3xl sm:text-4xl">{profile.name}</h1>
           {profile.headline && (
             <p className="mt-1 text-lg text-ink-soft">{profile.headline}</p>
           )}
 
           <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[0.95rem] text-ink-soft">
-            {profile.uni && (
-              <li className="flex items-center gap-1.5">
-                <GraduationCap className="size-4" aria-hidden />
-                {profile.uni}
-                {profile.verified_school && (
-                  <span className="text-primary">· email verified</span>
-                )}
-              </li>
-            )}
             {profile.city && (
               <li className="flex items-center gap-1.5">
                 <MapPin className="size-4" aria-hidden />
@@ -468,6 +455,13 @@ export default function Profile() {
               <li className="flex items-center gap-1.5">
                 <Clock className="size-4" aria-hidden />
                 {profile.availability}
+              </li>
+            )}
+            {profile.uni && (
+              <li className="flex items-center gap-1.5">
+                <Building2 className="size-4" aria-hidden />
+                {profile.uni}
+                {profile.verified_school && <VerifiedMark />}
               </li>
             )}
           </ul>
@@ -549,11 +543,7 @@ export default function Profile() {
 
       {pinned.length > 0 && (
         <Section title="Featured" className="mt-8">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pinned.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          <ProjectFeed projects={pinned} />
         </Section>
       )}
 
@@ -628,11 +618,7 @@ export default function Profile() {
               : "Nothing public to show yet."}
           </EmptyState>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {others.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          <ProjectFeed projects={others} />
         )}
       </Section>
 

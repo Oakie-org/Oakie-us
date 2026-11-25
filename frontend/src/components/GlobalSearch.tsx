@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Clock,
   CornerDownLeft,
+  FileText,
   Search,
   Sparkles,
 } from "lucide-react";
@@ -18,9 +19,8 @@ import {
 import { useSuggestions } from "@/lib/queries";
 import { cn, readStored, writeStored } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { StatusDot, VerifiedMark } from "@/components/ui/badge";
+import { StatusDot } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/feedback";
-import { ProjectCover } from "@/components/ProjectCover";
 import type { ProjectStatus } from "@/lib/types";
 
 const RECENT_KEY = "oakie:recent-searches";
@@ -151,17 +151,7 @@ function Palette({ onClose }: { onClose: () => void }) {
           to: `/projects/${project.id}`,
           node: (
             <Line
-              icon={
-                <ProjectCover
-                  project={{
-                    id: project.id,
-                    category: project.category,
-                    image_url: null,
-                  }}
-                  columns={2}
-                  rows={2}
-                />
-              }
+              icon={<FileText className="size-4" aria-hidden />}
               title={project.title}
               detail={project.subtitle || project.category}
               trailing={
@@ -187,10 +177,9 @@ function Palette({ onClose }: { onClose: () => void }) {
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1.5 font-medium">
                   <span className="truncate">{person.name}</span>
-                  {person.verified_school && <VerifiedMark />}
                 </span>
                 <span className="block truncate text-sm text-ink-soft">
-                  {person.headline || person.uni || person.city}
+                  {person.headline || person.city}
                 </span>
               </span>
             </>

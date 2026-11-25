@@ -11,7 +11,7 @@ import { cn, pluralize } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState, ErrorState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/field";
-import { ProjectCard, ProjectCardSkeleton } from "@/components/cards";
+import { ProjectFeed, ProjectFeedSkeleton } from "@/components/ProjectFeed";
 import {
   AppliedFilters,
   FacetMenu,
@@ -106,7 +106,7 @@ export default function Explore() {
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by title, role, skill, school or city"
+            placeholder="Search by title, role, skill or city"
             aria-label="Search projects"
             className="h-12 pl-12"
             maxLength={80}
@@ -136,7 +136,7 @@ export default function Explore() {
             onChange={(value) => setParam("status", value)}
           />
           <FacetMenu
-            label="School"
+            label="Community"
             value={filters.uni ?? ""}
             options={facets.data?.uni ?? []}
             onChange={(value) => setParam("uni", value)}
@@ -194,11 +194,7 @@ export default function Explore() {
       {query.isError ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
       ) : query.isPending ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy>
-          {Array.from({ length: 6 }, (_, index) => (
-            <ProjectCardSkeleton key={index} />
-          ))}
-        </div>
+        <ProjectFeedSkeleton />
       ) : projects.length === 0 ? (
         <EmptyState
           icon={SearchX}
@@ -225,20 +221,14 @@ export default function Explore() {
       ) : (
         <>
           {/* Dims while a new filter is loading, so the list never flashes empty. */}
-          <div
+          <ProjectFeed
+            projects={projects}
+            onPreview={preview}
             className={cn(
-              "grid gap-4 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3",
+              "transition-opacity duration-200",
               query.isPlaceholderData && "opacity-50",
             )}
-          >
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onPreview={preview}
-              />
-            ))}
-          </div>
+          />
           <LoadMore
             hasMore={Boolean(query.hasNextPage)}
             loading={query.isFetchingNextPage}

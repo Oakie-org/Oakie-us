@@ -105,12 +105,18 @@ class ProjectViewer(BaseModel):
     invitation: InvitationPublic | None = None
 
 
-class ProjectDetail(ProjectPublic):
+class ProjectListed(ProjectPublic):
+    """A project as it appears in a list: with the person who posted it, so a
+    card reads as something a real person wrote."""
+
     owner: UserSummary | None = None
+
+
+class ProjectDetail(ProjectListed):
     viewer: ProjectViewer = Field(default_factory=ProjectViewer)
 
 
-class ProjectMembership(ProjectPublic):
+class ProjectMembership(ProjectListed):
     """A project as it appears on a member's profile."""
 
     role: ProjectRole

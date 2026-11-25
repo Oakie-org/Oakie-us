@@ -34,7 +34,7 @@ export default function Talent() {
     ["q", filters.q && `“${filters.q}”`],
     ["skill", filters.skill],
     ["open_to", filters.open_to && `Open to ${filters.open_to}`],
-    ["uni", filters.uni && `School: ${filters.uni}`],
+    ["uni", filters.uni && `Community: ${filters.uni}`],
     ["city", filters.city && `City: ${filters.city}`],
   ]
     .filter((entry): entry is [string, string] => Boolean(entry[1]))
@@ -68,7 +68,7 @@ export default function Talent() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by name, school, city or skill"
+              placeholder="Search by name, skill or city"
               aria-label="Search people"
               className="h-12 pl-12"
               maxLength={80}
@@ -96,8 +96,8 @@ export default function Talent() {
             <input
               value={uni}
               onChange={(event) => setUni(event.target.value)}
-              placeholder="School"
-              aria-label="School"
+              placeholder="Community"
+              aria-label="Community: a school, company or club"
               maxLength={80}
               className="h-10 w-36 shrink-0 rounded-full border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
             />

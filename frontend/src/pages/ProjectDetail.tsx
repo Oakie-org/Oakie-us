@@ -10,17 +10,14 @@ import {
   Bell,
   BellRing,
   Check,
-  GraduationCap,
   Heart,
   Hourglass,
   Lock,
   MailOpen,
-  MapPin,
   Megaphone,
   Pencil,
   Share2,
   UserPlus,
-  Wifi,
   X,
 } from "lucide-react";
 
@@ -33,14 +30,14 @@ import {
   useWithdrawApplication,
 } from "@/lib/queries";
 import type { ProjectDetail as Project } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { Chip, StatusBadge } from "@/components/ui/badge";
+import { cn, timeAgo } from "@/lib/utils";
+import { Avatar } from "@/components/ui/avatar";
+import { Chip, StatusDot } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { ErrorState, PageSpinner } from "@/components/ui/feedback";
 import { useToast } from "@/components/ui/toast";
-import { CategoryLabel, PersonLine } from "@/components/cards";
+import { placeLabel } from "@/components/cards";
 import { useTitle } from "@/components/page";
-import { ProjectCover } from "@/components/ProjectCover";
 import NotFound from "@/pages/NotFound";
 import { ApplicationsTab } from "@/pages/project/ApplicationsTab";
 import { ApplyDialog } from "@/pages/project/ApplyDialog";
@@ -293,15 +290,12 @@ export default function ProjectDetail() {
           onDismiss={dismissCreated}
         />
       )}
-      <div className="relative h-20 overflow-hidden rounded-card sm:h-28">
-        <ProjectCover project={project} columns={12} rows={2} />
-      </div>
-
-      <header className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+      <header className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <CategoryLabel category={project.category} />
-            <StatusBadge status={project.status} />
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[0.9375rem] text-ink-soft">
+            <StatusDot status={project.status} className="text-[0.9375rem]" />
+            <span aria-hidden>·</span>
+            <span>{project.category}</span>
             {project.visibility !== "public" && (
               <Chip tone="outline">
                 <Lock className="size-3.5" aria-hidden />{" "}
@@ -315,34 +309,30 @@ export default function ProjectDetail() {
           {project.subtitle && (
             <p className="mt-2 text-xl text-ink-soft">{project.subtitle}</p>
           )}
-          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[0.95rem] text-ink-soft">
-            {project.uni && (
-              <li className="flex items-center gap-1.5">
-                <GraduationCap className="size-4" aria-hidden />
-                {project.uni}
-              </li>
+          {/* The byline of a post: who wrote it, when, and where it happens. */}
+          <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem] text-ink-soft">
+            {project.owner && (
+              <Link
+                to={`/u/${project.owner.id}`}
+                className="group flex items-center gap-2 rounded-full"
+              >
+                <Avatar user={project.owner} size="sm" />
+                <span className="font-display font-semibold text-ink group-hover:underline">
+                  {project.owner.name}
+                </span>
+              </Link>
             )}
-            {project.city && (
-              <li className="flex items-center gap-1.5">
-                <MapPin className="size-4" aria-hidden />
-                {project.city}
-              </li>
+            {project.owner && <span aria-hidden>·</span>}
+            <time dateTime={project.created_at}>
+              posted {timeAgo(project.created_at)}
+            </time>
+            {placeLabel(project) && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{placeLabel(project)}</span>
+              </>
             )}
-            {project.remote_ok && (
-              <li className="flex items-center gap-1.5">
-                <Wifi className="size-4" aria-hidden />
-                Remote friendly
-              </li>
-            )}
-          </ul>
-          {project.owner && (
-            <div className="mt-5">
-              <PersonLine
-                person={project.owner}
-                detail="Started this project"
-              />
-            </div>
-          )}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

@@ -1,6 +1,8 @@
 """Demo data for local development, written through the real services so it
 obeys the same rules as production data."""
 
+from datetime import UTC, datetime, timedelta
+
 from app.core.security import Principal
 from app.local import auth
 from app.models.project import (
@@ -15,6 +17,10 @@ from app.models.user import ProfileLink, UserUpdate
 from app.repositories import projects as projects_repo
 from app.repositories import users as users_repo
 from app.services import applications, invitations, messaging, projects, users, workspace
+
+# Demo "uploads" are files in frontend/public/seed, served by the Vite dev server.
+# Only some projects have one: a picture is optional, and most posts are text.
+SEED_IMAGES = "/seed"
 
 # Local-only demo accounts; the password is the same for all of them.
 DEMO_PASSWORD = "oakie-demo-2026"
@@ -33,19 +39,19 @@ MEMBERS = [
      "UCLA", ["Video Editing", "Copywriting", "Marketing"], ["Side project", "Internship"],
      "I script, shoot and edit. I want to pair with builders who need a story told well."),
     ("omar", "Omar Haddad", "Full-stack engineer, serverless enthusiast", "Seattle, WA",
-     "University of Washington", ["Backend", "Frontend", "Mobile"], ["Co-founder", "Mentoring"],
+     "", ["Backend", "Frontend", "Mobile"], ["Co-founder", "Mentoring"],
      "Shipped three production apps on AWS. Happy to mentor first-time technical founders."),
     ("priya", "Priya Nair", "ML engineer exploring applied NLP", "Toronto, CA",
      "University of Toronto", ["Machine Learning", "Data Analysis", "Backend"],
      ["Side project", "Hackathon"],
      "Research assistant in an NLP lab. I like projects where the model is 20% of the work."),
-    ("jun", "Jun Tanaka", "Illustrator and brand designer", "Tokyo, JP", "Waseda University",
+    ("jun", "Jun Tanaka", "Freelance illustrator and brand designer", "Tokyo, JP", "",
      ["Illustration", "UI/UX Design"], ["Side project"],
      "Character design, brand systems, and the occasional zine."),
     ("grace", "Grace Okafor", "Community organizer and event producer", "Austin, TX",
-     "UT Austin", ["Community Ops", "Business Development", "Marketing"],
+     "", ["Community Ops", "Business Development", "Marketing"],
      ["Co-founder", "Internship"],
-     "Ran a 600-person student conference. I make sure the room is full and the sponsors "
+     "Ran a 600-person community conference. I make sure the room is full and the sponsors "
      "are happy."),
 ]  # fmt: skip
 
@@ -58,6 +64,7 @@ PROJECTS = [
         "goal: 200 listings, 30 completed hand-offs, and a first version of our trust signals.",
         category="Software", tags=["Marketplace", "React", "Trust & Safety"],
         status="Recruiting", uni="NYU", city="New York, NY", max_members=6,
+        image_url=f"{SEED_IMAGES}/dormswap.svg",
         open_roles=[OpenRole(title="Backend engineer", skills=["Backend"]),
                     OpenRole(title="Campus growth lead", skills=["Marketing", "Community Ops"])])),
     ("leo", dict(
@@ -67,6 +74,7 @@ PROJECTS = [
         "a proper data layer and someone who enjoys explaining results to non-quants.",
         category="Finance & Quant", tags=["Python", "Backtesting", "Equities"],
         status="In Progress", uni="UChicago", city="Chicago, IL", max_members=5,
+        image_url=f"{SEED_IMAGES}/quant-lab.svg",
         open_roles=[OpenRole(title="Data engineer", skills=["Backend", "Data Analysis"]),
                     OpenRole(title="Research writer", skills=["Copywriting"])])),
     ("sofia", dict(
@@ -94,7 +102,8 @@ PROJECTS = [
         "categories and expiry reminders for site volunteers.\n\nOne community partner has "
         "agreed to pilot.",
         category="Social Impact", tags=["Open Source", "Mapping", "Community"],
-        status="Recruiting", uni="UT Austin", city="Austin, TX", max_members=8,
+        status="Recruiting", city="Austin, TX", max_members=8,
+        image_url=f"{SEED_IMAGES}/open-meals.svg",
         open_roles=[OpenRole(title="Mobile developer", skills=["Mobile"]),
                     OpenRole(title="Field researcher", skills=["Community Ops"])])),
     ("jun", dict(
@@ -102,7 +111,8 @@ PROJECTS = [
         description="Twelve illustrators, twelve cities, one printed zine. We are looking for "
         "two more artists and someone who can run a small pre-order campaign.",
         category="Design & Art", tags=["Illustration", "Print", "Anthology"],
-        status="Idea", uni="Waseda University", city="Tokyo, JP", max_members=14,
+        status="Idea", city="Tokyo, JP", max_members=14,
+        image_url=f"{SEED_IMAGES}/rainy-day-zine.svg",
         open_roles=[OpenRole(title="Illustrator", skills=["Illustration"]),
                     OpenRole(title="Campaign manager", skills=["Marketing"])])),
     ("omar", dict(
@@ -110,23 +120,26 @@ PROJECTS = [
         description="Finding a study spot is a lottery. QuietHours is a minimal web app: pick a "
         "building, see if it is quiet, okay or loud right now, based on anonymous reports with "
         "time decay and geofencing.",
-        category="Software", tags=["Campus Life", "Web App", "Data"],
-        status="Recruiting", uni="University of Washington", city="Seattle, WA", max_members=5,
+        category="Software", tags=["Study spots", "Web App", "Data"],
+        status="Recruiting", city="Seattle, WA", max_members=5,
         open_roles=[OpenRole(title="Product designer", skills=["UI/UX Design"])])),
     ("grace", dict(
-        title="Founders' Supper Club", subtitle="Monthly dinners where student founders demo",
+        title="Founders' Supper Club", subtitle="Monthly dinners where early founders demo",
         description="Eight founders, one long table, three demos. We host a monthly dinner "
-        "where student teams show work in progress and get candid feedback.",
+        "where small teams show work in progress and get candid feedback.",
         category="Events & Community", tags=["Startup", "Networking", "Demo night"],
-        status="In Progress", uni="UT Austin", city="Austin, TX", max_members=6,
+        status="In Progress", city="Austin, TX", max_members=6,
         open_roles=[OpenRole(title="Sponsorship lead", skills=["Business Development"])])),
     ("leo", dict(
-        title="Tip Jar Analytics", subtitle="Fair-pay insights for campus baristas",
-        description="A finished class project that became a real tool: baristas log tips, the "
+        title="Tip Jar Analytics", subtitle="Fair-pay insights for baristas",
+        description="A weekend project that became a real tool: baristas log tips, the "
         "app shows how pooling rules change take-home pay.",
         category="Startup", tags=["Fintech", "Analytics", "Mobile"],
-        status="Completed", uni="UChicago", city="Chicago, IL", max_members=4, open_roles=[])),
+        status="Completed", city="Chicago, IL", max_members=4, open_roles=[])),
 ]  # fmt: skip
+
+# One entry per project above: how long ago it was posted.
+POSTED_HOURS_AGO = [5, 30, 3 * 24, 9 * 24, 2 * 24, 6 * 24, 20, 13 * 24, 40 * 24]
 
 
 def run() -> None:
@@ -147,7 +160,7 @@ def run() -> None:
 
     # Demo accounts use one mail domain; mark a few as school-verified so the
     # badge is visible locally. In production the flag comes from the confirmed address.
-    for handle in ("maya", "leo", "priya", "omar"):
+    for handle in ("maya", "leo", "priya"):
         profile = users_repo.get(people[handle].sub)
         if profile:
             users_repo.update(profile, {"verified_school": True})
@@ -167,6 +180,13 @@ def run() -> None:
     for owner, fields in PROJECTS:
         project = projects.create(people[owner], ProjectCreate(**fields))
         created[fields["title"]] = project.id
+
+    # Spread the posts over the last few weeks, so the feed has a sense of time.
+    for (_, fields), hours in zip(PROJECTS, POSTED_HOURS_AGO, strict=True):
+        project = projects_repo.get(created[fields["title"]])
+        if project:
+            posted = datetime.now(UTC) - timedelta(hours=hours)
+            projects_repo.update(project, {"created_at": posted.isoformat(timespec="milliseconds")})
 
     # Feature two projects at the top of Explore.
     for title in ("DormSwap", "Campus Quant Lab"):

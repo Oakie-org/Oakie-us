@@ -15,7 +15,7 @@ import {
 import { useProjects, useStats } from "@/lib/queries";
 import { cn, compact } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
-import { ProjectCard, ProjectCardSkeleton } from "@/components/cards";
+import { ProjectFeed, ProjectFeedSkeleton } from "@/components/ProjectFeed";
 import { useTitle } from "@/components/page";
 
 const PEOPLE: {
@@ -77,7 +77,7 @@ const STEPS = [
   },
   {
     title: "Match across disciplines",
-    body: "Search people by skill, school and city. Engineers meet quants, writers meet editors, founders meet co-founders.",
+    body: "Search people by skill and city. Engineers meet quants, writers meet editors, founders meet co-founders.",
     tone: "bg-block-mint",
   },
   {
@@ -120,8 +120,7 @@ export default function Landing() {
       <section className="grid items-center gap-10 pt-4 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pt-10">
         <div className="animate-rise">
           <p className="mb-5 inline-flex h-8 items-center gap-2 rounded-full bg-primary-soft px-3.5 font-display text-sm font-semibold text-on-primary-soft">
-            <Users className="size-4" aria-hidden /> For students and young
-            creators
+            <Users className="size-4" aria-hidden /> For people who make things
           </p>
           <h1 className="text-5xl leading-[1.02] sm:text-6xl lg:text-7xl">
             Find your people.
@@ -192,15 +191,11 @@ export default function Landing() {
             See all projects <ArrowRight aria-hidden />
           </ButtonLink>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.isPending
-            ? Array.from({ length: 3 }, (_, index) => (
-                <ProjectCardSkeleton key={index} />
-              ))
-            : projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-        </div>
+        {featured.isPending ? (
+          <ProjectFeedSkeleton count={3} />
+        ) : (
+          <ProjectFeed projects={projects} />
+        )}
         {featured.isError && (
           <p className="rounded-card bg-sunken p-6 text-ink-soft">
             Projects couldn't be loaded right now.{" "}
@@ -215,8 +210,8 @@ export default function Landing() {
         <div>
           <h2 className="text-3xl sm:text-4xl">Good ideas die alone.</h2>
           <p className="mt-3 text-lg text-ink-soft">
-            On campus and in your first years out, the hard part is rarely the
-            idea. It's finding the person with the other half of the skills.
+            In school, at work or in between, the hard part is rarely the idea.
+            It's finding the person with the other half of the skills.
           </p>
         </div>
         <ul className="flex flex-col gap-3">

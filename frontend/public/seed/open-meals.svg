@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1200" height="900" fill="#eef0e6"/>
+  <path d="M-20 640 C200 560 380 700 620 610 S1000 480 1220 560 V920 H-20Z" fill="#cfe3ee"/>
+  <rect x="120" y="90" width="250" height="170" rx="12" fill="#dbe8cf"/>
+  <rect x="820" y="330" width="210" height="150" rx="12" fill="#dbe8cf"/>
+  <g stroke="#ffffff" stroke-width="26" stroke-linecap="round" fill="none">
+    <path d="M-20 300 H1220"/><path d="M-20 520 C300 500 700 470 1220 300"/>
+    <path d="M440 -20 V620"/><path d="M760 -20 V540"/><path d="M1080 -20 V420"/><path d="M90 -20 L260 620"/>
+  </g>
+  <g stroke="#ffffff" stroke-width="12" stroke-linecap="round" fill="none">
+    <path d="M-20 150 H1220"/><path d="M600 -20 V600"/><path d="M920 -20 V470"/><path d="M-20 420 H760"/>
+  </g>
+  <g font-size="15" fill="#8a938c"><text x="150" y="130">Pease Park</text><text x="846" y="366">Eastside Gardens</text><text x="870" y="700" fill="#7fa3b8">Colorado River</text></g>
+  <g>
+    <path d="M440 300 m0 -62 a26 26 0 0 1 26 26 c0 20 -26 44 -26 44 s-26 -24 -26 -44 a26 26 0 0 1 26 -26z" fill="#b93319"/><circle cx="440" cy="264" r="9" fill="#ffffff"/>
+    <rect x="476" y="232" width="238" height="64" rx="14" fill="#ffffff"/>
+    <text x="494" y="259" font-size="18" font-weight="700" fill="#17201c">Guadalupe St fridge</text>
+    <text x="494" y="282" font-size="15" fill="#b93319">Empty · needs produce</text>
+  </g>
+  <g>
+    <path d="M760 150 m0 -62 a26 26 0 0 1 26 26 c0 20 -26 44 -26 44 s-26 -24 -26 -44 a26 26 0 0 1 26 -26z" fill="#0e6b55"/><circle cx="760" cy="114" r="9" fill="#ffffff"/>
+    <rect x="796" y="82" width="222" height="64" rx="14" fill="#ffffff"/>
+    <text x="814" y="109" font-size="18" font-weight="700" fill="#17201c">Cherrywood fridge</text>
+    <text x="814" y="132" font-size="15" fill="#0e6b55">Stocked 2 h ago</text>
+  </g>
+  <g>
+    <path d="M230 520 m0 -62 a26 26 0 0 1 26 26 c0 20 -26 44 -26 44 s-26 -24 -26 -44 a26 26 0 0 1 26 -26z" fill="#d48a1c"/><circle cx="230" cy="484" r="9" fill="#ffffff"/>
+    <rect x="266" y="452" width="232" height="64" rx="14" fill="#ffffff"/>
+    <text x="284" y="479" font-size="18" font-weight="700" fill="#17201c">Zilker pantry box</text>
+    <text x="284" y="502" font-size="15" fill="#9a6410">Low · dairy expires Fri</text>
+  </g>
+  <path d="M1080 300 m0 -62 a26 26 0 0 1 26 26 c0 20 -26 44 -26 44 s-26 -24 -26 -44 a26 26 0 0 1 26 -26z" fill="#0e6b55"/><circle cx="1080" cy="264" r="9" fill="#ffffff"/>
+  <rect x="40" y="772" width="420" height="88" rx="18" fill="#17201c"/>
+  <text x="68" y="810" font-size="22" font-weight="700" fill="#ffffff">4 fridges tracked · 1 needs you</text>
+  <text x="68" y="838" font-size="16" fill="#c9cfcb">Updated by site volunteers, East Austin pilot</text>
+</svg>

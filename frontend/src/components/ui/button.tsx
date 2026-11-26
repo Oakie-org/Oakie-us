@@ -4,28 +4,27 @@ import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "accent" | "ink" | "outline" | "ghost" | "danger";
+type Variant = "primary" | "outline" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const BASE =
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-display font-semibold whitespace-nowrap " +
-  "transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.97] " +
-  "disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-[1.15em] [&_svg]:shrink-0";
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-field font-medium whitespace-nowrap " +
+  "transition-[background-color,border-color,color,transform] duration-150 ease-out-soft active:scale-[0.98] " +
+  "disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-[1.1em] [&_svg]:shrink-0";
 
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-primary text-on-primary hover:bg-primary-hover",
-  accent: "bg-accent text-on-accent hover:brightness-95",
-  ink: "bg-ink text-paper hover:bg-ink/85",
-  outline: "border-2 border-line bg-surface text-ink hover:border-ink",
+  outline:
+    "border border-line-strong bg-surface text-ink hover:border-ink-soft hover:bg-sunken",
   ghost: "text-ink hover:bg-sunken",
-  danger: "bg-danger-soft text-danger hover:brightness-95",
+  danger: "bg-danger-soft text-danger hover:bg-danger hover:text-surface",
 };
 
 // Every size keeps at least a 44px touch target; `sm` extends it invisibly.
 const SIZES: Record<Size, string> = {
-  sm: "relative h-9 px-4 text-sm after:absolute after:-inset-y-1 after:inset-x-0",
-  md: "h-11 px-5 text-[0.95rem]",
-  lg: "h-13 px-7 text-base",
+  sm: "relative h-9 px-3.5 text-sm after:absolute after:-inset-y-1 after:inset-x-0",
+  md: "h-11 px-4 text-[0.9375rem]",
+  lg: "h-12 px-5 text-base",
   icon: "size-11",
 };
 

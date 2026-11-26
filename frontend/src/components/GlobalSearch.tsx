@@ -327,7 +327,7 @@ function Palette({ onClose }: { onClose: () => void }) {
             aria-label={group.title}
             className="pb-1"
           >
-            <p className="px-3 pb-1 pt-2 text-xs font-semibold tracking-wide text-ink-soft uppercase">
+            <p className="px-3 pb-1 pt-2 text-[0.8125rem] text-ink-mute">
               {group.title}
             </p>
             {group.rows.map((row) => {
@@ -344,7 +344,7 @@ function Palette({ onClose }: { onClose: () => void }) {
                   onMouseMove={() => position !== active && setCursor(position)}
                   onClick={() => go(row.to)}
                   className={cn(
-                    "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-1.5 text-left",
+                    "flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-1.5 text-left",
                     position === active && "bg-sunken",
                   )}
                 >
@@ -402,7 +402,7 @@ export function GlobalSearch() {
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Trigger
         aria-label="Search"
-        className="flex size-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-sunken lg:h-10 lg:w-64 lg:justify-start lg:gap-2 lg:border lg:border-line lg:bg-surface lg:px-3.5 lg:text-ink-soft lg:hover:border-ink-soft lg:hover:bg-surface"
+        className="flex size-11 items-center justify-center rounded-field text-ink transition-colors hover:bg-sunken lg:h-10 lg:w-64 lg:justify-start lg:gap-2 lg:border lg:border-line lg:bg-surface lg:px-3.5 lg:text-ink-soft lg:hover:border-ink-soft lg:hover:bg-surface"
       >
         <Search className="size-5 lg:size-4" aria-hidden />
         <span className="hidden flex-1 text-left text-sm lg:block">
@@ -413,10 +413,10 @@ export function GlobalSearch() {
         </kbd>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-block-ink/40" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-black/40" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fixed inset-x-3 top-3 z-50 animate-pop overflow-hidden rounded-card border border-line bg-surface outline-none sm:inset-x-auto sm:left-1/2 sm:top-[12vh] sm:w-[min(38rem,calc(100vw-2rem))] sm:-translate-x-1/2"
+          className="fixed inset-x-3 top-3 z-50 animate-pop overflow-hidden rounded-card border border-line bg-surface shadow-float outline-none sm:inset-x-auto sm:left-1/2 sm:top-[12vh] sm:w-[min(38rem,calc(100vw-2rem))] sm:-translate-x-1/2"
         >
           <DialogPrimitive.Title className="sr-only">
             Search Oakie

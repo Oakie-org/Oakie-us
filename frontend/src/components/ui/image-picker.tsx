@@ -46,7 +46,7 @@ export function ImagePicker({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-display text-sm font-semibold">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
       <div className="flex flex-wrap items-center gap-4">
         {preview}
         <div className="flex flex-wrap gap-2">

@@ -1,4 +1,4 @@
-import { Check, Inbox, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 import { useApplications, useDecideApplication } from "@/lib/queries";
 import type { Application, ProjectDetail, UserSummary } from "@/lib/types";
@@ -11,9 +11,9 @@ import { PersonLine } from "@/components/cards";
 
 const RESOLVED_TONE = {
   approved: "bg-primary text-on-primary",
-  rejected: "bg-sunken text-ink-soft",
-  withdrawn: "bg-sunken text-ink-soft",
-  pending: "bg-block-sun text-block-ink",
+  rejected: "border border-line text-ink-mute",
+  withdrawn: "border border-line text-ink-mute",
+  pending: "border border-line text-ink-soft",
 } as const;
 
 /**
@@ -46,7 +46,7 @@ function ApplicantFacts({
       {matching.length > 0 && (
         <>
           <dt className="text-ink-soft">Skills you asked for</dt>
-          <dd className="font-semibold">{matching.join(", ")}</dd>
+          <dd className="font-medium">{matching.join(", ")}</dd>
         </>
       )}
       {other.length > 0 && (
@@ -99,12 +99,12 @@ function ApplicationCard({
     );
 
   return (
-    <li className="flex flex-col gap-4 rounded-card bg-surface p-5">
+    <li className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         {application.applicant ? (
           <PersonLine person={application.applicant} />
         ) : (
-          <span className="font-display font-semibold">Former member</span>
+          <span className="font-medium">Former member</span>
         )}
         {pending ? (
           <span className="text-sm text-ink-soft">
@@ -113,7 +113,7 @@ function ApplicationCard({
         ) : (
           <span
             className={cn(
-              "flex h-7 items-center rounded-full px-3 font-display text-[0.8125rem] font-semibold capitalize",
+              "flex h-7 items-center rounded-chip px-2.5 text-[0.8125rem] font-medium capitalize",
               RESOLVED_TONE[application.status],
             )}
           >
@@ -126,7 +126,7 @@ function ApplicationCard({
           <Chip tone="primary">{application.role_title}</Chip>
         </div>
       )}
-      <p className="prose-plain rounded-2xl bg-sunken p-4">
+      <p className="prose-plain rounded-field bg-sunken p-4">
         {application.message}
       </p>
       {pending && application.applicant && (
@@ -172,7 +172,7 @@ export function ApplicationsTab({ project }: { project: ProjectDetail }) {
     );
   if (applications.isPending) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      <div className="flex max-w-3xl flex-col gap-4">
         {Array.from({ length: 2 }, (_, index) => (
           <Skeleton key={index} className="h-48 rounded-card" />
         ))}
@@ -189,12 +189,7 @@ export function ApplicationsTab({ project }: { project: ProjectDetail }) {
 
   if (applications.data.length === 0) {
     return (
-      <EmptyState
-        icon={Inbox}
-        title="No applications yet"
-        tone="bg-block-pink"
-        className="mx-auto max-w-3xl"
-      >
+      <EmptyState title="No applications yet" className="max-w-3xl">
         Add open roles and share the project link. Applications arrive here and
         in your notifications.
       </EmptyState>
@@ -202,9 +197,11 @@ export function ApplicationsTab({ project }: { project: ProjectDetail }) {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-10">
+    <div className="flex max-w-3xl flex-col gap-10">
       <section>
-        <h2 className="mb-4 text-xl">Waiting for you · {pending.length}</h2>
+        <h2 className="mb-4 font-sans text-lg">
+          Waiting for you · {pending.length}
+        </h2>
         {pending.length ? (
           <ul className="flex flex-col gap-4">
             {pending.map((application) => (
@@ -216,14 +213,14 @@ export function ApplicationsTab({ project }: { project: ProjectDetail }) {
             ))}
           </ul>
         ) : (
-          <p className="rounded-card bg-surface p-5 text-ink-soft">
+          <p className="rounded-card border border-line bg-surface p-5 text-ink-soft">
             You're all caught up.
           </p>
         )}
       </section>
       {resolved.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl">Resolved</h2>
+          <h2 className="mb-4 font-sans text-lg">Resolved</h2>
           <ul className="flex flex-col gap-4">
             {resolved.map((application) => (
               <ApplicationCard

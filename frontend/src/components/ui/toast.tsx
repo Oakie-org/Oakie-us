@@ -63,9 +63,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={toast.id}
             role={toast.kind === "error" ? "alert" : "status"}
             className={cn(
-              "pointer-events-auto flex max-w-md animate-pop items-start gap-2.5 rounded-2xl px-4 py-3 font-medium",
+              "pointer-events-auto flex max-w-md animate-pop items-start gap-2.5 rounded-field px-4 py-3 text-[0.9375rem] font-medium shadow-float",
               toast.kind === "error"
-                ? "bg-danger-soft text-danger ring-2 ring-danger/30"
+                ? "border border-danger/30 bg-danger-soft text-danger"
                 : "bg-ink text-paper",
             )}
           >

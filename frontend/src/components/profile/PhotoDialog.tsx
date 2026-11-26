@@ -110,14 +110,14 @@ function PhotoEditor({ me, onDone }: { me: Me; onDone: () => void }) {
             pick(event.dataTransfer.files[0]);
           }}
           className={cn(
-            "flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-colors",
+            "flex w-full flex-col items-center gap-3 rounded-field border border-dashed px-6 py-8 text-center transition-colors",
             dragging
               ? "border-primary bg-primary-soft"
               : "border-line hover:border-ink",
           )}
         >
           <Avatar user={me} size="xl" />
-          <span className="flex items-center gap-2 font-display font-semibold">
+          <span className="flex items-center gap-2 font-medium">
             <ImagePlus className="size-5" aria-hidden />
             {me.avatar_url ? "Choose a new photo" : "Choose a photo"}
           </span>
@@ -143,7 +143,7 @@ function PhotoEditor({ me, onDone }: { me: Me; onDone: () => void }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative mx-auto aspect-square w-full max-w-80 overflow-hidden rounded-2xl bg-block-ink">
+      <div className="relative mx-auto aspect-square w-full max-w-80 overflow-hidden rounded-field bg-black">
         <Suspense
           fallback={
             <div className="flex h-full items-center justify-center">

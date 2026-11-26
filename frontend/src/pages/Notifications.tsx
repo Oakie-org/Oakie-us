@@ -18,15 +18,15 @@ import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/feedback";
 import { PageHeader, useTitle } from "@/components/page";
 
-const KIND: Record<string, { icon: LucideIcon; tone: string }> = {
-  "application.received": { icon: UserPlus, tone: "bg-block-sky" },
-  "application.approved": { icon: UserCheck, tone: "bg-block-mint" },
-  "application.rejected": { icon: UserX, tone: "bg-block-sand" },
-  "user.followed": { icon: UserPlus, tone: "bg-block-pink" },
-  "project.followed": { icon: UserPlus, tone: "bg-block-lilac" },
-  "project.update": { icon: Megaphone, tone: "bg-block-sun" },
-  "task.assigned": { icon: ClipboardList, tone: "bg-block-aqua" },
-  "member.removed": { icon: UserX, tone: "bg-block-sand" },
+const KIND: Record<string, LucideIcon> = {
+  "application.received": UserPlus,
+  "application.approved": UserCheck,
+  "application.rejected": UserX,
+  "user.followed": UserPlus,
+  "project.followed": UserPlus,
+  "project.update": Megaphone,
+  "task.assigned": ClipboardList,
+  "member.removed": UserX,
 };
 
 function NotificationRow({
@@ -36,48 +36,35 @@ function NotificationRow({
   notification: Notification;
   onOpen: () => void;
 }) {
-  const { icon: Icon, tone } = KIND[notification.kind] ?? {
-    icon: Bell,
-    tone: "bg-block-sand",
-  };
+  const Icon = KIND[notification.kind] ?? Bell;
   return (
     <li>
       <Link
         to={notification.link || "/notifications"}
         onClick={onOpen}
-        className={cn(
-          "flex items-start gap-4 rounded-card border-2 p-4 transition-colors hover:border-ink",
-          notification.read
-            ? "border-transparent bg-transparent"
-            : "border-transparent bg-surface",
-        )}
+        className="flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-sunken sm:px-5"
       >
         <span className="relative shrink-0">
           {notification.actor ? (
             <Avatar user={notification.actor} />
           ) : (
-            <span
-              className={cn(
-                "flex size-11 items-center justify-center rounded-full text-block-ink",
-                tone,
-              )}
-            >
+            <span className="flex size-11 items-center justify-center rounded-full border border-line bg-sunken text-ink-soft">
               <Icon className="size-5" aria-hidden />
             </span>
           )}
           {notification.actor && (
-            <span
-              className={cn(
-                "absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full text-block-ink ring-2 ring-paper",
-                tone,
-              )}
-            >
+            <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full border border-line bg-surface text-ink-soft">
               <Icon className="size-3" aria-hidden />
             </span>
           )}
         </span>
         <span className="min-w-0 flex-1">
-          <span className={cn("block", !notification.read && "font-semibold")}>
+          <span
+            className={cn(
+              "block",
+              notification.read ? "text-ink-soft" : "font-medium",
+            )}
+          >
             {notification.title}
           </span>
           {notification.body && (
@@ -85,12 +72,12 @@ function NotificationRow({
               {notification.body}
             </span>
           )}
-          <span className="mt-1 block text-sm text-ink-soft">
+          <span className="mt-1 block text-[0.8125rem] text-ink-mute">
             {timeAgo(notification.created_at)}
           </span>
         </span>
         {!notification.read && (
-          <span className="mt-2 size-2.5 shrink-0 rounded-full bg-accent">
+          <span className="mt-2 size-2 shrink-0 rounded-full bg-accent">
             <span className="sr-only">Unread</span>
           </span>
         )}
@@ -106,7 +93,7 @@ export default function Notifications() {
   const unread = query.data?.unread_count ?? 0;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-2xl">
       <PageHeader
         title="Notifications"
         lead={unread > 0 ? `${unread} unread` : "You're all caught up."}
@@ -132,11 +119,11 @@ export default function Notifications() {
           ))}
         </div>
       ) : query.data.items.length === 0 ? (
-        <EmptyState icon={Bell} title="Nothing yet" tone="bg-block-sun">
+        <EmptyState title="Nothing yet">
           Applications, new followers and team updates will show up here.
         </EmptyState>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
           {query.data.items.map((notification) => (
             <NotificationRow
               key={notification.id}

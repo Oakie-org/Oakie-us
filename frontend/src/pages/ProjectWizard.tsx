@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
-import { toneFor } from "@/lib/categories";
 import { useCatalog, useSaveProject } from "@/lib/queries";
 import type {
   Project,
@@ -185,7 +184,7 @@ function OptionCard({
   return (
     <label
       className={cn(
-        "flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-3.5 transition-colors has-focus-visible:outline-3 has-focus-visible:outline-primary",
+        "flex cursor-pointer items-center gap-3 rounded-field border p-3.5 transition-colors has-focus-visible:outline-3 has-focus-visible:outline-primary",
         active
           ? "border-primary bg-primary-soft"
           : "border-line bg-surface hover:border-ink-soft",
@@ -354,8 +353,7 @@ export default function ProjectWizard() {
           <p className="flex items-center gap-1.5" aria-live="polite">
             {savedAt && (
               <>
-                <Check className="size-4 text-primary" aria-hidden /> Draft
-                saved
+                <Check className="size-4" aria-hidden /> Draft saved
               </>
             )}
           </p>
@@ -377,9 +375,9 @@ export default function ProjectWizard() {
         </ol>
 
         {restored && (
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-primary-soft px-4 py-3 text-on-primary-soft">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-field bg-primary-soft px-4 py-3 text-on-primary-soft">
             <p className="text-[0.95rem] font-medium">
-              Welcome back. We kept your draft of “{input.title.trim()}”.
+              We kept your draft of “{input.title.trim()}”.
             </p>
             <Button variant="ghost" size="sm" onClick={startOver}>
               <RotateCcw aria-hidden /> Start over
@@ -432,9 +430,7 @@ export default function ProjectWizard() {
                   )}
                 </Field>
                 <fieldset>
-                  <legend className="font-display text-sm font-semibold">
-                    Discipline
-                  </legend>
+                  <legend className="text-sm font-medium">Discipline</legend>
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
                     {(catalog?.categories ?? [input.category]).map(
                       (category) => (
@@ -445,13 +441,6 @@ export default function ProjectWizard() {
                           active={input.category === category}
                           onSelect={() => set("category", category)}
                         >
-                          <span
-                            className={cn(
-                              "size-3.5 shrink-0 rounded-[4px]",
-                              toneFor(category).bg,
-                            )}
-                            aria-hidden
-                          />
                           <span className="text-[0.95rem] font-medium">
                             {category}
                           </span>
@@ -467,7 +456,7 @@ export default function ProjectWizard() {
               <>
                 {ideas.length > 0 && input.open_roles.length < 8 && (
                   <div>
-                    <p className="font-display text-sm font-semibold">
+                    <p className="text-sm font-medium">
                       Common for {input.category}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -488,7 +477,7 @@ export default function ProjectWizard() {
                               ),
                             }))
                           }
-                          className="flex h-10 items-center gap-1.5 rounded-full border border-dashed border-ink-soft px-3.5 text-sm font-medium transition-colors hover:border-solid hover:border-ink hover:bg-surface"
+                          className="flex h-10 items-center gap-1.5 rounded-field border border-dashed border-ink-soft px-3.5 text-sm font-medium transition-colors hover:border-solid hover:border-ink hover:bg-surface"
                         >
                           <Plus className="size-4" aria-hidden /> {title}
                         </button>
@@ -500,7 +489,7 @@ export default function ProjectWizard() {
                 {input.open_roles.map((role, index) => (
                   <div
                     key={index}
-                    className="flex animate-pop flex-col gap-3 rounded-2xl bg-surface p-4"
+                    className="flex animate-pop flex-col gap-3 rounded-field border border-line bg-surface p-4"
                   >
                     <div className="flex items-end gap-2">
                       <Field label={`Role ${index + 1}`} className="flex-1">
@@ -563,7 +552,7 @@ export default function ProjectWizard() {
                 )}
 
                 <div>
-                  <p className="font-display text-sm font-semibold">
+                  <p className="text-sm font-medium">
                     Team size, including you
                   </p>
                   <div className="mt-2 flex items-center gap-3">
@@ -577,7 +566,7 @@ export default function ProjectWizard() {
                       <Minus aria-hidden />
                     </Button>
                     <span
-                      className="w-10 text-center font-display text-2xl font-semibold tabular-nums"
+                      className="w-10 text-center text-2xl font-medium tabular-nums"
                       aria-live="polite"
                     >
                       {input.max_members}
@@ -602,7 +591,7 @@ export default function ProjectWizard() {
             {step === 2 && (
               <>
                 <fieldset>
-                  <legend className="font-display text-sm font-semibold">
+                  <legend className="text-sm font-medium">
                     Where does it stand?
                   </legend>
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -615,9 +604,7 @@ export default function ProjectWizard() {
                         onSelect={() => set("status", value)}
                       >
                         <span>
-                          <span className="block font-display font-semibold">
-                            {value}
-                          </span>
+                          <span className="block font-medium">{value}</span>
                           <span className="block text-sm text-ink-soft">
                             {detail}
                           </span>
@@ -730,13 +717,13 @@ export default function ProjectWizard() {
                       <img
                         src={input.image_url}
                         alt=""
-                        className="h-20 w-32 rounded-xl bg-sunken object-cover"
+                        className="h-20 w-32 rounded-lg bg-sunken object-cover"
                       />
                     )
                   }
                 />
                 <fieldset>
-                  <legend className="font-display text-sm font-semibold">
+                  <legend className="text-sm font-medium">
                     Who can see it
                   </legend>
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -749,7 +736,7 @@ export default function ProjectWizard() {
                         onSelect={() => set("visibility", value)}
                       >
                         <span>
-                          <span className="flex items-center gap-1.5 font-display font-semibold">
+                          <span className="flex items-center gap-1.5 font-medium">
                             <Icon className="size-4" aria-hidden />
                             {label}
                           </span>
@@ -815,22 +802,20 @@ export default function ProjectWizard() {
                   ].map((item) => (
                     <li
                       key={item.label}
-                      className="flex items-center gap-3 rounded-2xl bg-surface p-4"
+                      className="flex items-center gap-3 rounded-field border border-line bg-surface p-4"
                     >
                       <span
                         className={cn(
                           "flex size-7 shrink-0 items-center justify-center rounded-full",
                           item.done
                             ? "bg-primary text-on-primary"
-                            : "border-2 border-dashed border-ink-soft",
+                            : "border border-dashed border-ink-soft",
                         )}
                       >
                         {item.done && <Check className="size-4" aria-hidden />}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-display font-semibold">
-                          {item.label}
-                        </span>
+                        <span className="block font-medium">{item.label}</span>
                         <span className="block truncate text-sm text-ink-soft">
                           {item.detail}
                         </span>
@@ -882,9 +867,7 @@ export default function ProjectWizard() {
 
       <aside className="hidden lg:block">
         <div className="sticky top-24">
-          <p className="mb-3 text-xs font-semibold tracking-wide text-ink-soft uppercase">
-            Live preview
-          </p>
+          <p className="mb-3 text-sm text-ink-soft">Live preview</p>
           <div className="pointer-events-none" aria-hidden>
             <ProjectCard project={preview} />
           </div>

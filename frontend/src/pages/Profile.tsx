@@ -6,7 +6,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import {
-  Award,
   Building2,
   CalendarDays,
   Camera,
@@ -14,7 +13,6 @@ import {
   Clock,
   Code2,
   Copy,
-  FolderOpen,
   ImagePlus,
   Link as LinkIcon,
   MapPin,
@@ -166,8 +164,8 @@ function InviteToProject({
         />
       ) : mine.isPending ? (
         <div className="space-y-2">
-          <Skeleton className="h-16 rounded-2xl" />
-          <Skeleton className="h-16 rounded-2xl" />
+          <Skeleton className="h-16 rounded-field" />
+          <Skeleton className="h-16 rounded-field" />
         </div>
       ) : manageable.length === 0 ? (
         <div className="flex flex-col items-start gap-3">
@@ -184,10 +182,10 @@ function InviteToProject({
               <button
                 type="button"
                 onClick={() => setChosen(project)}
-                className="flex w-full items-center gap-3 rounded-2xl border-2 border-line p-3 text-left transition-colors hover:border-ink"
+                className="flex w-full items-center gap-3 rounded-field border border-line p-3 text-left transition-colors hover:border-ink"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-display font-semibold">
+                  <span className="block truncate font-medium">
                     {project.title}
                   </span>
                   <span className="block truncate text-sm text-ink-soft">
@@ -226,7 +224,7 @@ function CopyRow({
   }
   return (
     <div>
-      <p className="font-display text-sm font-semibold">{label}</p>
+      <p className="text-sm font-medium">{label}</p>
       <div className="mt-1.5 flex items-start gap-2">
         <code
           className={cn(
@@ -278,7 +276,7 @@ function ShareDialog({
           value={`<iframe src="${embed}" title="${user.name} on Oakie" width="380" height="250" style="border:0;max-width:100%" loading="lazy"></iframe>`}
         />
         <div>
-          <p className="mb-1.5 flex items-center gap-1.5 font-display text-sm font-semibold">
+          <p className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
             <Code2 className="size-4" aria-hidden /> Preview
           </p>
           {open && (
@@ -316,7 +314,7 @@ function FollowList({
       {list.isPending ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }, (_, index) => (
-            <Skeleton key={index} className="h-12 rounded-xl" />
+            <Skeleton key={index} className="h-12 rounded-lg" />
           ))}
         </div>
       ) : !list.data?.length ? (
@@ -347,9 +345,14 @@ function Block({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-card bg-surface p-6", className)}>
+    <section
+      className={cn(
+        "rounded-card border border-line bg-surface p-6",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg">{title}</h2>
+        <h2 className="font-sans text-[1.0625rem]">{title}</h2>
         {edit}
       </div>
       <div className="mt-3">{children}</div>
@@ -439,7 +442,7 @@ export default function Profile() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-card bg-surface">
+      <div className="relative overflow-hidden rounded-card border border-line bg-surface">
         {profile.banner_url ? (
           <img
             src={profile.banner_url}
@@ -447,11 +450,11 @@ export default function Profile() {
             className="h-28 w-full bg-sunken object-cover sm:h-40"
           />
         ) : (
-          accent && <div className={cn("h-16 sm:h-20", accent.bg)} />
+          accent && <div className={cn("h-16 sm:h-20", accent)} />
         )}
         {isMe && (
           <Button
-            variant={profile.banner_url ? "ink" : "ghost"}
+            variant={profile.banner_url ? "primary" : "ghost"}
             size="icon"
             className={cn(
               "absolute right-3 top-3",
@@ -484,7 +487,7 @@ export default function Profile() {
                   size="xl"
                   className="ring-4 ring-surface"
                 />
-                <span className="absolute bottom-0.5 right-0.5 flex size-9 items-center justify-center rounded-full bg-ink text-paper ring-4 ring-surface transition-transform group-hover:scale-110">
+                <span className="absolute bottom-0.5 right-0.5 flex size-9 items-center justify-center rounded-full bg-ink text-paper ring-4 ring-surface">
                   <Camera className="size-4" aria-hidden />
                 </span>
               </button>
@@ -600,7 +603,7 @@ export default function Profile() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-sm font-medium transition-colors hover:border-ink"
+                    className="flex h-8 items-center gap-1.5 rounded-chip border border-line px-3 text-sm font-medium transition-colors hover:border-ink"
                   >
                     <LinkIcon className="size-3.5 text-ink-soft" aria-hidden />
                     {link.label ||
@@ -613,7 +616,7 @@ export default function Profile() {
                   <button
                     type="button"
                     onClick={() => edit("links")}
-                    className="relative flex h-8 items-center gap-1.5 rounded-full border border-dashed border-ink-soft px-3 text-sm font-medium text-ink-soft transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0 hover:border-solid hover:border-ink hover:text-ink"
+                    className="relative flex h-8 items-center gap-1.5 rounded-chip border border-dashed border-ink-soft px-3 text-sm font-medium text-ink-soft transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0 hover:border-solid hover:border-ink hover:text-ink"
                   >
                     {profile.links.length ? (
                       <Pencil className="size-3.5" aria-hidden />
@@ -629,7 +632,7 @@ export default function Profile() {
 
           <dl className="mt-5 flex gap-2">
             <div className="px-3 py-1">
-              <dd className="font-display text-xl font-semibold">
+              <dd className="text-xl font-medium">
                 {compact.format(profile.num_projects)}
               </dd>
               <dt className="text-sm text-ink-soft">Projects</dt>
@@ -639,9 +642,9 @@ export default function Profile() {
                 key={kind}
                 type="button"
                 onClick={() => setDialog(kind)}
-                className="rounded-xl px-3 py-1 text-left transition-colors hover:bg-sunken"
+                className="rounded-lg px-3 py-1 text-left transition-colors hover:bg-sunken"
               >
-                <dd className="font-display text-xl font-semibold">
+                <dd className="text-xl font-medium">
                   {compact.format(
                     kind === "followers"
                       ? profile.num_followers
@@ -658,13 +661,13 @@ export default function Profile() {
       {strength?.next && nextLink && (
         <Link
           to={nextLink}
-          className="group mt-4 flex flex-wrap items-center gap-4 rounded-card border border-dashed border-ink-soft p-4 transition-colors hover:border-solid hover:border-ink"
+          className="mt-4 flex flex-wrap items-center gap-4 rounded-card border border-line bg-surface p-4 transition-colors hover:border-line-strong"
         >
-          <span className="font-display text-2xl font-semibold tabular-nums">
+          <span className="text-2xl font-medium tabular-nums">
             {strength.percent}%
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block font-display font-semibold">
+            <span className="block font-medium">
               Next: {strength.next.label.toLowerCase()}
             </span>
             <span className="block text-sm text-ink-soft">
@@ -676,8 +679,8 @@ export default function Profile() {
             aria-hidden
           >
             <span
-              className="block h-full rounded-full bg-primary transition-[width] duration-500 ease-out-soft"
-              style={{ width: `${strength.percent}%` }}
+              className="block h-full origin-left rounded-full bg-primary transition-transform duration-500 ease-out-soft"
+              style={{ transform: `scaleX(${strength.percent / 100})` }}
             />
           </span>
         </Link>
@@ -827,11 +830,10 @@ export default function Profile() {
           <Skeleton className="h-40 rounded-card" />
         ) : others.length === 0 && pinned.length === 0 ? (
           <EmptyState
-            icon={FolderOpen}
             title="No projects yet"
             action={
               isMe ? (
-                <div className="flex flex-wrap justify-center gap-3">
+                <div className="flex flex-wrap gap-3">
                   <ButtonLink to="/projects/new">Start a project</ButtonLink>
                   <ButtonLink to="/explore?open=1" variant="outline">
                     Find one to join
@@ -851,7 +853,7 @@ export default function Profile() {
 
       <Section title="Verified contributions">
         {!records.data?.length ? (
-          <EmptyState icon={Award} title="No records yet">
+          <EmptyState title="No records yet">
             A verifiable record is issued for every project a member joins.
             Anyone can check it by its code.
           </EmptyState>

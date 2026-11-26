@@ -62,18 +62,18 @@ export function ChipInput({
           setFocused(false);
       }}
     >
-      <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-field border-2 border-line bg-surface px-2.5 py-2 transition-colors focus-within:border-primary hover:border-ink-soft">
+      <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-field border border-line bg-surface px-2.5 py-2 transition-colors focus-within:border-primary hover:border-ink-soft">
         {value.map((label) => (
           <span
             key={label}
-            className="inline-flex h-8 items-center gap-1 rounded-full bg-primary-soft pl-3 pr-1 text-sm font-medium text-on-primary-soft"
+            className="inline-flex h-8 items-center gap-1 rounded-chip bg-primary-soft pl-3 pr-1 text-sm font-medium text-on-primary-soft"
           >
             {label}
             <button
               type="button"
               onClick={() => onChange(value.filter((v) => v !== label))}
               aria-label={`Remove ${label}`}
-              className="flex size-6 items-center justify-center rounded-full hover:bg-on-primary-soft/15"
+              className="flex size-6 items-center justify-center rounded-chip hover:bg-on-primary-soft/15"
             >
               <X className="size-3.5" aria-hidden />
             </button>
@@ -98,7 +98,7 @@ export function ChipInput({
               type="button"
               onClick={() => add(option)}
               className={cn(
-                "inline-flex h-8 items-center gap-1 rounded-full border border-line px-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink",
+                "inline-flex h-8 items-center gap-1 rounded-chip border border-line px-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink",
               )}
             >
               <Plus className="size-3.5" aria-hidden />

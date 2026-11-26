@@ -29,18 +29,18 @@ export function Dialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-block-ink/60" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-black/40" />
         <DialogPrimitive.Content
           onInteractOutside={(event) => locked && event.preventDefault()}
           className={cn(
             "fixed inset-x-0 bottom-0 z-50 max-h-[92dvh] animate-pop overflow-y-auto rounded-t-card bg-surface p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]",
-            "sm:inset-auto sm:left-1/2 sm:top-1/2 sm:w-[min(32rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-card",
+            "shadow-float sm:inset-auto sm:left-1/2 sm:top-1/2 sm:w-[min(32rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-card sm:border sm:border-line",
             className,
           )}
         >
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <DialogPrimitive.Title className="text-xl">
+              <DialogPrimitive.Title className="font-sans text-lg">
                 {title}
               </DialogPrimitive.Title>
               {description && (
@@ -51,7 +51,7 @@ export function Dialog({
             </div>
             <DialogPrimitive.Close
               aria-label="Close"
-              className="-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-sunken hover:text-ink"
+              className="-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-field text-ink-soft transition-colors hover:bg-sunken hover:text-ink"
             >
               <X className="size-5" aria-hidden />
             </DialogPrimitive.Close>
@@ -86,7 +86,7 @@ export function Drawer({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-block-ink/40" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade bg-black/40" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className={cn(
@@ -122,7 +122,7 @@ export function MenuContent({
       <MenuPrimitive.Content
         align={align}
         sideOffset={8}
-        className="z-50 min-w-52 animate-pop rounded-2xl border-2 border-line bg-surface p-1.5"
+        className="z-50 min-w-52 animate-pop rounded-field border border-line bg-surface p-1.5 shadow-float"
       >
         {children}
       </MenuPrimitive.Content>
@@ -148,7 +148,7 @@ export function MenuItem({
       onSelect={onSelect}
       disabled={disabled}
       className={cn(
-        "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-[0.95rem] font-medium outline-none transition-colors",
+        "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-[0.95rem] font-medium outline-none transition-colors",
         "data-highlighted:bg-sunken data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-ink-soft",
         danger && "text-danger [&_svg]:text-danger",
       )}

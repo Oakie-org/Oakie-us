@@ -61,17 +61,17 @@ function InvitationBanner({ project }: { project: Project }) {
       {
         onSuccess: () =>
           toast.success(
-            accept ? `Welcome to ${project.title}` : "Invitation declined",
+            accept ? `You joined ${project.title}` : "Invitation declined",
           ),
         onError: (error) => toast.error(error),
       },
     );
   return (
-    <section className="mb-6 flex animate-rise flex-wrap items-center justify-between gap-4 rounded-card border-2 border-primary bg-primary-soft p-5 text-on-primary-soft">
+    <section className="mb-6 flex animate-rise flex-wrap items-center justify-between gap-4 rounded-card border border-primary bg-primary-soft p-5 text-on-primary-soft">
       <div className="flex min-w-0 items-start gap-3">
         <MailOpen className="mt-0.5 size-6 shrink-0" aria-hidden />
         <div className="min-w-0">
-          <p className="font-display text-lg font-semibold">
+          <p className="text-lg font-medium">
             {invitation.inviter?.name ?? "The team"} invited you to join
             {invitation.role_title ? ` as ${invitation.role_title}` : ""}
           </p>
@@ -110,10 +110,10 @@ function NextSteps({
   onDismiss: () => void;
 }) {
   return (
-    <section className="mb-6 animate-rise rounded-card bg-surface p-5 sm:p-6">
+    <section className="mb-6 animate-rise rounded-card border border-line bg-surface p-5 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl">
+          <h2 className="font-sans text-lg">
             {project.title} is live. Now find your first teammate.
           </h2>
           <p className="mt-1 text-ink-soft">
@@ -164,7 +164,7 @@ function JoinAction({
 
   if (viewer.role) {
     return (
-      <span className="flex h-11 items-center gap-2 rounded-full bg-primary-soft px-5 font-display font-semibold text-on-primary-soft">
+      <span className="flex h-11 items-center gap-2 rounded-field border border-line bg-sunken px-4 text-[0.9375rem] font-medium">
         <Check className="size-4" aria-hidden />
         {viewer.role === "owner" ? "Your project" : "You're on the team"}
       </span>
@@ -174,7 +174,7 @@ function JoinAction({
   if (viewer.application_status === "pending") {
     return (
       <span className="flex flex-wrap items-center gap-2">
-        <span className="flex h-11 items-center gap-2 rounded-full bg-block-sun px-5 font-display font-semibold text-block-ink">
+        <span className="flex h-11 items-center gap-2 rounded-field border border-line bg-sunken px-4 text-[0.9375rem] font-medium">
           <Hourglass className="size-4" aria-hidden /> Application sent
         </span>
         <Button
@@ -328,7 +328,9 @@ export default function ProjectDetail() {
               </Chip>
             )}
           </div>
-          <h1 className="mt-3 text-4xl sm:text-5xl">{project.title}</h1>
+          <h1 className="mt-3 text-3xl leading-[1.1] sm:text-[2.75rem]">
+            {project.title}
+          </h1>
           {project.subtitle && (
             <p className="mt-2 text-xl text-ink-soft">{project.subtitle}</p>
           )}
@@ -337,10 +339,10 @@ export default function ProjectDetail() {
             {project.owner && (
               <Link
                 to={`/u/${project.owner.id}`}
-                className="group flex items-center gap-2 rounded-full"
+                className="group flex items-center gap-2 rounded-field"
               >
                 <Avatar user={project.owner} size="sm" />
-                <span className="font-display font-semibold text-ink group-hover:underline">
+                <span className="font-medium text-ink group-hover:underline">
                   {project.owner.name}
                 </span>
               </Link>
@@ -438,7 +440,7 @@ export default function ProjectDetail() {
               preventScrollReset
               aria-current={active ? "page" : undefined}
               className={cn(
-                "-mb-0.5 flex h-12 shrink-0 items-center border-b-[3px] px-4 font-display font-semibold transition-colors",
+                "-mb-0.5 flex h-12 shrink-0 items-center border-b-[3px] px-4 font-medium transition-colors",
                 active
                   ? "border-primary text-ink"
                   : "border-transparent text-ink-soft hover:text-ink",

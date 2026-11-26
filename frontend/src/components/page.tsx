@@ -9,7 +9,7 @@ export function useTitle(title: string | undefined) {
   useEffect(() => {
     document.title = title
       ? `${title} · Oakie`
-      : "Oakie: find your people, build your world";
+      : "Oakie: projects looking for teammates";
   }, [title]);
 }
 
@@ -29,13 +29,13 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "mb-8 flex flex-wrap items-end justify-between gap-4",
+        "mb-6 flex flex-wrap items-end justify-between gap-4",
         className,
       )}
     >
       <div className="max-w-2xl">
-        <h1 className="text-4xl sm:text-5xl">{title}</h1>
-        {lead && <p className="mt-3 text-lg text-ink-soft">{lead}</p>}
+        <h1 className="text-3xl leading-tight sm:text-4xl">{title}</h1>
+        {lead && <p className="mt-2 text-ink-soft">{lead}</p>}
       </div>
       {action}
     </header>
@@ -54,9 +54,9 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={cn("mt-12", className)}>
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 className="text-2xl">{title}</h2>
+    <section className={cn("mt-10", className)}>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-[1.375rem] leading-tight">{title}</h2>
         {action}
       </div>
       {children}
@@ -130,10 +130,10 @@ export function FilterPills({
             aria-pressed={active}
             onClick={() => onChange(active ? "" : option)}
             className={cn(
-              "h-10 shrink-0 rounded-full border-2 px-4 font-display text-sm font-semibold transition-colors duration-150",
+              "h-10 shrink-0 rounded-field border px-3.5 text-sm font-medium transition-colors duration-150",
               active
                 ? "border-ink bg-ink text-paper"
-                : "border-line bg-surface text-ink hover:border-ink",
+                : "border-line-strong bg-surface text-ink hover:bg-sunken",
             )}
           >
             {option || allLabel}

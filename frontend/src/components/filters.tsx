@@ -6,7 +6,7 @@ import type { FacetOption } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const PILL =
-  "flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors duration-150";
+  "flex h-10 shrink-0 items-center gap-1.5 rounded-field border px-3.5 text-sm font-medium transition-colors duration-150";
 const IDLE = "border-line bg-surface text-ink hover:border-ink-soft";
 const ACTIVE = "border-ink bg-ink text-paper";
 
@@ -52,7 +52,7 @@ export function FacetMenu({
         <MenuPrimitive.Content
           align="start"
           sideOffset={8}
-          className="z-50 max-h-80 min-w-56 animate-pop overflow-y-auto rounded-2xl border border-line bg-surface p-1.5"
+          className="z-50 max-h-80 min-w-56 animate-pop overflow-y-auto rounded-field border border-line bg-surface p-1.5 shadow-float"
         >
           {listed.length === 0 && (
             <p className="px-3 py-2 text-sm text-ink-soft">
@@ -65,15 +65,13 @@ export function FacetMenu({
               <MenuPrimitive.Item
                 key={option.value}
                 onSelect={() => onChange(chosen ? "" : option.value)}
-                className="flex min-h-10 cursor-pointer items-center gap-2 rounded-xl px-3 text-[0.95rem] outline-none data-highlighted:bg-sunken"
+                className="flex min-h-10 cursor-pointer items-center gap-2 rounded-lg px-3 text-[0.95rem] outline-none data-highlighted:bg-sunken"
               >
                 <span className="flex size-4 shrink-0 items-center justify-center">
-                  {chosen && (
-                    <Check className="size-4 text-primary" aria-hidden />
-                  )}
+                  {chosen && <Check className="size-4" aria-hidden />}
                 </span>
                 <span
-                  className={cn("flex-1 truncate", chosen && "font-semibold")}
+                  className={cn("flex-1 truncate", chosen && "font-medium")}
                 >
                   {option.value}
                 </span>
@@ -140,7 +138,7 @@ export function AppliedFilters({
             type="button"
             onClick={filter.onRemove}
             aria-label={`Remove filter: ${filter.label}`}
-            className="group flex h-8 items-center gap-1.5 rounded-full bg-primary-soft pl-3 pr-2 text-[0.8125rem] font-medium text-on-primary-soft transition-colors hover:bg-line hover:text-ink"
+            className="group flex h-8 items-center gap-1.5 rounded-chip bg-primary-soft pl-3 pr-2 text-[0.8125rem] font-medium text-on-primary-soft transition-colors hover:bg-line hover:text-ink"
           >
             <span className="max-w-48 truncate">{filter.label}</span>
             <X
@@ -155,7 +153,7 @@ export function AppliedFilters({
           <button
             type="button"
             onClick={onClear}
-            className="h-8 rounded-full px-2 text-[0.8125rem] font-semibold text-ink-soft underline-offset-2 hover:text-ink hover:underline"
+            className="h-8 rounded-chip px-2 text-[0.8125rem] font-medium text-ink-soft underline-offset-2 hover:text-ink hover:underline"
           >
             Clear all
           </button>

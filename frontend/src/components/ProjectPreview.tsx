@@ -38,7 +38,7 @@ function Body({
           <img
             src={project.image_url}
             alt=""
-            className="mb-5 max-h-64 w-full rounded-2xl bg-sunken object-cover"
+            className="mb-5 max-h-64 w-full rounded-field bg-sunken object-cover"
           />
         )}
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-soft">
@@ -57,7 +57,7 @@ function Body({
           {project.owner && (
             <Link
               to={`/u/${project.owner.id}`}
-              className="group flex items-center gap-2 rounded-full"
+              className="group flex items-center gap-2 rounded-field"
             >
               <Avatar user={project.owner} size="xs" />
               <span className="font-medium text-ink group-hover:underline">
@@ -88,7 +88,7 @@ function Body({
           </div>
         )}
 
-        <section className="mt-6 rounded-2xl bg-surface px-4">
+        <section className="mt-6 rounded-field border border-line bg-surface px-4">
           <div className="flex items-center justify-between gap-4 py-4">
             <div>
               <h3 className="text-lg">{seats.text}</h3>
@@ -112,7 +112,7 @@ function Body({
                   className="flex items-center justify-between gap-3 py-3.5"
                 >
                   <div className="min-w-0">
-                    <p className="font-display font-semibold">{role.title}</p>
+                    <p className="font-medium">{role.title}</p>
                     {role.skills.length > 0 && (
                       <p className="mt-0.5 truncate text-sm text-ink-soft">
                         {role.skills.join(" · ")}
@@ -200,14 +200,14 @@ export function ProjectPreview({
         {id && (
           <Link
             to={`/projects/${id}`}
-            className="flex h-9 items-center gap-1 rounded-full px-3 text-sm font-semibold text-ink-soft hover:bg-sunken hover:text-ink"
+            className="flex h-9 items-center gap-1 rounded-field px-3 text-sm font-medium text-ink-soft hover:bg-sunken hover:text-ink"
           >
             Open full page <ArrowUpRight className="size-4" aria-hidden />
           </Link>
         )}
         <DrawerClose
           aria-label="Close preview"
-          className="flex size-11 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-sunken hover:text-ink"
+          className="flex size-11 items-center justify-center rounded-field text-ink-soft transition-colors hover:bg-sunken hover:text-ink"
         >
           <X className="size-5" aria-hidden />
         </DrawerClose>
@@ -224,8 +224,8 @@ export function ProjectPreview({
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-7 w-2/3" />
           <Skeleton className="h-5 w-full" />
-          <Skeleton className="h-20 w-full rounded-2xl" />
-          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-field" />
+          <Skeleton className="h-40 w-full rounded-field" />
         </div>
       ) : (
         <>

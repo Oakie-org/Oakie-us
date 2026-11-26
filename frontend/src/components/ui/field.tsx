@@ -10,8 +10,8 @@ import { ChevronDown, CircleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CONTROL =
-  "w-full rounded-field border-2 border-line bg-surface px-4 text-base text-ink placeholder:text-ink-soft/70 " +
-  "transition-colors duration-150 hover:border-ink-soft focus:border-primary focus:outline-none " +
+  "w-full rounded-field border border-line-strong bg-surface px-3.5 text-base text-ink placeholder:text-ink-mute " +
+  "transition-colors duration-150 hover:border-ink-soft focus:border-ink focus:outline-none " +
   "aria-invalid:border-danger disabled:opacity-60";
 
 interface FieldProps {
@@ -44,10 +44,7 @@ export function Field({
     [error && errorId, hint && hintId].filter(Boolean).join(" ") || undefined;
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label
-        htmlFor={id}
-        className="font-display text-sm font-semibold text-ink"
-      >
+      <label htmlFor={id} className="text-sm font-medium text-ink">
         {label}
         {required && (
           <span className="text-danger" aria-hidden>
@@ -84,7 +81,7 @@ export function Input({
   className,
   ...rest
 }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(CONTROL, "h-12", className)} {...rest} />;
+  return <input className={cn(CONTROL, "h-11", className)} {...rest} />;
 }
 
 export function Textarea({
@@ -111,7 +108,7 @@ export function Select({
   return (
     <div className="relative">
       <select
-        className={cn(CONTROL, "h-12 appearance-none pr-10", className)}
+        className={cn(CONTROL, "h-11 appearance-none pr-10", className)}
         {...rest}
       >
         {children}

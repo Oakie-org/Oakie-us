@@ -13,7 +13,7 @@ export function Logo({ className }: { className?: string }) {
       width={800}
       height={250}
       className={cn(
-        "h-9 w-auto mix-blend-multiply dark:mix-blend-screen dark:invert",
+        "h-7 w-auto mix-blend-multiply dark:mix-blend-screen dark:invert",
         className,
       )}
     />

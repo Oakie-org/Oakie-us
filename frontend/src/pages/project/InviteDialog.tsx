@@ -67,10 +67,10 @@ export function InviteForm({
         );
       }}
     >
-      <div className="flex items-center gap-3 rounded-2xl bg-sunken p-3">
+      <div className="flex items-center gap-3 rounded-field bg-sunken p-3">
         <Avatar user={person} />
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1 font-display font-semibold">
+          <p className="flex items-center gap-1 font-medium">
             <span className="truncate">{person.name}</span>
           </p>
           {person.headline && (
@@ -157,7 +157,7 @@ function Picker({
     <div className="flex flex-col gap-4">
       <div className="relative">
         <Search
-          className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-ink-soft"
+          className="pointer-events-none absolute left-3.5 top-1/2 size-[1.125rem] -translate-y-1/2 text-ink-mute"
           aria-hidden
         />
         <Input
@@ -173,7 +173,7 @@ function Picker({
       </div>
 
       <div>
-        <p className="mb-1 text-xs font-semibold tracking-wide text-ink-soft uppercase">
+        <p className="mb-1 text-sm text-ink-soft">
           {term
             ? "Results"
             : wanted
@@ -183,7 +183,7 @@ function Picker({
         {people.isPending ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }, (_, index) => (
-              <Skeleton key={index} className="h-14 rounded-xl" />
+              <Skeleton key={index} className="h-14 rounded-lg" />
             ))}
           </div>
         ) : found.length === 0 ? (
@@ -196,7 +196,7 @@ function Picker({
               <li key={person.id} className="flex items-center gap-3 py-2">
                 <Avatar user={person} />
                 <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-1 font-display font-semibold">
+                  <p className="flex items-center gap-1 font-medium">
                     <span className="truncate">{person.name}</span>
                   </p>
                   <p className="truncate text-sm text-ink-soft">
@@ -224,9 +224,7 @@ function Picker({
 
       {pending.length > 0 && (
         <div className="border-t border-line pt-4">
-          <p className="mb-1 text-xs font-semibold tracking-wide text-ink-soft uppercase">
-            Waiting for an answer
-          </p>
+          <p className="mb-1 text-sm text-ink-soft">Waiting for an answer</p>
           <ul>
             {pending.map(
               (invitation) =>

@@ -3,7 +3,6 @@ import {
   Flag,
   Megaphone,
   MoreHorizontal,
-  Newspaper,
   Pencil,
   Plus,
   Rocket,
@@ -14,7 +13,7 @@ import {
 import { useAuth } from "@/auth/AuthProvider";
 import { useDeletePost, useSavePost, useTimeline } from "@/lib/queries";
 import type { ProjectDetail, TimelineKind, TimelinePost } from "@/lib/types";
-import { cn, formatDate, timeAgo } from "@/lib/utils";
+import { formatDate, timeAgo } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,13 +33,10 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { LoadMore } from "@/components/page";
 
-const KIND: Record<
-  TimelineKind,
-  { label: string; icon: LucideIcon; tone: string }
-> = {
-  update: { label: "Update", icon: Megaphone, tone: "bg-block-sky" },
-  milestone: { label: "Milestone", icon: Flag, tone: "bg-block-sun" },
-  release: { label: "Release", icon: Rocket, tone: "bg-block-mint" },
+const KIND: Record<TimelineKind, { label: string; icon: LucideIcon }> = {
+  update: { label: "Update", icon: Megaphone },
+  milestone: { label: "Milestone", icon: Flag },
+  release: { label: "Release", icon: Rocket },
 };
 
 function PostDialog({
@@ -154,7 +150,7 @@ export function UpdatesTab({ project }: { project: ProjectDetail }) {
   const hidden = project.visibility !== "public" && !isMember;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="max-w-3xl">
       {isMember && (
         <div className="mb-6 flex justify-end">
           <Button onClick={() => setEditing("new")}>
@@ -176,9 +172,7 @@ export function UpdatesTab({ project }: { project: ProjectDetail }) {
         </div>
       ) : posts.length === 0 ? (
         <EmptyState
-          icon={Newspaper}
           title={hidden ? "Updates are for the team" : "No updates yet"}
-          tone="bg-block-sky"
         >
           {hidden
             ? "This project shares its progress with members only."
@@ -187,24 +181,19 @@ export function UpdatesTab({ project }: { project: ProjectDetail }) {
               : "Follow the project to hear when the team posts."}
         </EmptyState>
       ) : (
-        <ol className="relative flex flex-col gap-4 before:absolute before:bottom-6 before:left-[1.35rem] before:top-6 before:w-0.5 before:bg-line">
+        <ol className="relative flex flex-col gap-4 before:absolute before:bottom-6 before:left-[1.35rem] before:top-6 before:w-px before:bg-line">
           {posts.map((post) => {
-            const { label, icon: Icon, tone } = KIND[post.kind] ?? KIND.update;
+            const { label, icon: Icon } = KIND[post.kind] ?? KIND.update;
             const mine = post.author?.id === me?.id;
             return (
               <li key={post.id} className="relative flex gap-4">
-                <span
-                  className={cn(
-                    "z-10 flex size-11 shrink-0 items-center justify-center rounded-full text-block-ink ring-4 ring-paper",
-                    tone,
-                  )}
-                >
+                <span className="z-10 flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-ink-soft ring-4 ring-paper">
                   <Icon className="size-5" aria-hidden />
                 </span>
-                <article className="min-w-0 flex-1 rounded-card bg-surface p-5 sm:p-6">
+                <article className="min-w-0 flex-1 rounded-card border border-line bg-surface p-5 sm:p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-display text-xs font-semibold tracking-wide text-ink-soft uppercase">
+                      <p className="text-[0.8125rem] text-ink-mute">
                         {label} ·{" "}
                         <time
                           dateTime={post.created_at}
@@ -213,7 +202,7 @@ export function UpdatesTab({ project }: { project: ProjectDetail }) {
                           {timeAgo(post.created_at)}
                         </time>
                       </p>
-                      <h3 className="mt-1 text-xl leading-snug">
+                      <h3 className="mt-1 font-serif text-[1.375rem] leading-[1.2]">
                         {post.title}
                       </h3>
                     </div>
@@ -221,7 +210,7 @@ export function UpdatesTab({ project }: { project: ProjectDetail }) {
                       <Menu>
                         <MenuTrigger
                           aria-label={`Actions for ${post.title}`}
-                          className="-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-sunken"
+                          className="-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-field text-ink-soft hover:bg-sunken"
                         >
                           <MoreHorizontal className="size-5" aria-hidden />
                         </MenuTrigger>
@@ -254,7 +243,7 @@ export function UpdatesTab({ project }: { project: ProjectDetail }) {
                           src={url}
                           alt=""
                           loading="lazy"
-                          className="aspect-video w-full rounded-xl bg-sunken object-cover"
+                          className="aspect-video w-full rounded-lg bg-sunken object-cover"
                         />
                       ))}
                     </div>

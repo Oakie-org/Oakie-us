@@ -15,6 +15,8 @@ interface ProjectFeedProps<P extends Project> {
   onPreview?: (id: string) => void;
   /** Extra line under a card, e.g. the viewer's role on that team. */
   footer?: (project: P) => ReactNode;
+  /** Fewer columns where the feed shares the page with a side column. */
+  maxColumns?: number;
   className?: string;
 }
 
@@ -23,6 +25,7 @@ export function ProjectFeed<P extends Project>({
   projects,
   onPreview,
   footer,
+  maxColumns,
   className,
 }: ProjectFeedProps<P>) {
   return (
@@ -30,6 +33,7 @@ export function ProjectFeed<P extends Project>({
       items={projects}
       getKey={(project) => project.id}
       estimate={estimateProjectCard}
+      maxColumns={maxColumns}
       className={className}
     >
       {(project) => (
@@ -50,6 +54,7 @@ export function ProjectFeedSkeleton({ count = 6 }: { count?: number }) {
         items={SKELETONS.slice(0, count)}
         getKey={String}
         estimate={(index) => (index % 3 === 1 ? 20 : 12)}
+        maxColumns={Math.min(3, count)}
       >
         {(index) => <ProjectCardSkeleton index={index} />}
       </Masonry>

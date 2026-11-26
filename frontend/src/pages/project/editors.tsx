@@ -118,7 +118,7 @@ function OptionCard({
   return (
     <label
       className={cn(
-        "flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-3.5 transition-colors has-focus-visible:outline-3 has-focus-visible:outline-primary",
+        "flex cursor-pointer items-center gap-3 rounded-field border p-3.5 transition-colors has-focus-visible:outline-3 has-focus-visible:outline-primary",
         active
           ? "border-primary bg-primary-soft"
           : "border-line bg-surface hover:border-ink-soft",
@@ -215,9 +215,7 @@ function BasicsEditor({ project, save, touch, footer }: EditorProps) {
         )}
       </Field>
       <fieldset>
-        <legend className="font-display text-sm font-semibold">
-          Where does it stand?
-        </legend>
+        <legend className="text-sm font-medium">Where does it stand?</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {STAGES.map(({ value, detail }) => (
             <OptionCard
@@ -228,9 +226,7 @@ function BasicsEditor({ project, save, touch, footer }: EditorProps) {
               onSelect={() => set("status", value)}
             >
               <span>
-                <span className="block font-display font-semibold leading-tight">
-                  {value}
-                </span>
+                <span className="block font-medium leading-tight">{value}</span>
                 <span className="block text-sm text-ink-soft">{detail}</span>
               </span>
             </OptionCard>
@@ -310,7 +306,7 @@ function PictureEditor({ project, save, touch, footer }: EditorProps) {
         <img
           src={draft.image_url}
           alt=""
-          className="max-h-64 w-full rounded-2xl bg-sunken object-contain"
+          className="max-h-64 w-full rounded-field bg-sunken object-contain"
         />
       )}
       <ImagePicker
@@ -356,7 +352,7 @@ function RolesEditor({ project, save, touch, footer }: EditorProps) {
       {roles.map((role, index) => (
         <div
           key={index}
-          className="flex animate-pop flex-col gap-3 rounded-2xl bg-sunken p-4"
+          className="flex animate-pop flex-col gap-3 rounded-field bg-sunken p-4"
         >
           <div className="flex items-end gap-2">
             <Field label={`Role ${index + 1}`} className="flex-1">
@@ -414,7 +410,7 @@ function RolesEditor({ project, save, touch, footer }: EditorProps) {
         </Button>
       )}
       <div>
-        <p className="font-display text-sm font-semibold">
+        <p className="text-sm font-medium">
           Team size, including everyone on it
         </p>
         <div className="mt-2 flex items-center gap-3">
@@ -428,7 +424,7 @@ function RolesEditor({ project, save, touch, footer }: EditorProps) {
             <Minus aria-hidden />
           </Button>
           <span
-            className="w-10 text-center font-display text-2xl font-semibold tabular-nums"
+            className="w-10 text-center text-2xl font-medium tabular-nums"
             aria-live="polite"
           >
             {draft.max_members}
@@ -521,10 +517,8 @@ function VisibilityEditor({
   if (confirming) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="rounded-2xl bg-danger-soft p-4">
-          <p className="font-display font-semibold text-danger">
-            Delete {project.title}?
-          </p>
+        <div className="rounded-field bg-danger-soft p-4">
+          <p className="font-medium text-danger">Delete {project.title}?</p>
           <p className="mt-1">
             This removes the project, its updates, tasks and every member's
             contribution record. It can't be undone.
@@ -574,9 +568,7 @@ function VisibilityEditor({
           >
             <Icon className="size-5 shrink-0" aria-hidden />
             <span>
-              <span className="block font-display font-semibold leading-tight">
-                {label}
-              </span>
+              <span className="block font-medium leading-tight">{label}</span>
               <span className="block text-sm text-ink-soft">{detail}</span>
             </span>
           </OptionCard>

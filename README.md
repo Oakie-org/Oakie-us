@@ -82,37 +82,6 @@
 
 ---
 
-## 📂 项目结构 | Project Structure
-
-```text
-Oakie-us/
-├── serverless_backend/
-│   ├── app/
-│   │   ├── api/v1/endpoints/   # 路由层：只管 HTTP
-│   │   ├── services/           # 服务层：业务规则、权限、通知
-│   │   ├── repositories/       # 仓储层：DynamoDB 键与查询
-│   │   ├── db/                 # 单表网关与表结构定义
-│   │   ├── models/             # Pydantic 数据模型
-│   │   ├── core/               # 配置、鉴权、错误、ID
-│   │   ├── triggers/           # Cognito PostConfirmation
-│   │   └── local/              # 仅本地：开发用登录与演示数据
-│   ├── scripts/dev_server.py   # 一条命令启动本地后端（无需 AWS）
-│   ├── tests/                  # pytest（内存 DynamoDB）
-│   └── template.yaml           # SAM 模板
-├── frontend/
-│   └── src/
-│       ├── app/                # 路由、外壳、主题
-│       ├── auth/               # 登录（Cognito / 本地）
-│       ├── lib/                # API 客户端、查询 hooks、类型
-│       ├── components/         # 设计系统组件与业务组件
-│       └── pages/              # 页面
-├── docs/                       # 架构说明、设计系统
-├── docs_for_ai/                # AI 协作简报、API 约定、路线图
-└── scripts/                    # 开发脚本
-```
-
----
-
 ## 🚀 快速开始 | Getting Started
 
 **本地开发不需要 AWS 账号。** 后端会启动一个内存版的 DynamoDB/S3 模拟器，并内置演示数据和本地登录。
@@ -159,10 +128,9 @@ cd frontend && npm run lint && npm run build          # 前端规范与构建
 
 ## 📚 文档 | Documentation
 
-- [架构说明](./docs/architecture.md)：分层、单表数据模型、鉴权、API 一览、部署注意事项
+- [架构说明](./docs/architecture.md)：关键决策、分层、单表数据模型、鉴权、部署注意事项
 - [设计系统](./docs/design-system.md)：配色、字体、交互规范
-- [路线图](./docs_for_ai/project-timeline.md)：已完成与待办
-- [Serverless 架构分析报告](./serverless_analysis看我.md)
+- [AI 协作规则](./AGENTS.md)：命令、约定、完成标准（`CLAUDE.md` 直接引用它）
 
 ---
 
@@ -176,6 +144,7 @@ cd frontend && npm run lint && npm run build          # 前端规范与构建
 - [x] **项目认证记录**：每位成员在每个项目的可验证贡献记录（`/verify/<code>`）
 - [ ] **扩展**：EventBridge 异步通知、WebSocket 实时消息、独立搜索服务
 - [ ] **创业孵化通道**：对接投资人、导师与孵化器（规划中）
+- [ ] **运营工具**：邮件通知、内容审核、管理后台
 - [ ] **重新部署到 AWS**：新栈首次部署与旧数据迁移
 
 ---

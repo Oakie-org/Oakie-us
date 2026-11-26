@@ -14,6 +14,18 @@ Lambda: FastAPI via Mangum ──► DynamoDB (one table, two GSIs)
 Cognito User Pool ──PostConfirmation──► Lambda trigger (provisions the profile)
 ```
 
+## Decisions
+
+- **Serverless instead of the original Java/Spring Boot service** (now in
+  `archived_java_impl/`). Lambda, API Gateway (HTTP API) and DynamoDB bill per
+  request: the estimate at one million requests a month was under $5, and there
+  is no server to operate. The price is a cold start of 1–3 s after idle, so keep
+  the dependency bundle small.
+- **One Lambda for the whole FastAPI app**, not one per route: one deploy unit
+  and one local process, which suits a project this size.
+- **One DynamoDB table**, so a project and everything inside it is read from one
+  partition and counters change in the same transaction as the item behind them.
+
 ## Backend (`serverless_backend/`)
 
 ### Layers
@@ -93,30 +105,15 @@ notifications. It runs inline and is best-effort (a failed notification never
 fails the action). When fan-out needs to leave the request path, publish to
 EventBridge from that one function.
 
-### API surface (`/api/v1`)
+### API
 
-| Area         | Endpoints                                                                                                                                                                                                                                       |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform     | `GET /meta`, `GET /stats/overview`, `GET /search/suggest`, `POST /uploads/sign`                                                                                                                                                                 |
-| Projects     | `GET, POST /projects`, `GET /projects/facets`, `GET /projects/following`, `GET, PATCH, DELETE /projects/{id}`, `PUT, DELETE /projects/{id}/like`, `PUT, DELETE /projects/{id}/follow`                                                           |
-| Team         | `GET /projects/{id}/members`, `PATCH, DELETE /projects/{id}/members/{user_id}`                                                                                                                                                                  |
-| Applications | `POST, GET /projects/{id}/applications`, `DELETE /projects/{id}/applications/me`, `POST /projects/{id}/applications/{applicant_id}/decision`                                                                                                    |
-| Invitations  | `POST, GET /projects/{id}/invitations`, `POST /projects/{id}/invitations/me/decision`, `DELETE /projects/{id}/invitations/{invitee_id}`, `GET /users/me/invitations`                                                                            |
-| Timeline     | `GET, POST /projects/{id}/timeline`, `PATCH, DELETE /projects/{id}/timeline/{post_id}`                                                                                                                                                          |
-| Tasks        | `GET, POST /projects/{id}/tasks`, `PATCH, DELETE /projects/{id}/tasks/{task_id}`                                                                                                                                                                |
-| People       | `GET /talent`, `GET, PATCH /users/me`, `GET /users/me/applications`, `GET /users/{id}`, `GET /users/{id}/projects`, `GET /users/{id}/contributions`, `GET /users/{id}/followers`, `GET /users/{id}/following`, `PUT, DELETE /users/{id}/follow` |
-| Proof        | `GET /contributions/{code}` (public verification of a contribution record)                                                                                                                                                                      |
-| Inbox        | `GET /inbox/summary`, `GET /notifications`, `POST /notifications/read`, `GET, POST /conversations`, `GET /conversations/{id}`, `POST /conversations/{id}/messages`                                                                              |
-
-Lists use cursor pagination: `{ "items": [...], "next_cursor": "..." | null }`.
-Interactive docs are at `/docs` on a running server.
+The endpoint reference is the OpenAPI schema at `/docs` on a running server; it
+is generated from the routers, so it cannot go stale. Conventions (pagination,
+errors, toggles) are in `AGENTS.md`.
 
 ### Running and testing
 
-```bash
-python serverless_backend/scripts/dev_server.py   # API :8000, in-memory AWS emulator :5050, demo data
-python -m pytest                                  # from the repo root; in-memory DynamoDB, no Docker
-```
+Commands are in `AGENTS.md`. Tests use in-memory DynamoDB and need no Docker.
 
 `scripts/dev_server.py` starts moto (DynamoDB and S3), creates the table and
 bucket, seeds demo data through the real services, and serves the API with local

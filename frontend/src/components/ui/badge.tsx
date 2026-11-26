@@ -1,12 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  BadgeCheck,
-  CheckCircle2,
-  CircleDashed,
-  Lightbulb,
-  Megaphone,
-  type LucideIcon,
-} from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 
 import type { ProjectStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -27,7 +20,7 @@ export function Chip({ children, className, tone = "neutral" }: ChipProps) {
   return (
     <span
       className={cn(
-        "inline-flex h-7 max-w-full items-center gap-1 rounded-full px-3 text-[0.8125rem] font-medium whitespace-nowrap",
+        "inline-flex h-7 max-w-full items-center gap-1 rounded-chip px-2.5 text-[0.8125rem] font-medium whitespace-nowrap",
         CHIP_TONES[tone],
         className,
       )}
@@ -37,44 +30,13 @@ export function Chip({ children, className, tone = "neutral" }: ChipProps) {
   );
 }
 
-// Status is carried by icon and label, never by colour alone.
-const STATUS: Record<ProjectStatus, { icon: LucideIcon; className: string }> = {
-  Recruiting: { icon: Megaphone, className: "bg-primary text-on-primary" },
-  "In Progress": {
-    icon: CircleDashed,
-    className: "bg-block-sun text-block-ink",
-  },
-  Idea: { icon: Lightbulb, className: "bg-block-lilac text-block-ink" },
-  Completed: { icon: CheckCircle2, className: "bg-ink text-paper" },
-};
-
-export function StatusBadge({
-  status,
-  className,
-}: {
-  status: ProjectStatus;
-  className?: string;
-}) {
-  const { icon: Icon, className: tone } = STATUS[status] ?? STATUS.Idea;
-  return (
-    <span
-      className={cn(
-        "inline-flex h-7 items-center gap-1.5 rounded-full px-3 font-display text-[0.8125rem] font-semibold whitespace-nowrap",
-        tone,
-        className,
-      )}
-    >
-      <Icon className="size-3.5" aria-hidden />
-      {status}
-    </span>
-  );
-}
-
+// A dot and a word. Only "Recruiting" is coloured, because an open door is
+// the one status a visitor acts on; the shape tells the others apart.
 const STATUS_DOT: Record<ProjectStatus, string> = {
-  Recruiting: "bg-primary",
-  "In Progress": "bg-block-orange",
-  Idea: "bg-block-lilac",
-  Completed: "bg-ink-soft",
+  Recruiting: "bg-positive",
+  "In Progress": "bg-ink",
+  Idea: "border border-ink-soft",
+  Completed: "bg-ink-mute",
 };
 
 /** Status as a dot and a word: readable in a scan without shouting. */
@@ -88,12 +50,15 @@ export function StatusDot({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 text-[0.8125rem] font-medium text-ink-soft",
+        "inline-flex shrink-0 items-center gap-1.5 text-[0.8125rem] text-ink-soft",
         className,
       )}
     >
       <span
-        className={cn("size-2 rounded-full", STATUS_DOT[status])}
+        className={cn(
+          "size-2 rounded-full",
+          STATUS_DOT[status] ?? STATUS_DOT.Idea,
+        )}
         aria-hidden
       />
       {status}
@@ -102,15 +67,16 @@ export function StatusDot({
 }
 
 /**
- * Marks a community a member confirmed with an email address from it. It
- * vouches for that one claim, not for the person, so it sits beside the
- * community's name and never beside the member's.
+ * Marks a community a member confirmed with an email address from it, in the
+ * seal colour Oakie keeps for what it has checked. It vouches for that one
+ * claim, not for the person, so it sits beside the community's name and never
+ * beside the member's.
  */
 export function VerifiedMark({ className }: { className?: string }) {
   return (
     <span
       title="Confirmed with an email address from this community"
-      className={cn("inline-flex shrink-0 text-primary", className)}
+      className={cn("inline-flex shrink-0 text-accent", className)}
     >
       <BadgeCheck className="size-[1.1em]" aria-hidden />
       <span className="sr-only">Confirmed by email</span>
@@ -121,7 +87,7 @@ export function VerifiedMark({ className }: { className?: string }) {
 export function CountBadge({ count, label }: { count: number; label: string }) {
   if (count <= 0) return null;
   return (
-    <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[0.6875rem] font-bold text-on-accent ring-2 ring-paper">
+    <span className="absolute -right-0.5 -top-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-accent px-1 text-[0.6875rem] font-medium text-on-accent tabular-nums ring-2 ring-paper">
       <span aria-hidden>{count > 9 ? "9+" : count}</span>
       <span className="sr-only">{`${count} ${label}`}</span>
     </span>

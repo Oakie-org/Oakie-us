@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { SearchX, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import { ApiError } from "@/lib/api";
 import { useProof } from "@/lib/queries";
@@ -26,7 +26,7 @@ export default function Verify() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-2xl">
       <PageHeader
         title="Verify a record"
         lead="Every Oakie member gets a contribution record for each project they join. Enter its code to confirm it's real and current."
@@ -48,7 +48,7 @@ export default function Verify() {
               autoCapitalize="characters"
               autoComplete="off"
               spellCheck={false}
-              className="font-mono tracking-wider uppercase"
+              className="font-mono uppercase"
               maxLength={20}
             />
           )}
@@ -67,12 +67,11 @@ export default function Verify() {
         {!code ? null : proof.isPending ? (
           <Skeleton className="h-72 rounded-card" />
         ) : notFound ? (
-          <div className="flex flex-col items-center rounded-card border-2 border-dashed border-line px-6 py-12 text-center">
-            <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-danger-soft text-danger">
-              <SearchX className="size-6" aria-hidden />
-            </span>
-            <h2 className="text-xl">No record matches {code}</h2>
-            <p className="mt-1 max-w-sm text-ink-soft">
+          <div className="rounded-card border border-line bg-surface px-5 py-6 sm:px-6">
+            <h2 className="font-sans text-base">
+              No record matches <span className="font-mono">{code}</span>
+            </h2>
+            <p className="mt-1 max-w-prose text-ink-soft">
               Check the code for typos. Records are also withdrawn when a member
               leaves a project.
             </p>

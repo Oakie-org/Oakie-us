@@ -8,8 +8,8 @@ import { StatusDot } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/feedback";
 
 const CARD_BASE =
-  "group flex flex-col overflow-hidden rounded-card border-2 border-transparent bg-surface " +
-  "transition-[border-color,transform] duration-200 ease-out-soft hover:-translate-y-0.5 hover:border-ink active:translate-y-0 focus-visible:border-ink";
+  "group flex flex-col overflow-hidden rounded-card border border-line bg-surface " +
+  "transition-colors duration-150 ease-out-soft hover:border-line-strong";
 const CARD = `${CARD_BASE} h-full`;
 
 /** "3 seats open", "Team full", "Completed": the one fact that decides whether to click. */
@@ -60,7 +60,7 @@ function Ask({
   return (
     <div
       className={cn(
-        "rounded-xl bg-sunken px-3.5 py-2.5 text-[0.8125rem] text-ink-soft",
+        "rounded-lg bg-sunken px-3 py-2.5 text-[0.8125rem] text-ink-soft",
         className,
       )}
     >
@@ -71,7 +71,7 @@ function Ask({
       <p className="mt-0.5 text-[0.9375rem] leading-snug">
         {shown.map((item, index) => (
           <Fragment key={item}>
-            <span className="inline-block max-w-full truncate align-bottom font-semibold text-ink">
+            <span className="inline-block max-w-full truncate align-bottom font-medium text-ink">
               {item}
               {index < shown.length - 1 && (
                 <span className="font-normal text-ink-soft">,</span>
@@ -152,7 +152,7 @@ export function ProjectCard({ project, footer, onPreview }: ProjectCardProps) {
         />
       )}
       <div className="flex flex-col gap-2.5 p-5">
-        <div className="flex items-center justify-between gap-3 text-[0.8125rem] text-ink-soft">
+        <div className="flex items-center justify-between gap-3 text-[0.8125rem] text-ink-mute">
           <span className="flex min-w-0 items-center gap-1.5">
             <StatusDot status={project.status} />
             <span aria-hidden>·</span>
@@ -163,10 +163,12 @@ export function ProjectCard({ project, footer, onPreview }: ProjectCardProps) {
           </time>
         </div>
 
-        <h3 className="line-clamp-3 text-xl leading-snug">{project.title}</h3>
+        <h3 className="line-clamp-3 font-serif text-[1.375rem] leading-[1.2] group-hover:underline group-hover:decoration-line-strong group-hover:underline-offset-4">
+          {project.title}
+        </h3>
 
         {project.subtitle && (
-          <p className="line-clamp-3 text-[0.975rem] leading-snug">
+          <p className="line-clamp-3 text-[0.9375rem] leading-snug">
             {project.subtitle}
           </p>
         )}
@@ -207,7 +209,7 @@ export function ProjectCard({ project, footer, onPreview }: ProjectCardProps) {
               already says so in its status. */}
           {!recruiting && project.status !== "Completed" && (
             <span
-              className={cn("shrink-0", seats.open && "font-semibold text-ink")}
+              className={cn("shrink-0", seats.open && "font-medium text-ink")}
             >
               {seats.text}
             </span>
@@ -240,7 +242,7 @@ const SKELETON_LINES = [3, 1, 4, 2, 5, 2];
 export function ProjectCardSkeleton({ index = 0 }: { index?: number }) {
   const lines = SKELETON_LINES[index % SKELETON_LINES.length];
   return (
-    <div className="overflow-hidden rounded-card bg-surface">
+    <div className="overflow-hidden rounded-card border border-line bg-surface">
       {index % 3 === 1 && <Skeleton className="h-44 w-full rounded-none" />}
       <div className="space-y-3 p-5">
         <Skeleton className="h-3 w-32" />
@@ -273,14 +275,16 @@ export function PersonCard({ person }: { person: UserSummary }) {
       <div className="flex items-center gap-3">
         <Avatar user={person} size="lg" />
         <div className="min-w-0">
-          <h3 className="truncate text-lg leading-tight">{person.name}</h3>
+          <h3 className="truncate text-[1.0625rem] leading-tight">
+            {person.name}
+          </h3>
           {where && (
             <p className="mt-0.5 truncate text-sm text-ink-soft">{where}</p>
           )}
         </div>
       </div>
-      <p className="line-clamp-3 text-[0.975rem] leading-snug">
-        {person.headline || "New to Oakie. Say hello!"}
+      <p className="line-clamp-3 text-[0.9375rem] leading-snug">
+        {person.headline || "New to Oakie"}
       </p>
       {person.skills.length > 0 && (
         <p className="line-clamp-2 text-[0.9375rem] text-ink-soft">
@@ -295,7 +299,7 @@ export function PersonCard({ person }: { person: UserSummary }) {
 
 export function PersonCardSkeleton() {
   return (
-    <div className="space-y-4 rounded-card bg-surface p-5">
+    <div className="space-y-4 rounded-card border border-line bg-surface p-5">
       <div className="flex items-center gap-3">
         <Skeleton className="size-16 rounded-full" />
         <div className="flex-1 space-y-2">
@@ -305,7 +309,7 @@ export function PersonCardSkeleton() {
       </div>
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-3/4" />
-      <Skeleton className="h-14 w-full rounded-xl" />
+      <Skeleton className="h-14 w-full rounded-lg" />
     </div>
   );
 }
@@ -323,11 +327,11 @@ export function PersonLine({
   return (
     <Link
       to={`/u/${person.id}`}
-      className="group flex min-w-0 items-center gap-3 rounded-xl"
+      className="group flex min-w-0 items-center gap-3 rounded-lg"
     >
       <Avatar user={person} size={size} />
       <span className="min-w-0">
-        <span className="block truncate font-display font-semibold group-hover:underline">
+        <span className="block truncate font-medium group-hover:underline">
           {person.name}
         </span>
         {detail !== undefined ? (

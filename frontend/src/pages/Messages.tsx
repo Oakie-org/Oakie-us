@@ -7,7 +7,7 @@ import {
 } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MessagesSquare, SendHorizontal } from "lucide-react";
+import { ArrowLeft, SendHorizontal } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { ApiError } from "@/lib/api";
@@ -45,8 +45,8 @@ function ConversationList({
             to={`/messages/${conversation.id}`}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-2xl p-3 transition-colors",
-                isActive ? "bg-ink text-paper" : "hover:bg-sunken",
+                "flex items-center gap-3 rounded-field p-3 transition-colors",
+                isActive ? "bg-sunken" : "hover:bg-sunken",
               )
             }
           >
@@ -55,26 +55,19 @@ function ConversationList({
                 <Avatar user={conversation.peer} />
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="truncate font-display font-semibold">
+                    <span className="truncate font-medium">
                       {conversation.peer.name}
                     </span>
-                    <span
-                      className={cn(
-                        "shrink-0 text-xs",
-                        isActive ? "text-paper/70" : "text-ink-soft",
-                      )}
-                    >
+                    <span className="shrink-0 text-xs text-ink-mute">
                       {timeAgo(conversation.last_at)}
                     </span>
                   </span>
                   <span
                     className={cn(
                       "block truncate text-sm",
-                      isActive
-                        ? "text-paper/75"
-                        : conversation.unread
-                          ? "font-semibold text-ink"
-                          : "text-ink-soft",
+                      conversation.unread
+                        ? "font-medium text-ink"
+                        : "text-ink-soft",
                     )}
                   >
                     {conversation.last_sender_id === myId && "You: "}
@@ -82,7 +75,7 @@ function ConversationList({
                   </span>
                 </span>
                 {conversation.unread > 0 && !isActive && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[0.6875rem] font-bold text-on-accent">
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[0.6875rem] font-medium text-on-accent">
                     {conversation.unread}
                     <span className="sr-only"> unread</span>
                   </span>
@@ -101,7 +94,7 @@ function Bubble({ message, mine }: { message: Message; mine: boolean }) {
     <li className={cn("flex flex-col", mine ? "items-end" : "items-start")}>
       <p
         className={cn(
-          "prose-plain max-w-[min(34rem,85%)] rounded-3xl px-4 py-2.5",
+          "prose-plain max-w-[min(34rem,85%)] rounded-card px-4 py-2.5",
           mine
             ? "rounded-br-lg bg-primary text-on-primary"
             : "rounded-bl-lg bg-sunken",
@@ -205,7 +198,7 @@ function Thread({ id }: { id: string }) {
         <Link
           to="/messages"
           aria-label="All messages"
-          className="flex size-11 items-center justify-center rounded-full hover:bg-sunken md:hidden"
+          className="flex size-11 items-center justify-center rounded-field hover:bg-sunken md:hidden"
         >
           <ArrowLeft className="size-5" aria-hidden />
         </Link>
@@ -215,7 +208,7 @@ function Thread({ id }: { id: string }) {
         >
           <Avatar user={conversation.peer} />
           <span className="min-w-0">
-            <span className="block truncate font-display font-semibold group-hover:underline">
+            <span className="block truncate font-medium group-hover:underline">
               {conversation.peer.name}
             </span>
             <span className="block truncate text-sm text-ink-soft">
@@ -237,7 +230,7 @@ function Thread({ id }: { id: string }) {
             divider && (
               <li
                 key={`day-${message.id}`}
-                className="my-2 text-center text-xs font-semibold tracking-wide text-ink-soft uppercase"
+                className="my-2 text-center text-[0.8125rem] text-ink-mute"
               >
                 {day}
               </li>
@@ -266,7 +259,7 @@ function Thread({ id }: { id: string }) {
           maxLength={4000}
           placeholder={`Message ${conversation.peer.name.split(" ")[0]}`}
           aria-label="Message"
-          className="max-h-40 min-h-12 flex-1 resize-none rounded-3xl border-2 border-line bg-surface px-4 py-2.5 text-base outline-none transition-colors [field-sizing:content] placeholder:text-ink-soft/70 focus:border-primary"
+          className="max-h-40 min-h-12 flex-1 resize-none rounded-card border border-line bg-surface px-4 py-2.5 text-base outline-none transition-colors [field-sizing:content] placeholder:text-ink-soft/70 focus:border-primary"
         />
         <Button
           type="submit"
@@ -292,15 +285,15 @@ export default function Messages() {
     <div className="-mx-4 -mt-8 flex h-[calc(100dvh-4rem-5rem)] sm:mx-0 sm:mt-0 md:h-[calc(100dvh-10rem)] md:min-h-[28rem] md:gap-5">
       <aside
         className={cn(
-          "w-full flex-col overflow-y-auto bg-paper p-4 md:flex md:w-80 md:shrink-0 md:rounded-card md:bg-surface",
+          "w-full flex-col overflow-y-auto bg-paper p-4 md:flex md:w-80 md:shrink-0 md:rounded-card border border-line md:bg-surface",
           id ? "hidden" : "flex",
         )}
       >
-        <h1 className="mb-4 px-1 text-3xl">Messages</h1>
+        <h1 className="mb-4 px-1 text-3xl leading-tight">Messages</h1>
         {conversations.isPending ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="h-16 rounded-2xl" />
+              <Skeleton key={index} className="h-16 rounded-field" />
             ))}
           </div>
         ) : conversations.isError ? (
@@ -310,9 +303,7 @@ export default function Messages() {
           />
         ) : conversations.data.length === 0 ? (
           <EmptyState
-            icon={MessagesSquare}
             title="No conversations yet"
-            tone="bg-block-aqua"
             action={<ButtonLink to="/talent">Find people</ButtonLink>}
           >
             Open someone's profile and say hello.
@@ -324,7 +315,7 @@ export default function Messages() {
 
       <section
         className={cn(
-          "min-w-0 flex-1 flex-col overflow-hidden bg-surface md:flex md:rounded-card",
+          "min-w-0 flex-1 flex-col overflow-hidden bg-surface md:flex md:rounded-card border border-line",
           id ? "flex" : "hidden",
         )}
       >
@@ -332,14 +323,9 @@ export default function Messages() {
           <Thread key={id} id={id} />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-            <span className="flex size-16 items-center justify-center rounded-3xl bg-block-aqua text-block-ink">
-              <MessagesSquare className="size-7" aria-hidden />
-            </span>
-            <p className="mt-4 font-display text-xl font-semibold">
-              Pick a conversation
-            </p>
+            <p className="font-medium">Pick a conversation</p>
             <p className="mt-1 text-ink-soft">
-              Or start one from anyone's profile.
+              Or start one from anyone's profile
             </p>
           </div>
         )}

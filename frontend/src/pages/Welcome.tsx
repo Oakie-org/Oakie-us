@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Camera, Check, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, Plus } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { useMatches, useProjects, useUpdateMe } from "@/lib/queries";
@@ -65,13 +65,11 @@ function Finish({ me, next }: { me: Me; next: string | null }) {
     (project) => project.owner_id !== me.id,
   );
   const showing = matched.length > 0 ? matched : fallback;
-  const first = me.name.split(" ")[0];
   return (
     <div className="mx-auto max-w-5xl animate-step">
-      <span className="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary">
-        <Check className="size-6" aria-hidden />
-      </span>
-      <h1 className="mt-5 text-3xl sm:text-4xl">You're in, {first}</h1>
+      <h1 className="text-3xl leading-tight sm:text-4xl">
+        Your profile is live
+      </h1>
       <p className="mt-2 max-w-xl text-lg text-ink-soft">
         {matched.length > 0
           ? "These teams are looking for what you do. Open one, or start something of your own."
@@ -113,7 +111,7 @@ function Finish({ me, next }: { me: Me; next: string | null }) {
             footer={(project) => (
               <p className="text-[0.8125rem] text-ink-soft">
                 Wants your{" "}
-                <span className="font-semibold text-ink">
+                <span className="font-medium text-ink">
                   {project.matched_skills.join(", ")}
                 </span>
               </p>
@@ -208,11 +206,9 @@ function Steps({ me, next }: { me: Me; next: string | null }) {
           <h1
             ref={heading}
             tabIndex={-1}
-            className="text-3xl outline-none sm:text-4xl"
+            className="text-3xl leading-tight outline-none sm:text-4xl"
           >
-            {step === 0
-              ? `Welcome, ${me.name.split(" ")[0]}. ${STEPS[0].title}`
-              : STEPS[step].title}
+            {STEPS[step].title}
           </h1>
           <p className="mt-2 text-lg text-ink-soft">{STEPS[step].lead}</p>
 
@@ -365,7 +361,7 @@ function Steps({ me, next }: { me: Me; next: string | null }) {
           profile.{" "}
           <button
             type="button"
-            className="font-semibold text-ink underline underline-offset-2"
+            className="font-medium text-ink underline underline-offset-2"
             onClick={() => navigate(next ?? "/")}
           >
             Do this later
@@ -375,9 +371,7 @@ function Steps({ me, next }: { me: Me; next: string | null }) {
 
       <aside className="hidden lg:block">
         <div className="sticky top-24">
-          <p className="mb-3 text-xs font-semibold tracking-wide text-ink-soft uppercase">
-            How teams see you
-          </p>
+          <p className="mb-3 text-sm text-ink-soft">How teams see you</p>
           <div className="pointer-events-none" aria-hidden>
             <PersonCard person={preview} />
           </div>

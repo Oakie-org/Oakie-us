@@ -1,7 +1,6 @@
 import { useState, type DragEvent } from "react";
 import {
   CalendarDays,
-  ClipboardList,
   MoreHorizontal,
   MoveRight,
   Pencil,
@@ -38,11 +37,11 @@ import {
 } from "@/components/ui/overlay";
 import { useToast } from "@/components/ui/toast";
 
-const COLUMNS: { status: TaskStatus; label: string; tone: string }[] = [
-  { status: "backlog", label: "Backlog", tone: "bg-block-sand" },
-  { status: "in_progress", label: "In progress", tone: "bg-block-sky" },
-  { status: "in_review", label: "In review", tone: "bg-block-sun" },
-  { status: "done", label: "Done", tone: "bg-block-mint" },
+const COLUMNS: { status: TaskStatus; label: string }[] = [
+  { status: "backlog", label: "Backlog" },
+  { status: "in_progress", label: "In progress" },
+  { status: "in_review", label: "In review" },
+  { status: "done", label: "Done" },
 ];
 
 function isOverdue(task: Task) {
@@ -201,7 +200,7 @@ function TaskCard({ task, onEdit, onMove, onDelete }: TaskCardProps) {
         event.dataTransfer.setData("text/task-id", task.id);
         event.dataTransfer.effectAllowed = "move";
       }}
-      className="flex cursor-grab flex-col gap-3 rounded-2xl bg-surface p-4 active:cursor-grabbing"
+      className="flex cursor-grab flex-col gap-3 rounded-field border border-line bg-surface p-4 active:cursor-grabbing"
     >
       <div className="flex items-start justify-between gap-2">
         <p
@@ -216,7 +215,7 @@ function TaskCard({ task, onEdit, onMove, onDelete }: TaskCardProps) {
         <Menu>
           <MenuTrigger
             aria-label={`Actions for ${task.title}`}
-            className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-sunken"
+            className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-field text-ink-soft hover:bg-sunken"
           >
             <MoreHorizontal className="size-5" aria-hidden />
           </MenuTrigger>
@@ -260,9 +259,9 @@ function TaskCard({ task, onEdit, onMove, onDelete }: TaskCardProps) {
           {task.due_date && (
             <span
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5",
+                "flex shrink-0 items-center gap-1.5 rounded-chip px-2 py-0.5",
                 overdue
-                  ? "bg-danger-soft font-semibold text-danger"
+                  ? "bg-danger-soft font-medium text-danger"
                   : "text-ink-soft",
               )}
             >
@@ -332,11 +331,10 @@ export function BoardTab({ project }: { project: ProjectDetail }) {
 
       {all.length === 0 ? (
         <EmptyState
-          icon={ClipboardList}
           title="The board is empty"
-          tone="bg-block-aqua"
           action={
             <Button
+              variant="outline"
               onClick={() => setDialog({ task: null, status: "backlog" })}
             >
               Add the first task
@@ -373,13 +371,9 @@ export function BoardTab({ project }: { project: ProjectDetail }) {
                 )}
               >
                 <header className="mb-3 flex items-center justify-between gap-2 px-1">
-                  <h3 className="flex items-center gap-2 text-base">
-                    <span
-                      className={cn("size-3 rounded-[4px]", column.tone)}
-                      aria-hidden
-                    />
+                  <h3 className="flex items-center gap-2 text-[0.9375rem]">
                     {column.label}
-                    <span className="font-sans text-sm font-normal text-ink-soft">
+                    <span className="text-sm font-normal text-ink-mute tabular-nums">
                       {columnTasks.length}
                     </span>
                   </h3>
@@ -389,7 +383,7 @@ export function BoardTab({ project }: { project: ProjectDetail }) {
                     onClick={() =>
                       setDialog({ task: null, status: column.status })
                     }
-                    className="flex size-9 items-center justify-center rounded-full text-ink-soft hover:bg-surface hover:text-ink"
+                    className="flex size-9 items-center justify-center rounded-field border border-line text-ink-soft hover:bg-surface hover:text-ink"
                   >
                     <Plus className="size-5" aria-hidden />
                   </button>

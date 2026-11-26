@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/field";
 import { Logo } from "@/components/Logo";
-import { ProjectCover } from "@/components/ProjectCover";
 import { useTitle } from "@/components/page";
 
 // Seeded by the backend's local dev server (serverless_backend/app/local/seed.py).
@@ -106,21 +105,21 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-2">
-      <div className="flex flex-col px-6 py-6 sm:px-10">
+    <div className="flex min-h-dvh flex-col px-4 py-4 sm:px-6">
+      <div className="flex flex-1 flex-col">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Oakie home" className="rounded-lg">
             <Logo />
           </Link>
           <Link
             to="/"
-            className="flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-ink-soft hover:text-ink"
+            className="flex h-10 items-center gap-1.5 rounded-field px-3 text-sm text-ink-soft transition-colors hover:bg-sunken hover:text-ink"
           >
             <ArrowLeft className="size-4" aria-hidden /> Back to Oakie
           </Link>
         </div>
 
-        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
+        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center pb-[12vh] pt-10">
           {step === "confirm" ? (
             <form
               onSubmit={onConfirm}
@@ -128,7 +127,7 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
               className="flex flex-col gap-5"
             >
               <div>
-                <h1 className="text-4xl">Check your inbox</h1>
+                <h1 className="text-3xl leading-tight">Check your inbox</h1>
                 <p className="mt-2 text-ink-soft">
                   We sent a 6-digit code to{" "}
                   <span className="font-medium text-ink">{email}</span>.
@@ -163,13 +162,13 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
               className="flex flex-col gap-5"
             >
               <div>
-                <h1 className="text-4xl">
-                  {isRegister ? "Join the island" : "Welcome back"}
+                <h1 className="text-3xl leading-tight">
+                  {isRegister ? "Create your account" : "Sign in to Oakie"}
                 </h1>
                 <p className="mt-2 text-ink-soft">
                   {isRegister
-                    ? "Create your profile and start finding your people."
-                    : "Sign in to pick up where your team left off."}
+                    ? "A name, an email and a password. The rest can wait."
+                    : "Your projects, applications and messages are where you left them."}
                 </p>
               </div>
 
@@ -226,7 +225,7 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
                         showPassword ? "Hide password" : "Show password"
                       }
                       aria-pressed={showPassword}
-                      className="absolute right-0.5 top-0.5 flex size-11 items-center justify-center rounded-full text-ink-soft hover:text-ink"
+                      className="absolute right-0 top-0 flex size-11 items-center justify-center rounded-field text-ink-soft hover:text-ink"
                     >
                       {showPassword ? (
                         <EyeOff className="size-5" aria-hidden />
@@ -244,15 +243,15 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
               </Button>
 
               {auth.mode === "local" && !isRegister && (
-                <div className="rounded-field bg-warn-soft px-4 py-3 text-sm">
-                  <p className="font-semibold">Local demo mode</p>
-                  <p className="mt-0.5">
+                <div className="rounded-field border border-line bg-sunken px-4 py-3 text-sm">
+                  <p className="font-medium">Local demo mode</p>
+                  <p className="mt-0.5 text-ink-soft">
                     Accounts live in the in-memory dev backend and reset when it
                     restarts.
                   </p>
                   <button
                     type="button"
-                    className="mt-2 font-semibold underline underline-offset-2"
+                    className="mt-2 font-medium underline underline-offset-2"
                     onClick={() => {
                       setEmail(LOCAL_DEMO.email);
                       setPassword(LOCAL_DEMO.password);
@@ -263,12 +262,12 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
                 </div>
               )}
 
-              <p className="text-center text-ink-soft">
+              <p className="text-ink-soft">
                 {isRegister ? "Already have an account? " : "New to Oakie? "}
                 <Link
                   to={isRegister ? "/login" : "/register"}
                   state={location.state}
-                  className="font-semibold text-primary underline-offset-2 hover:underline"
+                  className="font-medium text-ink underline underline-offset-4"
                 >
                   {isRegister ? "Sign in" : "Create one"}
                 </Link>
@@ -277,31 +276,6 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
           )}
         </div>
       </div>
-
-      <aside
-        className="relative hidden overflow-hidden bg-primary lg:block"
-        aria-hidden
-      >
-        <ProjectCover
-          project={{
-            id: "oakie-auth-panel",
-            category: "Finance & Quant",
-            image_url: null,
-          }}
-          columns={5}
-          rows={7}
-          className="absolute inset-0"
-        />
-        <div className="absolute inset-x-10 bottom-10 rounded-card bg-block-ink p-8 text-[#f6f5ef]">
-          <p className="font-display text-3xl font-semibold leading-tight">
-            From one project together to partners for life.
-          </p>
-          <p className="mt-3 text-[#f6f5ef]/75">
-            Engineers, quants, creators, designers and founders, building side
-            by side.
-          </p>
-        </div>
-      </aside>
     </div>
   );
 }

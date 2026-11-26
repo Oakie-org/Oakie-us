@@ -5,16 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Stable 32-bit hash, used to derive deterministic visuals from ids. */
-export function hash(text: string): number {
-  let value = 2166136261;
-  for (let index = 0; index < text.length; index++) {
-    value ^= text.charCodeAt(index);
-    value = Math.imul(value, 16777619);
-  }
-  return value >>> 0;
-}
-
 export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";

@@ -57,12 +57,12 @@ export default function EmbedProfile() {
       rel="noopener noreferrer"
       className="group m-1 block overflow-hidden rounded-card border border-line bg-surface text-ink transition-colors hover:border-ink"
     >
-      <div className={cn("h-2", tone?.bg ?? "bg-primary")} />
+      <div className={cn("h-2", tone ?? "bg-ink")} />
       <div className="p-5">
         <div className="flex items-center gap-3">
           <Avatar user={profile} size="lg" />
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 font-display text-lg font-semibold leading-tight">
+            <p className="flex items-center gap-1.5 text-lg font-medium leading-tight">
               <span className="truncate">{profile.name}</span>
             </p>
             {profile.headline && (
@@ -110,7 +110,7 @@ export default function EmbedProfile() {
               </span>
             )}
           </span>
-          <span className="flex items-center gap-1 font-semibold group-hover:underline">
+          <span className="flex items-center gap-1 font-medium group-hover:underline">
             <Logo className="h-4" />{" "}
             <ArrowUpRight className="size-4" aria-hidden />
           </span>

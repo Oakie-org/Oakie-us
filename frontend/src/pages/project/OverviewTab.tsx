@@ -34,7 +34,7 @@ function Seats({ project }: { project: ProjectDetail }) {
         Array.from({ length: empty }, (_, index) => (
           <span
             key={index}
-            className="size-9 rounded-full border-2 border-dashed border-line"
+            className="size-9 rounded-full border border-dashed border-line"
           />
         ))}
       {members.data && hidden > 0 && (
@@ -99,7 +99,7 @@ export function OverviewTab({
             </a>
             {onEdit && (
               <Button
-                variant="ink"
+                variant="outline"
                 size="icon"
                 className="absolute right-3 top-3"
                 aria-label="Change the picture"
@@ -120,7 +120,7 @@ export function OverviewTab({
           )
         )}
 
-        <section className="relative rounded-card bg-surface p-6 sm:p-8">
+        <section className="relative rounded-card border border-line bg-surface p-6 sm:p-8">
           {onEdit && (
             <EditButton
               label="Edit the story"
@@ -153,9 +153,9 @@ export function OverviewTab({
         </section>
 
         {recruiting && (
-          <section className="rounded-card bg-surface px-6 pt-6 pb-2 sm:px-8">
+          <section className="rounded-card border border-line bg-surface px-6 pt-6 pb-2 sm:px-8">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl">
+              <h2 className="font-sans text-lg">
                 Looking for{" "}
                 <span className="font-sans text-base font-normal text-ink-soft">
                   {pluralize(project.open_roles.length, "role")}
@@ -206,13 +206,13 @@ export function OverviewTab({
         )}
       </div>
 
-      <aside className="rounded-card bg-surface p-6 lg:sticky lg:top-24">
+      <aside className="rounded-card border border-line bg-surface p-6 lg:sticky lg:top-24">
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-xl">{seats.text}</h2>
+          <h2 className="font-sans text-lg">{seats.text}</h2>
           <Link
             to="?tab=team"
             replace
-            className="text-sm font-semibold text-primary hover:underline"
+            className="text-sm font-medium underline-offset-4 hover:underline"
           >
             Meet the team
           </Link>
@@ -236,7 +236,7 @@ export function OverviewTab({
             <button
               type="button"
               onClick={() => onEdit("place")}
-              className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-left text-[0.9375rem] font-medium transition-colors hover:bg-sunken"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-left text-[0.9375rem] font-medium transition-colors hover:bg-sunken"
             >
               <MapPin className="size-4 text-ink-soft" aria-hidden />
               Edit where it happens
@@ -244,7 +244,7 @@ export function OverviewTab({
             <button
               type="button"
               onClick={() => onEdit("visibility")}
-              className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-left text-[0.9375rem] font-medium transition-colors hover:bg-sunken"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-left text-[0.9375rem] font-medium transition-colors hover:bg-sunken"
             >
               <Eye className="size-4 text-ink-soft" aria-hidden />
               <span className="flex-1">Who can see it</span>

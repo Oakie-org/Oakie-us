@@ -124,7 +124,7 @@ export function TeamTab({
       <Menu>
         <MenuTrigger
           aria-label={`Actions for ${member.user.name}`}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-sunken"
+          className="flex size-11 shrink-0 items-center justify-center rounded-field text-ink-soft hover:bg-sunken"
         >
           <MoreHorizontal className="size-5" aria-hidden />
         </MenuTrigger>
@@ -156,7 +156,7 @@ export function TeamTab({
       {canManage && project.status !== "Completed" && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-card border border-dashed border-ink-soft p-4">
           <p className="text-[0.95rem]">
-            <span className="font-display font-semibold">
+            <span className="font-medium">
               {seats} {seats === 1 ? "seat" : "seats"} open.
             </span>{" "}
             <span className="text-ink-soft">
@@ -180,7 +180,7 @@ export function TeamTab({
         {members.data.map((member) => (
           <li
             key={member.user.id}
-            className="flex items-center justify-between gap-3 rounded-card bg-surface p-4"
+            className="flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-4"
           >
             <PersonLine
               person={member.user}

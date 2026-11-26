@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { Plus, Search, SearchX } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 import { useDebouncedParam, useSetParam } from "@/lib/hooks";
 import {
@@ -86,8 +86,10 @@ export default function Explore() {
     <>
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl sm:text-4xl">Explore projects</h1>
-          <p className="mt-1.5 text-ink-soft">
+          <h1 className="text-3xl leading-tight sm:text-4xl">
+            Explore projects
+          </h1>
+          <p className="mt-2 text-ink-soft">
             Find a team that needs what you're good at.
           </p>
         </div>
@@ -96,10 +98,10 @@ export default function Explore() {
         </ButtonLink>
       </header>
 
-      <div className="sticky top-16 z-30 -mx-4 mt-6 flex flex-col gap-3 border-b border-line bg-paper px-4 py-3 sm:-mx-6 sm:px-6">
+      <div className="sticky top-14 z-30 -mx-4 mt-6 flex flex-col gap-3 border-b border-line bg-paper px-4 py-3 sm:-mx-6 sm:px-6">
         <div className="relative">
           <Search
-            className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-ink-soft"
+            className="pointer-events-none absolute left-3.5 top-1/2 size-[1.125rem] -translate-y-1/2 text-ink-mute"
             aria-hidden
           />
           <Input
@@ -108,7 +110,7 @@ export default function Explore() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by title, role, skill or city"
             aria-label="Search projects"
-            className="h-12 pl-12"
+            className="pl-11"
             maxLength={80}
           />
         </div>
@@ -165,7 +167,7 @@ export default function Explore() {
               value={get("posted")}
               onChange={(event) => setParam("posted", event.target.value)}
               className={cn(
-                "h-10 appearance-none rounded-full border px-3.5 text-sm font-medium transition-colors",
+                "h-10 appearance-none rounded-field border px-3.5 text-sm font-medium transition-colors",
                 get("posted")
                   ? "border-ink bg-ink text-paper"
                   : "border-line bg-surface text-ink hover:border-ink-soft",
@@ -197,12 +199,11 @@ export default function Explore() {
         <ProjectFeedSkeleton />
       ) : projects.length === 0 ? (
         <EmptyState
-          icon={SearchX}
           title={
             applied.length ? "Nothing matches those filters" : "No projects yet"
           }
           action={
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap gap-3">
               {applied.length > 0 && (
                 <ButtonLink to="/explore" variant="outline" replace>
                   Clear filters
@@ -216,7 +217,7 @@ export default function Explore() {
         >
           {applied.length
             ? "Remove a filter to widen the search. Or maybe this is the project you should start."
-            : "Be the first to put an idea on the island."}
+            : "Be the first to post a project."}
         </EmptyState>
       ) : (
         <>

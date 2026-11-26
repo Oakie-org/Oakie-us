@@ -1,5 +1,4 @@
-import { AVATAR_TONES } from "@/lib/categories";
-import { cn, hash, initials } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 
 const SIZES = {
   xs: "size-7 text-[0.65rem]",
@@ -15,7 +14,7 @@ interface AvatarProps {
   className?: string;
 }
 
-/** Photo when there is one; otherwise initials on the member's own block colour. */
+/** Photo when there is one; otherwise plain initials. A face is the only colour an avatar has. */
 export function Avatar({ user, size = "md", className }: AvatarProps) {
   const shape = cn("shrink-0 rounded-full", SIZES[size], className);
   if (user.avatar_url) {
@@ -28,14 +27,12 @@ export function Avatar({ user, size = "md", className }: AvatarProps) {
       />
     );
   }
-  const tone = AVATAR_TONES[hash(user.id) % AVATAR_TONES.length];
   return (
     <span
       aria-hidden
       className={cn(
         shape,
-        tone.bg,
-        "flex items-center justify-center font-display font-semibold text-block-ink",
+        "flex items-center justify-center border border-line bg-sunken font-medium text-ink-soft",
       )}
     >
       {initials(user.name)}
@@ -63,7 +60,7 @@ export function AvatarStack({
         />
       ))}
       {extra > 0 && (
-        <span className="flex size-9 items-center justify-center rounded-full bg-sunken text-xs font-semibold ring-2 ring-surface">
+        <span className="flex size-9 items-center justify-center rounded-full bg-sunken text-xs font-medium ring-2 ring-surface">
           +{extra}
         </span>
       )}

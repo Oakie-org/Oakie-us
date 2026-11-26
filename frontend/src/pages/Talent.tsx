@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { Search, UserSearch } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { useDebouncedParam, useSetParam } from "@/lib/hooks";
 import { useCatalog, useTalent, type TalentFilters } from "@/lib/queries";
@@ -51,17 +51,17 @@ export default function Talent() {
   return (
     <>
       <header>
-        <h1 className="text-3xl sm:text-4xl">Find your people</h1>
+        <h1 className="text-3xl leading-tight sm:text-4xl">People</h1>
         <p className="mt-1.5 text-ink-soft">
           Filter by what they do, where they are and what they're open to.
         </p>
       </header>
 
-      <div className="sticky top-16 z-30 -mx-4 mt-6 flex flex-col gap-3 border-b border-line bg-paper px-4 py-3 sm:-mx-6 sm:px-6">
+      <div className="sticky top-14 z-30 -mx-4 mt-6 flex flex-col gap-3 border-b border-line bg-paper px-4 py-3 sm:-mx-6 sm:px-6">
         <div className="flex flex-col gap-3">
           <div className="relative flex-1">
             <Search
-              className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-ink-soft"
+              className="pointer-events-none absolute left-3.5 top-1/2 size-[1.125rem] -translate-y-1/2 text-ink-mute"
               aria-hidden
             />
             <Input
@@ -70,7 +70,7 @@ export default function Talent() {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name, skill or city"
               aria-label="Search people"
-              className="h-12 pl-12"
+              className="pl-11"
               maxLength={80}
             />
           </div>
@@ -99,7 +99,7 @@ export default function Talent() {
               placeholder="Community"
               aria-label="Community: a school, company or club"
               maxLength={80}
-              className="h-10 w-36 shrink-0 rounded-full border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
+              className="h-10 w-36 shrink-0 rounded-field border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
             />
             <input
               value={city}
@@ -107,7 +107,7 @@ export default function Talent() {
               placeholder="City"
               aria-label="City"
               maxLength={80}
-              className="h-10 w-36 shrink-0 rounded-full border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
+              className="h-10 w-36 shrink-0 rounded-field border border-line bg-surface px-3.5 text-sm font-medium placeholder:font-normal placeholder:text-ink-soft hover:border-ink-soft focus:border-primary focus:outline-none"
             />
           </div>
         </div>
@@ -136,11 +136,7 @@ export default function Talent() {
           ))}
         </div>
       ) : people.length === 0 ? (
-        <EmptyState
-          icon={UserSearch}
-          title="No one matches yet"
-          tone="bg-block-lilac"
-        >
+        <EmptyState title="No one matches yet">
           Try removing a filter. New members join every week.
         </EmptyState>
       ) : (

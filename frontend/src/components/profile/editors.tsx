@@ -381,15 +381,13 @@ function CoverEditor({ me, save, touch, footer }: EditorProps) {
             <img
               src={draft.banner_url}
               alt=""
-              className="h-16 w-40 rounded-xl bg-sunken object-cover"
+              className="h-16 w-40 rounded-lg bg-sunken object-cover"
             />
           )
         }
       />
       <fieldset>
-        <legend className="font-display text-sm font-semibold">
-          Or a colour
-        </legend>
+        <legend className="text-sm font-medium">Or a colour</legend>
         <p className="text-sm text-ink-soft">
           Shown as a band when there is no picture, and on your embedded card.
         </p>
@@ -399,7 +397,7 @@ function CoverEditor({ me, save, touch, footer }: EditorProps) {
               key={name || "none"}
               title={name || "None"}
               className={cn(
-                "flex size-11 cursor-pointer items-center justify-center rounded-full border-2 transition-transform has-focus-visible:outline-3 has-focus-visible:outline-primary hover:scale-110",
+                "flex size-11 cursor-pointer items-center justify-center rounded-full border transition-transform has-focus-visible:outline-3 has-focus-visible:outline-primary hover:scale-110",
                 draft.accent === name ? "border-ink" : "border-transparent",
               )}
             >
@@ -414,8 +412,8 @@ function CoverEditor({ me, save, touch, footer }: EditorProps) {
               />
               <span
                 className={cn(
-                  "flex size-8 items-center justify-center rounded-full text-[0.6875rem] font-semibold",
-                  toneNamed(name)?.bg ?? "border border-line bg-surface",
+                  "flex size-8 items-center justify-center rounded-full text-[0.6875rem] font-medium",
+                  toneNamed(name) ?? "border border-line bg-surface",
                 )}
               >
                 {name ? "" : "None"}
@@ -449,7 +447,7 @@ function FeaturedEditor({ me, save, touch, footer }: EditorProps) {
       }}
     >
       {mine.isPending ? (
-        <Skeleton className="h-12 rounded-2xl" />
+        <Skeleton className="h-12 rounded-field" />
       ) : !mine.data?.length ? (
         <p className="text-ink-soft">
           Projects you start or join can be pinned here.
@@ -463,7 +461,7 @@ function FeaturedEditor({ me, save, touch, footer }: EditorProps) {
               <li key={project.id}>
                 <label
                   className={cn(
-                    "flex min-h-12 items-center gap-3 rounded-2xl border-2 px-3.5 py-2 transition-colors",
+                    "flex min-h-12 items-center gap-3 rounded-field border px-3.5 py-2 transition-colors",
                     active ? "border-primary bg-primary-soft" : "border-line",
                     full
                       ? "opacity-50"

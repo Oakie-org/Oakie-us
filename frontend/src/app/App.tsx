@@ -61,9 +61,9 @@ class ErrorBoundary extends Component<
   render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
+      <div className="mx-auto flex min-h-dvh max-w-md flex-col items-start justify-center gap-4 p-6">
         <h1 className="text-3xl">Something broke on this page</h1>
-        <p className="max-w-md text-ink-soft">
+        <p className="text-ink-soft">
           Reloading usually fixes it. If it keeps happening, let us know what
           you were doing.
         </p>

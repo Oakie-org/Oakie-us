@@ -79,14 +79,14 @@ function ApplyForm({
       }}
     >
       {me && (
-        <div className="rounded-2xl bg-sunken p-3.5">
+        <div className="rounded-field bg-sunken p-3.5">
           <p className="text-[0.8125rem] text-ink-soft">
             The team sees this next to your message
           </p>
           <div className="mt-2 flex items-center gap-3">
             <Avatar user={me} />
             <div className="min-w-0">
-              <p className="truncate font-display font-semibold">{me.name}</p>
+              <p className="truncate font-medium">{me.name}</p>
               <p className="truncate text-sm text-ink-soft">
                 {[me.headline, me.skills.slice(0, 4).join(" \u00b7 ")]
                   .filter(Boolean)

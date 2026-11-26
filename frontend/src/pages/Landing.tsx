@@ -1,94 +1,30 @@
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  BadgeCheck,
-  Clapperboard,
-  Code2,
-  LineChart,
-  Megaphone,
-  Palette,
-  Rocket,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { useProjects, useStats } from "@/lib/queries";
-import { cn, compact } from "@/lib/utils";
+import type { Project } from "@/lib/types";
+import { compact, timeAgo } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
+import { placeLabel } from "@/components/cards";
 import { ProjectFeed, ProjectFeedSkeleton } from "@/components/ProjectFeed";
 import { useTitle } from "@/components/page";
-
-const PEOPLE: {
-  label: string;
-  detail: string;
-  icon: LucideIcon;
-  tone: string;
-  span: string;
-}[] = [
-  {
-    label: "Engineers",
-    detail: "Full-stack, AI, hardware",
-    icon: Code2,
-    tone: "bg-block-sky",
-    span: "col-span-2 row-span-2",
-  },
-  {
-    label: "Quants",
-    detail: "Strategy, analysis",
-    icon: LineChart,
-    tone: "bg-block-mint",
-    span: "col-span-2",
-  },
-  {
-    label: "Creators",
-    detail: "Video, writing",
-    icon: Clapperboard,
-    tone: "bg-block-coral",
-    span: "",
-  },
-  {
-    label: "Designers",
-    detail: "UI, illustration",
-    icon: Palette,
-    tone: "bg-block-pink",
-    span: "",
-  },
-  {
-    label: "Founders",
-    detail: "Looking for the other half",
-    icon: Rocket,
-    tone: "bg-block-sun",
-    span: "col-span-2",
-  },
-  {
-    label: "Organizers",
-    detail: "Events, community",
-    icon: Megaphone,
-    tone: "bg-block-lilac",
-    span: "col-span-2",
-  },
-];
 
 const STEPS = [
   {
     title: "Publish what you're building",
     body: "An app, a fund, a film, a zine, an event. Say what exists today and which seats are open.",
-    tone: "bg-block-sky",
   },
   {
     title: "Match across disciplines",
     body: "Search people by skill and city. Engineers meet quants, writers meet editors, founders meet co-founders.",
-    tone: "bg-block-mint",
   },
   {
     title: "Build in one shared space",
     body: "A timeline for progress, a board for tasks, a roster that shows who owns what.",
-    tone: "bg-block-sun",
   },
   {
     title: "Leave with proof",
     body: "Every member earns a verifiable contribution record to put on a résumé or an application.",
-    tone: "bg-block-coral",
   },
 ];
 
@@ -98,13 +34,75 @@ const STUCK = [
   "You have the idea that could become a company, and you're building it alone.",
 ];
 
+interface Seat {
+  role: string;
+  project: Project;
+}
+
+/** One row per open role, newest project first: what a visitor could join today. */
+function openSeats(projects: Project[], max: number): Seat[] {
+  return projects
+    .filter((project) => project.status !== "Completed")
+    .flatMap((project) =>
+      project.open_roles.map((role) => ({ role: role.title, project })),
+    )
+    .slice(0, max);
+}
+
+/** The hero's picture is the product's own content: seats that are open now. */
+function OpenSeats({ seats }: { seats: Seat[] }) {
+  return (
+    <section
+      aria-labelledby="open-seats"
+      className="overflow-hidden rounded-card border border-line bg-surface"
+    >
+      <div className="flex items-baseline justify-between gap-4 px-5 pb-3 pt-4">
+        <h2 id="open-seats" className="font-sans text-sm text-ink-soft">
+          Open seats right now
+        </h2>
+        <Link
+          to="/explore?open=1"
+          className="text-sm font-medium underline-offset-4 hover:underline"
+        >
+          See all
+        </Link>
+      </div>
+      <ul>
+        {seats.map(({ role, project }) => (
+          <li key={`${project.id}:${role}`} className="border-t border-line">
+            <Link
+              to={`/projects/${project.id}`}
+              className="flex items-baseline justify-between gap-4 px-5 py-3 transition-colors hover:bg-sunken"
+            >
+              <span className="min-w-0">
+                <span className="block truncate font-medium">{role}</span>
+                <span className="block truncate text-sm text-ink-soft">
+                  {[project.title, placeLabel(project)]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </span>
+              <time
+                dateTime={project.created_at}
+                className="shrink-0 text-[0.8125rem] text-ink-mute"
+              >
+                {timeAgo(project.created_at)}
+              </time>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function Stat({ value, label }: { value: number | undefined; label: string }) {
   return (
     <div>
-      <dd className="font-display text-4xl font-semibold sm:text-5xl">
+      <dd className="text-3xl font-medium tabular-nums">
         {value === undefined ? "–" : compact.format(value)}
       </dd>
-      <dt className="mt-1 text-[#f6f5ef]/70">{label}</dt>
+      <dt className="mt-1 text-sm text-ink-soft">{label}</dt>
     </div>
   );
 }
@@ -114,23 +112,19 @@ export default function Landing() {
   const { data: stats } = useStats();
   const featured = useProjects({}, 6);
   const projects = featured.data?.pages[0]?.items ?? [];
+  const seats = openSeats(projects, 5);
 
   return (
-    <div className="flex flex-col gap-20 sm:gap-28">
-      <section className="grid items-center gap-10 pt-4 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pt-10">
+    <div className="flex flex-col gap-16 sm:gap-24">
+      <section className="grid items-center gap-10 pt-4 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-16 lg:pt-12">
         <div className="animate-rise">
-          <p className="mb-5 inline-flex h-8 items-center gap-2 rounded-full bg-primary-soft px-3.5 font-display text-sm font-semibold text-on-primary-soft">
-            <Users className="size-4" aria-hidden /> For people who make things
-          </p>
-          <h1 className="text-5xl leading-[1.02] sm:text-6xl lg:text-7xl">
-            Find your people.
-            <br />
-            <span className="text-primary">Build your world.</span>
+          <h1 className="max-w-[16ch] text-[2.5rem] leading-[1.05] tracking-[-0.02em] sm:text-6xl">
+            Find the teammates your project is missing
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-ink-soft sm:text-xl">
-            Oakie is where people with different skills meet, form teams and
-            ship real projects, and where a class side project can turn into a
-            company.
+          <p className="mt-6 max-w-[34rem] text-lg text-ink-soft">
+            Post what you're building and which seats are open. People with the
+            skills you lack apply, you build it together, and everyone leaves
+            with a contribution record anyone can verify.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink to="/register" size="lg">
@@ -141,38 +135,12 @@ export default function Landing() {
             </ButtonLink>
           </div>
         </div>
-
-        <ul
-          className="stagger grid auto-rows-[6rem] grid-cols-4 gap-3 sm:auto-rows-[7rem]"
-          aria-label="Who Oakie is for"
-        >
-          {PEOPLE.map(({ label, detail, icon: Icon, tone, span }) => (
-            <li
-              key={label}
-              className={cn(
-                "flex flex-col justify-between rounded-card p-4 text-block-ink",
-                tone,
-                span,
-              )}
-            >
-              <Icon className="size-6" aria-hidden />
-              <div>
-                <p className="font-display text-lg font-semibold leading-tight sm:text-xl">
-                  {label}
-                </p>
-                {span && <p className="text-sm text-block-ink/75">{detail}</p>}
-              </div>
-            </li>
-          ))}
-        </ul>
+        {seats.length > 0 && <OpenSeats seats={seats} />}
       </section>
 
-      <section
-        aria-label="Oakie in numbers"
-        className="rounded-card bg-block-ink px-6 py-10 text-[#f6f5ef] sm:px-12"
-      >
-        <dl className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-          <Stat value={stats?.projects} label="Projects on the island" />
+      <section aria-label="Oakie in numbers">
+        <dl className="grid grid-cols-2 gap-x-8 gap-y-6 border-y border-line py-6 lg:grid-cols-4">
+          <Stat value={stats?.projects} label="Projects" />
           <Stat value={stats?.members} label="Members" />
           <Stat value={stats?.teammates_matched} label="Teammates matched" />
           <Stat value={stats?.applications} label="Applications sent" />
@@ -180,16 +148,14 @@ export default function Landing() {
       </section>
 
       <section>
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl sm:text-4xl">Teams looking for you</h2>
-            <p className="mt-2 text-lg text-ink-soft">
-              Real projects, open seats, this week.
-            </p>
-          </div>
-          <ButtonLink to="/explore" variant="outline">
-            See all projects <ArrowRight aria-hidden />
-          </ButtonLink>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+          <h2 className="text-3xl leading-tight">Recently posted</h2>
+          <Link
+            to="/explore"
+            className="flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
+          >
+            See all projects <ArrowRight className="size-4" aria-hidden />
+          </Link>
         </div>
         {featured.isPending ? (
           <ProjectFeedSkeleton count={3} />
@@ -197,35 +163,26 @@ export default function Landing() {
           <ProjectFeed projects={projects} />
         )}
         {featured.isError && (
-          <p className="rounded-card bg-sunken p-6 text-ink-soft">
+          <p className="rounded-card border border-line bg-surface p-5 text-ink-soft">
             Projects couldn't be loaded right now.{" "}
-            <Link to="/explore" className="font-semibold text-ink underline">
-              Try the Explore page.
+            <Link to="/explore" className="font-medium text-ink underline">
+              Try the Explore page
             </Link>
           </p>
         )}
       </section>
 
-      <section className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16">
         <div>
-          <h2 className="text-3xl sm:text-4xl">Good ideas die alone.</h2>
-          <p className="mt-3 text-lg text-ink-soft">
+          <h2 className="text-3xl leading-tight">Who it's for</h2>
+          <p className="mt-3 max-w-[30rem] text-ink-soft">
             In school, at work or in between, the hard part is rarely the idea.
             It's finding the person with the other half of the skills.
           </p>
         </div>
-        <ul className="flex flex-col gap-3">
-          {STUCK.map((line, index) => (
-            <li
-              key={line}
-              className="flex items-start gap-4 rounded-card bg-surface p-5 text-lg"
-            >
-              <span
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-display font-semibold text-on-accent"
-                aria-hidden
-              >
-                {index + 1}
-              </span>
+        <ul className="border-b border-line">
+          {STUCK.map((line) => (
+            <li key={line} className="border-t border-line py-4 text-lg">
               {line}
             </li>
           ))}
@@ -233,48 +190,35 @@ export default function Landing() {
       </section>
 
       <section>
-        <h2 className="mb-6 text-3xl sm:text-4xl">
-          From first hello to shipped
-        </h2>
-        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 className="mb-6 text-3xl leading-tight">How it works</h2>
+        <ol className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <li
-              key={step.title}
-              className={cn(
-                "flex min-h-56 flex-col rounded-card p-6 text-block-ink",
-                step.tone,
-              )}
-            >
-              <span className="font-display text-5xl font-semibold" aria-hidden>
+            <li key={step.title} className="border-t border-ink pt-4">
+              <span className="text-sm text-ink-mute tabular-nums" aria-hidden>
                 {index + 1}
               </span>
-              <h3 className="mt-auto text-xl leading-snug">{step.title}</h3>
-              <p className="mt-2 text-[0.95rem] text-block-ink/80">
-                {step.body}
-              </p>
+              <h3 className="mt-2 text-lg leading-snug">{step.title}</h3>
+              <p className="mt-2 text-[0.9375rem] text-ink-soft">{step.body}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="grid items-center gap-6 rounded-card bg-primary p-8 text-on-primary sm:p-12 lg:grid-cols-[1fr_auto]">
+      <section className="flex flex-wrap items-center justify-between gap-6 rounded-card border border-line bg-surface p-6 sm:p-8">
         <div>
-          <BadgeCheck className="mb-4 size-10" aria-hidden />
-          <h2 className="text-3xl sm:text-4xl">
-            Your next teammate is already here.
-          </h2>
-          <p className="mt-3 max-w-xl text-lg opacity-85">
+          <h2 className="text-3xl leading-tight">Start with a profile</h2>
+          <p className="mt-2 max-w-xl text-ink-soft">
             Create a profile in two minutes. Post a project, or apply to one
             today.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <ButtonLink to="/register" size="lg" variant="accent">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <ButtonLink to="/register" size="lg">
             Create your profile
           </ButtonLink>
           <Link
             to="/verify"
-            className="flex h-13 items-center rounded-full px-5 font-display font-semibold underline-offset-4 hover:underline"
+            className="font-medium underline-offset-4 hover:underline"
           >
             Verify a contribution record
           </Link>

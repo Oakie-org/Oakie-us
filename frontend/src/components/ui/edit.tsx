@@ -47,11 +47,11 @@ export function AddPrompt({
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-2xl border border-dashed border-ink-soft px-4 py-3 text-left transition-colors hover:border-solid hover:border-ink"
+      className="group flex w-full items-center gap-3 rounded-field border border-dashed border-ink-soft px-4 py-3 text-left transition-colors hover:border-solid hover:border-ink"
     >
       <Plus className="size-5 shrink-0 text-ink-soft" aria-hidden />
       <span className="min-w-0">
-        <span className="block font-display font-semibold">{label}</span>
+        <span className="block font-medium">{label}</span>
         <span className="block text-sm text-ink-soft">{why}</span>
       </span>
     </button>

@@ -36,7 +36,7 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 import { Logo } from "@/components/Logo";
 
 const ICON_BUTTON =
-  "relative flex size-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-sunken";
+  "relative flex size-10 items-center justify-center rounded-field text-ink-soft transition-colors hover:bg-sunken hover:text-ink";
 
 function DesktopLink({ to, children }: { to: string; children: string }) {
   return (
@@ -45,8 +45,10 @@ function DesktopLink({ to, children }: { to: string; children: string }) {
       end={to === "/"}
       className={({ isActive }) =>
         cn(
-          "flex h-10 items-center rounded-full px-4 font-display text-[0.95rem] font-semibold transition-colors",
-          isActive ? "bg-ink text-paper" : "text-ink hover:bg-sunken",
+          "flex h-9 items-center rounded-field px-3 text-[0.9375rem] font-medium transition-colors",
+          isActive
+            ? "bg-sunken text-ink"
+            : "text-ink-soft hover:bg-sunken hover:text-ink",
         )
       }
     >
@@ -80,7 +82,7 @@ function AccountMenu() {
   if (!me)
     return (
       <span
-        className="size-11 animate-pulse rounded-full bg-sunken"
+        className="size-10 animate-pulse rounded-full bg-sunken"
         aria-hidden
       />
     );
@@ -91,9 +93,7 @@ function AccountMenu() {
       </MenuTrigger>
       <MenuContent>
         <MenuLabel>
-          <span className="block font-display font-semibold text-ink">
-            {me.name}
-          </span>
+          <span className="block font-medium text-ink">{me.name}</span>
           {me.email}
         </MenuLabel>
         <MenuSeparator />
@@ -138,14 +138,14 @@ function TabLink({
       end={to === "/"}
       className={({ isActive }) =>
         cn(
-          "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-semibold transition-colors",
-          isActive ? "text-primary" : "text-ink-soft",
+          "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium transition-colors",
+          isActive ? "text-ink" : "text-ink-mute",
         )
       }
     >
       <span
         className={cn(
-          "relative flex size-8 items-center justify-center rounded-full",
+          "relative flex size-8 items-center justify-center rounded-lg",
           primary && "bg-primary text-on-primary",
         )}
       >
@@ -166,16 +166,16 @@ export default function AppShell() {
     <div className="flex min-h-dvh flex-col">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-field focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
       >
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-line bg-paper">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-line bg-surface">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-4 sm:px-6">
           <Link
             to="/"
-            className="mr-2 flex shrink-0 items-center rounded-lg"
+            className="mr-3 flex shrink-0 items-center rounded-lg"
             aria-label="Oakie home"
           >
             <Logo />
@@ -246,7 +246,7 @@ export default function AppShell() {
 
       <main
         id="main"
-        className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-8 sm:px-6 md:pb-16"
+        className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-8 sm:px-6 md:pb-20"
       >
         <Suspense fallback={<PageSpinner />}>
           <Outlet />
@@ -255,13 +255,10 @@ export default function AppShell() {
 
       <footer className="hidden border-t border-line md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-6 text-sm text-ink-soft">
-          <p>
-            Oakie is not an island. It is one built by people who make things
-            together.
-          </p>
+          <p>Oakie (搭搭岛)</p>
           <Link
             to="/verify"
-            className="flex items-center gap-1.5 font-medium text-ink hover:underline"
+            className="flex items-center gap-1.5 text-ink-soft hover:text-ink hover:underline"
           >
             <ShieldCheck className="size-4" aria-hidden /> Verify a contribution
             record
@@ -271,7 +268,7 @@ export default function AppShell() {
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         <TabLink to="/" icon={Home} label="Home" />
         <TabLink to="/explore" icon={Compass} label="Explore" />

@@ -1,59 +1,87 @@
 # Oakie design system
 
-Direction: **Vibrant & Block-based**, chosen with the UI/UX Pro Max skill for a
-youth-focused, creator-led community product. Flat colour blocks, generous radii,
-large geometric type, no drop shadows. The palette is grounded in the Oakie
-wordmark (charcoal ink, a leaf, a wave) rather than the generic "creator pink"
-the skill's product match suggested.
+Direction: **paper, ink and one seal.** Oakie is a project wall and, at the end
+of a project, a credits list. So the interface is white paper and black ink,
+and it owns exactly one colour: the vermilion of a seal, kept for what Oakie
+has checked or what is waiting for you. Every other colour on a screen is
+something a person uploaded.
+
+- **Character**: direct, credible, made by hand.
+- **Moments**: the pictures people upload, and the contribution record, which
+  is laid out like the document it stands in for.
+- **Signature**: the seal (`搭`, from 搭搭岛) stamped on a verified record, and
+  its colour wherever something is verified or unread.
 
 All tokens are defined in `frontend/src/index.css`. Components use the semantic
 Tailwind utilities below and never raw hex values.
 
 ## Colour
 
-| Token                              | Light                 | Dark                  | Use                                                  |
-| ---------------------------------- | --------------------- | --------------------- | ---------------------------------------------------- |
-| `paper`                            | `#F6F5EF`             | `#0F1512`             | Page background                                      |
-| `surface`                          | `#FFFFFF`             | `#18201C`             | Cards, inputs, dialogs                               |
-| `sunken`                           | `#ECEAE0`             | `#222C27`             | Wells, board columns, hover                          |
-| `ink`                              | `#17201C`             | `#EEF2EE`             | Text, strong borders                                 |
-| `ink-soft`                         | `#55615A`             | `#A6B1AB`             | Secondary text (at least 4.5:1 on paper and surface) |
-| `line`                             | `#D9D7CA`             | `#303C36`             | Borders, dividers                                    |
-| `primary` / `on-primary`           | `#0E6B55` / white     | `#4FD1A5` / `#06231A` | Primary actions, links, focus ring                   |
-| `primary-soft` / `on-primary-soft` | `#D9EEE5` / `#0A4A3B` | `#16372D` / `#A8ECD3` | Skill and role chips, selected states                |
-| `accent` / `on-accent`             | `#FF7A52` / ink       | `#FF8F6B` / ink       | Unread badges, highlights, one CTA per view          |
-| `danger` / `danger-soft`           | `#B93319` / `#FBE3DC` | `#FF8D76` / `#45201A` | Errors, destructive actions                          |
+| Token                              | Light                 | Dark                  | Use                                                    |
+| ---------------------------------- | --------------------- | --------------------- | ------------------------------------------------------ |
+| `paper`                            | `#FAFAFA`             | `#141415`             | Page background                                        |
+| `surface`                          | `#FFFFFF`             | `#19191B`             | Cards, inputs, dialogs, the top bar                    |
+| `sunken`                           | `#F2F2F2`             | `#232325`             | Wells, hover, the selected nav item                    |
+| `ink`                              | `#171717`             | `#EDEDED`             | Text                                                   |
+| `ink-soft`                         | `#5C5C5C`             | `#A1A1A6`             | Secondary text                                         |
+| `ink-mute`                         | `#6E6E6E`             | `#85858B`             | Meta only: times, counts, captions                     |
+| `line` / `line-strong`             | `#E6E6E6` / `#CDCDCD` | `#2A2A2D` / `#3D3D41` | Hairlines / borders of inputs and outline buttons      |
+| `primary` / `on-primary`           | ink / white           | off-white / `#141415` | The primary action, progress, focus ring               |
+| `primary-soft` / `on-primary-soft` | `#E9E9E9` / ink       | `#2E2E31` / ink       | What the viewer has chosen (applied filters, own role) |
+| `accent` / `on-accent`             | `#C8371B` / white     | `#F2684A` / `#1A0D09` | The seal: verified, unread, needs your answer          |
+| `positive`                         | `#16A34A`             | `#4CC38A`             | The "Recruiting" dot, nothing else                     |
+| `danger` / `danger-soft`           | `#B4233C` / `#FBEAED` | `#FF8FA3` / `#3A1820` | Errors, destructive actions                            |
 
-### Block colours
-
-Each discipline owns one block colour (`frontend/src/lib/categories.ts`). It is how
-a card or cover says "finance" or "film" before a word is read. Blocks always carry
-`block-ink` text, in both themes.
-
-Software → sky · AI & Data → lilac · Finance & Quant → mint · Media & Content →
-coral · Design & Art → pink · Events & Community → sun · Research → aqua ·
-Startup → orange · Social Impact → leaf · anything else → sand.
-
-Colour never carries meaning alone: status badges pair it with an icon and a
-label, unread items with a dot plus bold text and a screen-reader label.
+- The primary button is ink, not a colour. The accent is never a button.
+- The accent covers a few percent of a screen at most. If a screen has no
+  unread item and nothing verified, it has no accent, and that is correct.
+- No tinted page backgrounds, no per-discipline colours, no coloured initials,
+  no pastel icon tiles. A discipline is a word.
+- The `block-*` colours survive for one thing: the flat band a member may pick
+  for the top of their own profile. It is their content, so nothing else uses them.
+- Colour never carries meaning alone: a status is a dot and a word, an unread
+  item a dot plus medium weight and a screen-reader label.
 
 ## Type
 
-- **Display**: Outfit (600). Headings, buttons, labels. Tight tracking, balanced wrapping.
-- **Body**: Work Sans (400–600). 16px base, 1.5 line height.
-- Both are self-hosted through `@fontsource-variable`, so there is no third-party font request.
-- Scale: hero 48–72px, page title 36–48px, section 24px, card title 20px, body 16px,
-  secondary 14–15px, never below 11px for badges and 12px for text.
+- **Titles**: Newsreader (500), a serif. Page and section headings (`h1`,
+  `h2`) and the title of a post (`font-serif` on a project card, an update, a
+  record). It makes a project read as something a person wrote.
+- **Interface**: Instrument Sans (400 and 500). Body, buttons, labels, small
+  headings inside panels (`font-sans` on an `h2` there).
+- The serif is never used for buttons, labels, chips or anything under 20px.
+- Two weights. Hierarchy comes from size and from `ink` / `ink-soft` /
+  `ink-mute`, not from bold. No uppercase labels, no letter-spaced labels.
+- Record codes are monospace. Numbers that line up use `tabular-nums`.
+- Both families are self-hosted through `@fontsource-variable`; Chinese falls
+  back to the system's Songti (titles) and PingFang / YaHei (interface).
+- Scale: landing headline 40–60px, page title 30–36px, project page title up
+  to 44px, section 22px, card title 22px, body 16px, secondary 14–15px, meta 13px.
 
 ## Shape, space, motion
 
-- Radius: cards 20px (`rounded-card`), fields 12px (`rounded-field`), buttons and chips fully round.
-- No shadows. Elevation is expressed with a colour step (`paper` → `surface`) or a 2px border.
-- Hover on cards: lift 4px and gain an ink border. Press: scale to 0.97.
-- Motion tokens: `animate-rise` (lists enter, staggered by `.stagger`), `animate-pop`
-  (dialogs, menus, toasts), 150–200ms colour transitions.
-  `prefers-reduced-motion` disables all of it.
-- Layout: one 72rem column, 16px gutters on phones and 24px from `sm`; grids go 1 → 2 → 3 columns.
+- Radius: cards 14px (`rounded-card`), buttons and fields 10px
+  (`rounded-field`), chips 6px (`rounded-chip`), inner wells 8px. Only avatars,
+  dots, count badges and progress tracks are round.
+- Surfaces are separated by a 1px hairline (`border-line`). Only things that
+  float (menus, dialogs, the search palette, toasts) carry `shadow-float`.
+- Hover is a surface or border step. Nothing lifts, scales or moves on hover.
+  Press scales a button to 0.98.
+- Motion tokens: `animate-rise` (a list enters once, staggered by `.stagger`,
+  six items at most), `animate-pop` (dialogs, menus, toasts), 150ms colour
+  transitions, one easing curve (`ease-out-soft`). Width and height are never
+  animated. `prefers-reduced-motion` disables all of it.
+- Layout: one 72rem column, 16px gutters on phones and 24px from `sm`; pages
+  start at the left edge of that column, never centred in it. A short list
+  (applications, followed projects) sits in a side column instead of taking a
+  full row. Empty and error states are left-aligned text in a plain box.
+
+## Copy
+
+- A title names the page or the thing ("Home", "Notifications", the project's
+  name). No greetings, no slogans, no exclamation marks.
+- The landing headline says what Oakie does; its picture is live data (the
+  seats open right now), not artwork.
 
 ## Pictures are content, never decoration
 
@@ -64,15 +92,15 @@ one project repeated. A project without a picture is a text post, and its card
 quotes more of the text instead.
 
 The same holds for people: a profile banner is the member's own picture, or
-failing that a flat band in the accent colour they chose, or nothing. The only
-generated artwork left is the illustration on the sign-in page (`ProjectCover`),
-which decorates the product, not anyone's content.
+failing that a flat band in the colour they chose, or nothing. An avatar is a
+photo or plain initials. There is no generated artwork anywhere, including the
+sign-in page.
 
 ## Interaction rules
 
 - Touch targets are at least 44px; small buttons extend their hit area invisibly.
 - Every icon-only control has an `aria-label`; decorative icons are `aria-hidden`.
-- Focus is always visible: a 3px primary outline with a 2px offset.
+- Focus is always visible: a 2px ink outline with a 2px offset.
 - Forms: visible labels, validation on blur, errors beneath the field tied by
   `aria-describedby`, and a focusable error summary on a failed submit.
 - Navigation: top bar on desktop; five-item bottom tab bar on phones. Tabs and filters are URLs.
@@ -94,9 +122,10 @@ needs and whether there is a seat without reading a paragraph or decoding a colo
 - **Card order**: picture (only if uploaded) → status, discipline and age →
   title → one-liner → opening paragraph (longer when there is no picture) →
   "Looking for" → who posted it and where.
-- **Colour is quiet.** Status is a dot and a word (`StatusDot`). Chips are
-  neutral; `primary-soft` is reserved for what the viewer has chosen. On a
-  project the only colour comes from its own picture and its people's avatars.
+- **Colour is quiet.** Status is a dot and a word (`StatusDot`); only
+  "Recruiting" is green, the rest differ by shape. Chips are neutral;
+  `primary-soft` is reserved for what the viewer has chosen. On a project the
+  only colour comes from its own picture and its people's photos.
 - **Roles are words, not tags.** "Looking for" is one inset block: role names
   in bold, each kept on one line, with the open-seat count beside the label.
   On the project page the same roles are rows with their skills and an Apply
@@ -106,8 +135,9 @@ needs and whether there is a seat without reading a paragraph or decoding a colo
 - **No credential on a card.** A project's and a person's place is a city. A
   school, company or club is an optional "Community": one fact on the project
   page or profile and a filter, never a headline, and never required. The
-  check mark (`VerifiedMark`) confirms that one community claim by email, so it
-  sits beside the community's name and nowhere near the person's.
+  check mark (`VerifiedMark`, in the seal colour) confirms that one community
+  claim by email, so it sits beside the community's name and nowhere near the
+  person's.
 - **People are a grid, projects are a feed.** People are comparable (who, what
   they do, what they are open to), so their cards share a row height. A person
   card reads name and city → headline → skills as words → "Open to", the same

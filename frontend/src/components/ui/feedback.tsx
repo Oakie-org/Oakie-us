@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Loader2, RotateCw, type LucideIcon } from "lucide-react";
+import { Loader2, RotateCw } from "lucide-react";
 
 import { errorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -29,48 +29,36 @@ export function PageSpinner() {
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn("animate-pulse rounded-xl bg-sunken", className)}
+      className={cn("animate-pulse rounded-md bg-sunken", className)}
       aria-hidden
     />
   );
 }
 
 interface EmptyStateProps {
-  icon: LucideIcon;
   title: string;
   children?: ReactNode;
   action?: ReactNode;
-  tone?: string;
   className?: string;
 }
 
 /** What a list shows when it has nothing: say why, and what to do next. */
 export function EmptyState({
-  icon: Icon,
   title,
   children,
   action,
-  tone = "bg-block-sand",
   className,
 }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-card border-2 border-dashed border-line px-6 py-12 text-center",
+        "rounded-card border border-line bg-surface px-5 py-6 sm:px-6",
         className,
       )}
     >
-      <span
-        className={cn(
-          "mb-4 flex size-14 items-center justify-center rounded-2xl text-block-ink",
-          tone,
-        )}
-      >
-        <Icon className="size-6" aria-hidden />
-      </span>
-      <h3 className="text-lg">{title}</h3>
-      {children && <p className="mt-1 max-w-sm text-ink-soft">{children}</p>}
-      {action && <div className="mt-5">{action}</div>}
+      <h3 className="text-base">{title}</h3>
+      {children && <p className="mt-1 max-w-prose text-ink-soft">{children}</p>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
@@ -85,10 +73,10 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="flex flex-col items-center rounded-card bg-danger-soft px-6 py-10 text-center"
+      className="rounded-card border border-line bg-surface px-5 py-6 sm:px-6"
     >
-      <h3 className="text-lg text-danger">That didn't load</h3>
-      <p className="mt-1 max-w-sm text-ink">{errorMessage(error)}</p>
+      <h3 className="text-base text-danger">That didn't load</h3>
+      <p className="mt-1 max-w-prose text-ink-soft">{errorMessage(error)}</p>
       {onRetry && (
         <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
           <RotateCw aria-hidden /> Try again

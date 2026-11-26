@@ -1,7 +1,7 @@
 import { Check, Inbox, X } from "lucide-react";
 
 import { useApplications, useDecideApplication } from "@/lib/queries";
-import type { Application, ProjectDetail } from "@/lib/types";
+import type { Application, ProjectDetail, UserSummary } from "@/lib/types";
 import { cn, timeAgo } from "@/lib/utils";
 import { Chip } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,63 @@ const RESOLVED_TONE = {
   withdrawn: "bg-sunken text-ink-soft",
   pending: "bg-block-sun text-block-ink",
 } as const;
+
+/**
+ * What the applicant's profile says, read against what this project asked
+ * for: the skills its open roles name come first, so the decision does not
+ * need a trip to the profile.
+ */
+function ApplicantFacts({
+  person,
+  project,
+}: {
+  person: UserSummary;
+  project: ProjectDetail;
+}) {
+  const wanted = new Set(
+    project.open_roles.flatMap((role) =>
+      role.skills.map((skill) => skill.toLowerCase()),
+    ),
+  );
+  const matching = person.skills.filter((skill) =>
+    wanted.has(skill.toLowerCase()),
+  );
+  const other = person.skills.filter(
+    (skill) => !wanted.has(skill.toLowerCase()),
+  );
+  if (person.skills.length === 0 && !person.city && !person.availability)
+    return null;
+  return (
+    <dl className="grid gap-x-4 gap-y-1 text-[0.9375rem] sm:grid-cols-[auto_1fr]">
+      {matching.length > 0 && (
+        <>
+          <dt className="text-ink-soft">Skills you asked for</dt>
+          <dd className="font-semibold">{matching.join(", ")}</dd>
+        </>
+      )}
+      {other.length > 0 && (
+        <>
+          <dt className="text-ink-soft">
+            {matching.length > 0 ? "Also" : "Skills"}
+          </dt>
+          <dd>{other.slice(0, 8).join(", ")}</dd>
+        </>
+      )}
+      {person.availability && (
+        <>
+          <dt className="text-ink-soft">Can give</dt>
+          <dd>{person.availability}</dd>
+        </>
+      )}
+      {person.city && (
+        <>
+          <dt className="text-ink-soft">Based in</dt>
+          <dd>{person.city}</dd>
+        </>
+      )}
+    </dl>
+  );
+}
 
 function ApplicationCard({
   application,
@@ -72,6 +129,9 @@ function ApplicationCard({
       <p className="prose-plain rounded-2xl bg-sunken p-4">
         {application.message}
       </p>
+      {pending && application.applicant && (
+        <ApplicantFacts person={application.applicant} project={project} />
+      )}
       {pending && (
         <div className="flex flex-wrap items-center gap-2">
           <Button

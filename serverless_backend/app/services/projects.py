@@ -26,13 +26,14 @@ from app.models.project import (
     ProjectDetail,
     ProjectFacets,
     ProjectListed,
+    ProjectMatch,
     ProjectMembership,
     ProjectPublic,
     ProjectUpdate,
     ProjectViewer,
 )
 from app.repositories import projects as repo
-from app.services import notifications, users
+from app.services import notifications, platform, users
 
 MANAGER_ROLES = (ProjectRole.OWNER, ProjectRole.ADMIN)
 
@@ -168,6 +169,32 @@ def list_projects(query: ProjectQuery, limit: int, cursor: str | None) -> Cursor
     return CursorPage(items=_listed(page.items), next_cursor=page.next_cursor)
 
 
+def matches_for(principal: Principal, limit: int) -> list[ProjectMatch]:
+    """Open projects whose roles ask for a skill the member lists, best overlap
+    first, then the listing's own order. Projects they are already on, have
+    applied to or own are left out. Reads the whole listing, like `facets`."""
+    profile = users.ensure_profile(principal)
+    mine = {skill.lower(): skill for skill in profile.get("skills") or []}
+    if not mine:
+        return []
+    taken = {m["project_id"] for m in repo.memberships_of(principal.sub)}
+    taken |= {a["project_id"] for a in repo.applications_of(principal.sub)}
+    scored: list[tuple[int, int, Item, list[str]]] = []
+    for position, project in enumerate(repo.list_all()):
+        if project["id"] in taken or not _is_open(project):
+            continue
+        shared = [mine[skill] for skill in sorted(_wanted_skills(project) & mine.keys())]
+        if shared:
+            scored.append((-len(shared), position, project, shared))
+    scored.sort(key=lambda entry: entry[:2])
+    top = scored[:limit]
+    owners = users.summaries(list({project["owner_id"] for _, _, project, _ in top}))
+    return [
+        ProjectMatch(**project, owner=owners.get(project["owner_id"]), matched_skills=shared)
+        for _, _, project, shared in top
+    ]
+
+
 def _tally(values: list[str], limit: int | None = None) -> list[FacetOption]:
     """Options by popularity, grouped case-insensitively under their commonest spelling."""
     spellings: dict[str, Counter[str]] = {}
@@ -266,6 +293,8 @@ def create(principal: Principal, payload: ProjectCreate) -> ProjectPublic:
     if not principal.has_at_least(minimum):
         raise Forbidden(f"Publishing projects requires the '{minimum.value}' role")
     users.ensure_profile(principal)
+    if payload.image_url:
+        platform.require_own_upload(principal.sub, payload.image_url, "project_cover")
 
     now = now_iso()
     project = {
@@ -300,6 +329,9 @@ def update(project_id: str, principal: Principal, payload: ProjectUpdate) -> Pro
     seats = fields.get("max_members")
     if seats is not None and seats < access.project["current_members"]:
         raise BadRequest("Team size cannot be smaller than the current team")
+    picture = fields.get("image_url")
+    if picture and picture != access.project.get("image_url"):
+        platform.require_own_upload(principal.sub, picture, "project_cover")
     if not fields:
         return ProjectPublic(**access.project)
     fields["updated_at"] = now_iso()

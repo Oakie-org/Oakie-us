@@ -15,6 +15,7 @@ from app.core.security import Principal
 from app.db.table import aws_client_kwargs
 from app.models.common import ProjectStatus
 from app.models.social import Catalog, SignResponse, StatsOverview
+from app.models.user import AVAILABILITY
 from app.repositories import stats as stats_repo
 
 CATEGORIES = [
@@ -55,6 +56,7 @@ CATALOG = Catalog(
     skills=SKILLS,
     statuses=[status.value for status in ProjectStatus],
     open_to=OPEN_TO,
+    availability=list(AVAILABILITY),
 )
 
 # -------------------------------------------------------------------- stats
@@ -115,6 +117,15 @@ def _public_url(bucket: str, key: str) -> str:
     if settings.AWS_ENDPOINT_URL:
         return f"{settings.AWS_ENDPOINT_URL.rstrip('/')}/{bucket}/{key}"
     return f"https://{bucket}.s3.{settings.AWS_REGION}.amazonaws.com/{key}"
+
+
+def require_own_upload(user_id: str, url: str, purpose: str) -> None:
+    """Refuse a picture that is not this member's own upload for `purpose`.
+    Pictures are shown to everyone, so they may only point at our storage,
+    never at an address on someone else's server."""
+    bucket = settings.UPLOADS_BUCKET_NAME
+    if not bucket or not url.startswith(_public_url(bucket, f"{purpose}/{user_id}/")):
+        raise BadRequest("Upload the picture first, then save it")
 
 
 def sign_upload(principal: Principal, file_type: str, purpose: str) -> SignResponse:

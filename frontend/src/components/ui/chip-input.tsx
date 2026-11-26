@@ -10,6 +10,8 @@ interface ChipInputProps {
   suggestions?: string[];
   placeholder?: string;
   max?: number;
+  /** Offer the suggestions only while the field is in use: for tight spaces. */
+  quiet?: boolean;
   "aria-describedby"?: string;
   "aria-invalid"?: true;
 }
@@ -21,9 +23,11 @@ export function ChipInput({
   suggestions = [],
   placeholder,
   max = 8,
+  quiet,
   ...control
 }: ChipInputProps) {
   const [draft, setDraft] = useState("");
+  const [focused, setFocused] = useState(false);
   const full = value.length >= max;
 
   function add(raw: string) {
@@ -50,7 +54,14 @@ export function ChipInput({
   );
 
   return (
-    <div>
+    <div
+      onFocus={() => setFocused(true)}
+      onBlur={(event) => {
+        // Moving on to a suggestion keeps them open; leaving the field closes them.
+        if (!event.currentTarget.contains(event.relatedTarget))
+          setFocused(false);
+      }}
+    >
       <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-field border-2 border-line bg-surface px-2.5 py-2 transition-colors focus-within:border-primary hover:border-ink-soft">
         {value.map((label) => (
           <span
@@ -79,7 +90,7 @@ export function ChipInput({
           className="h-8 min-w-32 flex-1 bg-transparent px-1.5 text-base outline-none placeholder:text-ink-soft/70"
         />
       </div>
-      {remaining.length > 0 && !full && (
+      {remaining.length > 0 && !full && (!quiet || focused) && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {remaining.slice(0, 10).map((option) => (
             <button

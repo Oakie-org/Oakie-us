@@ -7,8 +7,8 @@ import {
   LogOut,
   MessageCircle,
   Moon,
+  Pencil,
   Plus,
-  Settings,
   ShieldCheck,
   Sun,
   User,
@@ -100,8 +100,8 @@ function AccountMenu() {
         <MenuItem onSelect={() => navigate(`/u/${me.id}`)}>
           <User aria-hidden /> Your profile
         </MenuItem>
-        <MenuItem onSelect={() => navigate("/settings")}>
-          <Settings aria-hidden /> Edit profile
+        <MenuItem onSelect={() => navigate(`/u/${me.id}?edit=intro`)}>
+          <Pencil aria-hidden /> Edit profile
         </MenuItem>
         <MenuItem onSelect={() => navigate("/verify")}>
           <ShieldCheck aria-hidden /> Verify a record

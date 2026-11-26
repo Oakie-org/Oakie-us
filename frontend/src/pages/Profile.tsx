@@ -1,17 +1,26 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   Award,
   Building2,
+  CalendarDays,
+  Camera,
   Check,
   Clock,
   Code2,
   Copy,
   FolderOpen,
+  ImagePlus,
   Link as LinkIcon,
   MapPin,
   MessageCircle,
   Pencil,
+  Plus,
   Share2,
   UserCheck,
   UserPlus,
@@ -21,7 +30,13 @@ import {
 import { useAuth } from "@/auth/AuthProvider";
 import { ApiError } from "@/lib/api";
 import { toneNamed } from "@/lib/categories";
-import { profileStrength, safeUrl } from "@/lib/profile";
+import {
+  isProfileSection,
+  nextProfileLink,
+  profileStrength,
+  safeUrl,
+  type ProfileSection,
+} from "@/lib/profile";
 import {
   useContributions,
   useFollowList,
@@ -35,6 +50,7 @@ import { cn, compact, formatDate } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Chip, VerifiedMark } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { AddPrompt, EditButton } from "@/components/ui/edit";
 import {
   EmptyState,
   ErrorState,
@@ -48,6 +64,7 @@ import { useToast } from "@/components/ui/toast";
 import { PersonLine } from "@/components/cards";
 import { ProjectFeed } from "@/components/ProjectFeed";
 import { Section, useTitle } from "@/components/page";
+import { ProfileEditor } from "@/components/profile/editors";
 import { RecordCard } from "@/components/RecordCard";
 import NotFound from "@/pages/NotFound";
 import { InviteForm } from "@/pages/project/InviteDialog";
@@ -317,11 +334,35 @@ function FollowList({
   );
 }
 
+function Block({
+  title,
+  edit,
+  children,
+  className,
+}: {
+  title: string;
+  /** The owner's pencil, when they are the one looking. */
+  edit?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn("rounded-card bg-surface p-6", className)}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg">{title}</h2>
+        {edit}
+      </div>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
 export default function Profile() {
   const { id = "" } = useParams();
   const { me, status } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+  const [params, setParams] = useSearchParams();
   const user = useUser(id);
   const projects = useUserProjects(id);
   const records = useContributions(id);
@@ -339,9 +380,30 @@ export default function Profile() {
       <ErrorState error={user.error} onRetry={() => void user.refetch()} />
     );
 
-  const profile = user.data;
-  const isMe = me?.id === profile.id;
-  const first = profile.name.split(" ")[0];
+  const isMe = me?.id === user.data.id;
+  // The owner sees their own edits the moment they are saved.
+  const profile: UserProfile = isMe && me ? me : user.data;
+
+  // Which part is being edited lives in the URL, so Back closes the sheet and
+  // "next: add a headline" can link straight to it. Only the owner can open one.
+  const requested = params.get("edit");
+  const editing = isMe && isProfileSection(requested) ? requested : null;
+  const edit = (section: ProfileSection) =>
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("edit", section);
+      return next;
+    });
+  const stopEditing = () =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("edit");
+        return next;
+      },
+      { replace: true },
+    );
+
   const links = [
     ...profile.links.map((link) => ({
       label: link.label,
@@ -358,10 +420,17 @@ export default function Profile() {
     (project) => !pinned.includes(project),
   );
   const strength = isMe && me ? profileStrength(me) : null;
+  const nextLink = isMe && me ? nextProfileLink(me) : null;
   // A banner is the member's own picture, or failing that the colour they
   // picked. With neither there is no banner: nothing is drawn to fill the gap.
   const accent = toneNamed(profile.accent);
   const hasBanner = Boolean(profile.banner_url || accent);
+  // Visitors only see the parts that say something; the owner also sees where
+  // the empty ones would go.
+  const showAbout = isMe || Boolean(profile.bio);
+  const showSkills = isMe || profile.skills.length > 0;
+  const showOpenTo = isMe || profile.open_to.length > 0;
+  const showSide = showSkills || showOpenTo;
 
   function requireSignIn(action: () => void) {
     if (status === "signedIn") action();
@@ -370,7 +439,7 @@ export default function Profile() {
 
   return (
     <>
-      <div className="overflow-hidden rounded-card bg-surface">
+      <div className="relative overflow-hidden rounded-card bg-surface">
         {profile.banner_url ? (
           <img
             src={profile.banner_url}
@@ -380,21 +449,60 @@ export default function Profile() {
         ) : (
           accent && <div className={cn("h-16 sm:h-20", accent.bg)} />
         )}
+        {isMe && (
+          <Button
+            variant={profile.banner_url ? "ink" : "ghost"}
+            size="icon"
+            className={cn(
+              "absolute right-3 top-3",
+              !profile.banner_url && "text-ink-soft hover:text-ink",
+              accent && !profile.banner_url && "text-block-ink",
+            )}
+            aria-label={hasBanner ? "Change your cover" : "Add a cover"}
+            title={hasBanner ? "Change your cover" : "Add a cover"}
+            onClick={() => edit("cover")}
+          >
+            <ImagePlus aria-hidden />
+          </Button>
+        )}
         <div className="px-5 pb-6 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <Avatar
-              user={profile}
-              size="xl"
-              className={cn(
-                "ring-4 ring-surface",
-                hasBanner ? "-mt-12" : "mt-6",
-              )}
-            />
+            {isMe ? (
+              <button
+                type="button"
+                onClick={() => edit("photo")}
+                aria-label={
+                  profile.avatar_url ? "Change your photo" : "Add a photo"
+                }
+                className={cn(
+                  "group relative rounded-full",
+                  hasBanner ? "-mt-12" : "mt-6",
+                )}
+              >
+                <Avatar
+                  user={profile}
+                  size="xl"
+                  className="ring-4 ring-surface"
+                />
+                <span className="absolute bottom-0.5 right-0.5 flex size-9 items-center justify-center rounded-full bg-ink text-paper ring-4 ring-surface transition-transform group-hover:scale-110">
+                  <Camera className="size-4" aria-hidden />
+                </span>
+              </button>
+            ) : (
+              <Avatar
+                user={profile}
+                size="xl"
+                className={cn(
+                  "ring-4 ring-surface",
+                  hasBanner ? "-mt-12" : "mt-6",
+                )}
+              />
+            )}
             <div className="flex flex-wrap gap-2 pb-1">
               {isMe ? (
-                <ButtonLink to="/settings" variant="outline">
-                  <Pencil aria-hidden /> Edit profile
-                </ButtonLink>
+                <Button variant="outline" onClick={() => edit("intro")}>
+                  <Pencil aria-hidden /> Edit intro
+                </Button>
               ) : (
                 <>
                   <Button
@@ -440,8 +548,18 @@ export default function Profile() {
           </div>
 
           <h1 className="mt-4 text-3xl sm:text-4xl">{profile.name}</h1>
-          {profile.headline && (
+          {profile.headline ? (
             <p className="mt-1 text-lg text-ink-soft">{profile.headline}</p>
+          ) : (
+            isMe && (
+              <button
+                type="button"
+                onClick={() => edit("intro")}
+                className="mt-1 flex min-h-11 items-center gap-1.5 text-lg text-ink-soft underline decoration-dashed underline-offset-4 hover:text-ink"
+              >
+                <Plus className="size-4" aria-hidden /> Add a headline
+              </button>
+            )
           )}
 
           <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[0.95rem] text-ink-soft">
@@ -464,9 +582,17 @@ export default function Profile() {
                 {profile.verified_school && <VerifiedMark />}
               </li>
             )}
+            <li className="flex items-center gap-1.5">
+              <CalendarDays className="size-4" aria-hidden />
+              Joined{" "}
+              {formatDate(profile.created_at, {
+                month: "long",
+                year: "numeric",
+              })}
+            </li>
           </ul>
 
-          {links.length > 0 && (
+          {(links.length > 0 || isMe) && (
             <ul className="mt-3 flex flex-wrap gap-2">
               {links.map((link) => (
                 <li key={link.href}>
@@ -482,6 +608,22 @@ export default function Profile() {
                   </a>
                 </li>
               ))}
+              {isMe && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => edit("links")}
+                    className="relative flex h-8 items-center gap-1.5 rounded-full border border-dashed border-ink-soft px-3 text-sm font-medium text-ink-soft transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0 hover:border-solid hover:border-ink hover:text-ink"
+                  >
+                    {profile.links.length ? (
+                      <Pencil className="size-3.5" aria-hidden />
+                    ) : (
+                      <Plus className="size-3.5" aria-hidden />
+                    )}
+                    {profile.links.length ? "Edit links" : "Link your work"}
+                  </button>
+                </li>
+              )}
             </ul>
           )}
 
@@ -513,9 +655,9 @@ export default function Profile() {
         </div>
       </div>
 
-      {strength && strength.next && (
+      {strength?.next && nextLink && (
         <Link
-          to={`/settings#${strength.next.key}`}
+          to={nextLink}
           className="group mt-4 flex flex-wrap items-center gap-4 rounded-card border border-dashed border-ink-soft p-4 transition-colors hover:border-solid hover:border-ink"
         >
           <span className="font-display text-2xl font-semibold tabular-nums">
@@ -530,75 +672,155 @@ export default function Profile() {
             </span>
           </span>
           <span
-            className="h-2 w-28 overflow-hidden rounded-full bg-line"
+            className="hidden h-2 w-28 overflow-hidden rounded-full bg-line sm:block"
             aria-hidden
           >
             <span
-              className="block h-full rounded-full bg-primary"
+              className="block h-full rounded-full bg-primary transition-[width] duration-500 ease-out-soft"
               style={{ width: `${strength.percent}%` }}
             />
           </span>
         </Link>
       )}
 
-      {pinned.length > 0 && (
-        <Section title="Featured" className="mt-8">
-          <ProjectFeed projects={pinned} />
+      {(pinned.length > 0 || (isMe && Boolean(projects.data?.length))) && (
+        <Section
+          title="Featured"
+          className="mt-8"
+          action={
+            isMe && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => edit("featured")}
+              >
+                <Pencil aria-hidden /> Choose
+              </Button>
+            )
+          }
+        >
+          {pinned.length > 0 ? (
+            <ProjectFeed projects={pinned} />
+          ) : (
+            <AddPrompt
+              label="Pin your best work"
+              why="Up to three projects sit at the top of your profile."
+              onClick={() => edit("featured")}
+            />
+          )}
         </Section>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <section className="rounded-card bg-surface p-6 sm:p-8">
-          <h2 className="text-xl">About</h2>
-          {profile.bio ? (
-            <p className="prose-plain mt-3">{profile.bio}</p>
-          ) : (
-            <p className="mt-3 text-ink-soft">
-              {isMe
-                ? "Tell people what you make and what you're looking for."
-                : `${first} hasn't written a bio yet.`}
-            </p>
+      {(showAbout || showSide) && (
+        <div
+          className={cn(
+            "mt-6 grid items-start gap-6",
+            showAbout && showSide && "lg:grid-cols-[1fr_20rem]",
           )}
-          <p className="mt-5 text-sm text-ink-soft">
-            On Oakie since{" "}
-            {formatDate(profile.created_at, { month: "long", year: "numeric" })}
-          </p>
-        </section>
-        <aside className="flex flex-col gap-6">
-          <section className="rounded-card bg-surface p-6">
-            <h2 className="text-lg">Skills</h2>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {profile.skills.length ? (
-                profile.skills.map((skill) => (
-                  <Link
-                    key={skill}
-                    to={`/talent?skill=${encodeURIComponent(skill)}`}
-                    className="rounded-full"
-                  >
-                    <Chip className="transition-colors hover:bg-line">
-                      {skill}
-                    </Chip>
-                  </Link>
-                ))
+        >
+          {showAbout && (
+            <Block
+              title="About"
+              className="sm:p-8"
+              edit={
+                isMe &&
+                profile.bio && (
+                  <EditButton
+                    label="Edit your bio"
+                    onClick={() => edit("about")}
+                  />
+                )
+              }
+            >
+              {profile.bio ? (
+                <p className="prose-plain">{profile.bio}</p>
               ) : (
-                <p className="text-ink-soft">None listed yet.</p>
+                <AddPrompt
+                  label="Write a short bio"
+                  why="Two sentences on what you've made and what you're looking for."
+                  onClick={() => edit("about")}
+                />
               )}
-            </div>
-            {profile.open_to.length > 0 && (
-              <>
-                <h2 className="mt-5 text-lg">Open to</h2>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {profile.open_to.map((option) => (
-                    <Chip key={option} tone="primary">
-                      {option}
-                    </Chip>
-                  ))}
-                </div>
-              </>
-            )}
-          </section>
-        </aside>
-      </div>
+            </Block>
+          )}
+          {showSide && (
+            <aside
+              className={
+                showAbout
+                  ? "flex flex-col gap-6"
+                  : "grid items-start gap-6 sm:grid-cols-2"
+              }
+            >
+              {showOpenTo && (
+                <Block
+                  title="Open to"
+                  edit={
+                    isMe &&
+                    profile.open_to.length > 0 && (
+                      <EditButton
+                        label="Edit what you're open to"
+                        onClick={() => edit("looking")}
+                      />
+                    )
+                  }
+                >
+                  {profile.open_to.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.open_to.map((option) => (
+                        <Chip key={option} tone="primary">
+                          {option}
+                        </Chip>
+                      ))}
+                    </div>
+                  ) : (
+                    <AddPrompt
+                      label="Say what you're open to"
+                      why="So the right invitations reach you."
+                      onClick={() => edit("looking")}
+                    />
+                  )}
+                </Block>
+              )}
+              {showSkills && (
+                <Block
+                  title="Skills"
+                  edit={
+                    isMe &&
+                    profile.skills.length > 0 && (
+                      <EditButton
+                        label="Edit your skills"
+                        onClick={() => edit("skills")}
+                      />
+                    )
+                  }
+                >
+                  {profile.skills.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.skills.map((skill) => (
+                        <Link
+                          key={skill}
+                          to={`/talent?skill=${encodeURIComponent(skill)}`}
+                          className="rounded-full"
+                        >
+                          <Chip className="transition-colors hover:bg-line">
+                            {skill}
+                          </Chip>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <AddPrompt
+                      label="List your skills"
+                      why="Teams filter people by skill."
+                      onClick={() => edit("skills")}
+                    />
+                  )}
+                </Block>
+              )}
+            </aside>
+          )}
+        </div>
+      )}
 
       <Section title={pinned.length ? "More projects" : "Projects"}>
         {projects.isPending ? (
@@ -609,7 +831,12 @@ export default function Profile() {
             title="No projects yet"
             action={
               isMe ? (
-                <ButtonLink to="/projects/new">Start a project</ButtonLink>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <ButtonLink to="/projects/new">Start a project</ButtonLink>
+                  <ButtonLink to="/explore?open=1" variant="outline">
+                    Find one to join
+                  </ButtonLink>
+                </div>
               ) : undefined
             }
           >
@@ -649,6 +876,9 @@ export default function Profile() {
           open={dialog === "invite"}
           onOpenChange={(open) => setDialog(open ? "invite" : null)}
         />
+      )}
+      {isMe && me && (
+        <ProfileEditor me={me} section={editing} onClose={stopEditing} />
       )}
       <ShareDialog
         user={profile}

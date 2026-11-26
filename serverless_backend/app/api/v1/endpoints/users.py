@@ -8,6 +8,7 @@ from app.models.project import (
     ApplicationPublic,
     ContributionRecord,
     InvitationPublic,
+    ProjectMatch,
     ProjectMembership,
 )
 from app.models.user import UserPrivate, UserPublic, UserSummary, UserUpdate
@@ -51,6 +52,12 @@ def my_applications(user: Principal = Depends(get_current_user)):
 def my_invitations(user: Principal = Depends(get_current_user)):
     """Invitations waiting for an answer."""
     return invitations.list_mine(user)
+
+
+@router.get("/users/me/matches", response_model=list[ProjectMatch])
+def my_matches(limit: int = Query(6, ge=1, le=24), user: Principal = Depends(get_current_user)):
+    """Open projects asking for a skill on the caller's profile."""
+    return projects.matches_for(user, limit)
 
 
 @router.get("/users/{user_id}", response_model=UserPublic)

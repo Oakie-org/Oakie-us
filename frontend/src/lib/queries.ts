@@ -30,6 +30,7 @@ import type {
   ProjectDetail,
   ProjectFacets,
   ProjectInput,
+  ProjectMatch,
   ProjectMembership,
   ProjectRole,
   SearchSuggestions,
@@ -59,6 +60,7 @@ export const keys = {
   followers: (id: string, kind: string) => ["users", id, kind] as const,
   followed: ["projects", "followed"] as const,
   myApplications: ["me", "applications"] as const,
+  myMatches: ["me", "matches"] as const,
   talent: (filters: object) => ["talent", filters] as const,
   user: (id: string) => ["users", id] as const,
   userProjects: (id: string) => ["users", id, "projects"] as const,
@@ -154,17 +156,28 @@ function invalidateProject(client: QueryClient, id: string) {
   ]);
 }
 
-export function useSaveProject(id?: string) {
+export function useSaveProject() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (input: ProjectInput) =>
-      id
-        ? api.patch<Project>(`/projects/${id}`, input)
-        : api.post<Project>("/projects", input),
+    mutationFn: (input: ProjectInput) => api.post<Project>("/projects", input),
     onSuccess: (project) => {
       client.invalidateQueries({ queryKey: ["users"] });
       client.invalidateQueries({ queryKey: keys.stats });
       return invalidateProject(client, project.id);
+    },
+  });
+}
+
+/** Change some of a project's fields; anything left out is untouched. */
+export function useUpdateProject(id: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (fields: Partial<ProjectInput>) =>
+      api.patch<Project>(`/projects/${id}`, fields),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["users"] });
+      client.invalidateQueries({ queryKey: keys.myMatches });
+      return invalidateProject(client, id);
     },
   });
 }
@@ -449,8 +462,18 @@ export function useUpdateMe() {
     onSuccess: (me) => {
       client.setQueryData(keys.me, me);
       client.invalidateQueries({ queryKey: ["talent"] });
+      client.invalidateQueries({ queryKey: keys.myMatches });
       return client.invalidateQueries({ queryKey: keys.user(me.id) });
     },
+  });
+}
+
+/** Open projects asking for a skill on the member's profile. */
+export function useMatches(enabled: boolean, limit = 6) {
+  return useQuery({
+    queryKey: [...keys.myMatches, limit],
+    queryFn: () => api.get<ProjectMatch[]>("/users/me/matches", { limit }),
+    enabled,
   });
 }
 

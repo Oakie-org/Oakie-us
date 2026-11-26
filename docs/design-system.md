@@ -131,5 +131,28 @@ needs and whether there is a seat without reading a paragraph or decoding a colo
   "Step N of 5" count, autosave to `localStorage` and smart defaults from the
   profile. Only the name and the description are required; optional steps can be
   skipped. Publishing lands on the project with three next steps (invite, post, share).
+- **A new member** is asked three things on three short screens (`/welcome`):
+  what they are open to, what they can do, and a face, a line and a city.
+  Answers are taps wherever a tap can say it; each screen is saved as it is
+  left and can be skipped; a live card shows how teams will see them; the last
+  screen is the projects their answers lead to. Sign-up itself asks only for a
+  name, an email and a password.
+- **Things are edited where they are read.** There is no settings form and no
+  edit page. On their own profile a member, and on their project its owner and
+  admins, see a pencil on each part and a dashed prompt where an empty part
+  would go; each opens a small sheet with only that part's fields and saves on
+  its own. The open sheet is in the URL (`?edit=<part>`), so Back closes it and
+  a nudge can link straight to it. A sheet holding unsaved changes ignores a
+  stray click outside it. Visitors never see an empty part. Creating is the
+  one place a multi-step flow is used; changing something later never repeats it.
+- **A profile photo** is picked, framed in a circle and saved in one sheet; it
+  does not wait for another Save button.
+- **Ask when the answer pays off.** A profile question is asked where its
+  answer is used: skills are asked again in the application form if they are
+  still empty, and the team reading that application sees the applicant's
+  skills against the ones its roles named. A field nothing reads is not asked.
+- **Choices over typing.** What members will be compared on (open to,
+  availability, skills) comes from fixed lists; free text is for what is
+  theirs alone (name, headline, bio).
 - **Profiles** carry a strength meter that names the single next step, and can be
   shared as a link or embedded as a card (`/embed/u/<id>`).

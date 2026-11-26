@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
+import { Eye, ImagePlus, MapPin } from "lucide-react";
 
+import type { ProjectPart } from "@/lib/project";
 import { useMembers } from "@/lib/queries";
 import type { ProjectDetail } from "@/lib/types";
 import { formatDate, pluralize } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Chip } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AddPrompt, EditButton } from "@/components/ui/edit";
 import { placeLabel, seatsLabel } from "@/components/cards";
 
 const SEATS_SHOWN = 8;
@@ -41,12 +44,21 @@ function Seats({ project }: { project: ProjectDetail }) {
   );
 }
 
+const VISIBLE_TO = {
+  public: "Public",
+  members_only: "Team-only updates",
+  private: "Private",
+} as const;
+
 export function OverviewTab({
   project,
   onApply,
+  onEdit,
 }: {
   project: ProjectDetail;
   onApply: (role: string) => void;
+  /** Given to the people who manage the project: each part gets a pencil. */
+  onEdit?: (part: ProjectPart) => void;
 }) {
   const seats = seatsLabel(project);
   const canApply =
@@ -70,24 +82,61 @@ export function OverviewTab({
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
       <div className="flex min-w-0 flex-col gap-6">
-        {project.image_url && (
-          <a
-            href={project.image_url}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Open the picture at full size"
-            className="block overflow-hidden rounded-card bg-sunken"
-          >
-            <img
-              src={project.image_url}
-              alt=""
-              className="max-h-[34rem] w-full object-contain"
+        {project.image_url ? (
+          <div className="relative">
+            <a
+              href={project.image_url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open the picture at full size"
+              className="block overflow-hidden rounded-card bg-sunken"
+            >
+              <img
+                src={project.image_url}
+                alt=""
+                className="max-h-[34rem] w-full object-contain"
+              />
+            </a>
+            {onEdit && (
+              <Button
+                variant="ink"
+                size="icon"
+                className="absolute right-3 top-3"
+                aria-label="Change the picture"
+                title="Change the picture"
+                onClick={() => onEdit("picture")}
+              >
+                <ImagePlus aria-hidden />
+              </Button>
+            )}
+          </div>
+        ) : (
+          onEdit && (
+            <AddPrompt
+              label="Add a picture"
+              why="A screenshot, a photo, a sketch. Optional: without one the card shows more of your words."
+              onClick={() => onEdit("picture")}
             />
-          </a>
+          )
         )}
 
-        <section className="rounded-card bg-surface p-6 sm:p-8">
-          <p className="prose-plain text-[1.0625rem]">{project.description}</p>
+        <section className="relative rounded-card bg-surface p-6 sm:p-8">
+          {onEdit && (
+            <EditButton
+              label="Edit the story"
+              onClick={() => onEdit("story")}
+              className="absolute right-3 top-3 m-0"
+            />
+          )}
+          <p
+            className={
+              onEdit
+                ? "prose-plain pr-8 text-[1.0625rem]"
+                : "prose-plain text-[1.0625rem]"
+            }
+          >
+            {project.description}
+          </p>
           {project.tags.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-1.5">
               {project.tags.map((tag) => (
@@ -105,12 +154,20 @@ export function OverviewTab({
 
         {recruiting && (
           <section className="rounded-card bg-surface px-6 pt-6 pb-2 sm:px-8">
-            <h2 className="text-xl">
-              Looking for{" "}
-              <span className="font-sans text-base font-normal text-ink-soft">
-                {pluralize(project.open_roles.length, "role")}
-              </span>
-            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl">
+                Looking for{" "}
+                <span className="font-sans text-base font-normal text-ink-soft">
+                  {pluralize(project.open_roles.length, "role")}
+                </span>
+              </h2>
+              {onEdit && (
+                <EditButton
+                  label="Edit roles and team size"
+                  onClick={() => onEdit("roles")}
+                />
+              )}
+            </div>
             <ul className="mt-2 divide-y divide-line">
               {project.open_roles.map((role) => (
                 <li
@@ -140,6 +197,13 @@ export function OverviewTab({
             </ul>
           </section>
         )}
+        {onEdit && !recruiting && project.status !== "Completed" && (
+          <AddPrompt
+            label="Name the roles you need"
+            why="Teams that name roles get far better applications."
+            onClick={() => onEdit("roles")}
+          />
+        )}
       </div>
 
       <aside className="rounded-card bg-surface p-6 lg:sticky lg:top-24">
@@ -167,6 +231,29 @@ export function OverviewTab({
             </div>
           ))}
         </dl>
+        {onEdit && (
+          <div className="mt-4 flex flex-col gap-1 border-t border-line pt-3">
+            <button
+              type="button"
+              onClick={() => onEdit("place")}
+              className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-left text-[0.9375rem] font-medium transition-colors hover:bg-sunken"
+            >
+              <MapPin className="size-4 text-ink-soft" aria-hidden />
+              Edit where it happens
+            </button>
+            <button
+              type="button"
+              onClick={() => onEdit("visibility")}
+              className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-left text-[0.9375rem] font-medium transition-colors hover:bg-sunken"
+            >
+              <Eye className="size-4 text-ink-soft" aria-hidden />
+              <span className="flex-1">Who can see it</span>
+              <span className="font-normal text-ink-soft">
+                {VISIBLE_TO[project.visibility]}
+              </span>
+            </button>
+          </div>
+        )}
       </aside>
     </div>
   );

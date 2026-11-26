@@ -9,6 +9,25 @@ Accent = Literal[
 ]
 
 
+# How much time a member can give a team. A fixed scale, so two people's answers
+# can be compared and a list can be scanned; "" means they have not said.
+AVAILABILITY = (
+    "A few hrs / week",
+    "5-10 hrs / week",
+    "10-20 hrs / week",
+    "Full-time",
+    "Not available right now",
+)
+Availability = Literal[
+    "",
+    "A few hrs / week",
+    "5-10 hrs / week",
+    "10-20 hrs / week",
+    "Full-time",
+    "Not available right now",
+]
+
+
 class ProfileLink(BaseModel):
     """A link the member chose to show: portfolio, GitHub, a resume, a reel."""
 
@@ -59,7 +78,7 @@ class UserUpdate(BaseModel):
     links: list[ProfileLink] | None = Field(default=None, max_length=6)
     accent: Accent | None = None
     pinned_project_ids: list[str] | None = Field(default=None, max_length=3)
-    availability: ShortText | None = None
+    availability: Availability | None = None
 
 
 class UserSummary(BaseModel):

@@ -177,6 +177,11 @@ export interface ProjectDetail extends Project {
   viewer: ProjectViewer;
 }
 
+/** An open project that asks for something the viewer can do. */
+export interface ProjectMatch extends Project {
+  matched_skills: string[];
+}
+
 export interface ProjectMembership extends Project {
   role: ProjectRole;
   member_title: string;
@@ -297,6 +302,7 @@ export interface Catalog {
   skills: string[];
   statuses: ProjectStatus[];
   open_to: string[];
+  availability: string[];
 }
 
 export interface StatsOverview {

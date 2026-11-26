@@ -73,6 +73,19 @@ never disagree. Facet counts apply every active filter except the facet's own,
 which keeps alternatives to the current choice visible. Facets read the whole
 listing partition; that is the first thing to move to a search service.
 
+`GET /users/me/matches` is the same listing read against the caller's profile:
+open projects whose roles name one of their skills, best overlap first. It is
+what makes listing skills worth a member's time, and like the facets it reads
+the whole listing partition.
+
+Every picture the API stores must be the caller's own upload. A profile's
+`avatar_url` and `banner_url`, a project's `image_url` and an update's
+`media_urls` are accepted only under that member's prefix for that purpose in
+the uploads bucket (`services/platform.require_own_upload`), so nothing a
+visitor's browser loads can point at someone else's server. A picture already
+saved is not checked again when other fields change. Demo pictures are static
+files, so the seed attaches them through the repository, below this rule.
+
 Search is a filter over `GSI1` against a denormalised lowercase `search_text`
 attribute. `Table.query_page` keeps reading until a page is full and derives the
 cursor from the last item returned, so filtered pagination never skips or repeats.

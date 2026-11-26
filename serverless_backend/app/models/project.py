@@ -112,6 +112,13 @@ class ProjectListed(ProjectPublic):
     owner: UserSummary | None = None
 
 
+class ProjectMatch(ProjectListed):
+    """An open project that wants something the viewer can do."""
+
+    # The viewer's skills this project's open roles ask for, in the viewer's spelling.
+    matched_skills: list[str] = Field(default_factory=list)
+
+
 class ProjectDetail(ProjectListed):
     viewer: ProjectViewer = Field(default_factory=ProjectViewer)
 

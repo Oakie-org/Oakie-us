@@ -42,3 +42,16 @@ export function useDebouncedParam(key: string, delay = 300) {
 
   return [draft, setDraft] as const;
 }
+
+/**
+ * The draft behind one edit sheet. The first change calls `touch`, so the
+ * sheet knows it is holding work a stray click should not throw away.
+ */
+export function useDraft<T>(initial: T, touch: () => void) {
+  const [draft, setDraft] = useState(initial);
+  const set = <K extends keyof T>(key: K, value: T[K]) => {
+    touch();
+    setDraft((current) => ({ ...current, [key]: value }));
+  };
+  return [draft, set] as const;
+}

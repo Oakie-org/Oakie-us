@@ -1,8 +1,13 @@
 import { api, ApiError } from "@/lib/api";
 import type { SignedUpload, UploadPurpose } from "@/lib/types";
 
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-export const ACCEPT_ATTRIBUTE = ACCEPTED.join(",");
+export const ACCEPTED_IMAGES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
+export const ACCEPT_ATTRIBUTE = ACCEPTED_IMAGES.join(",");
 
 /**
  * Upload an image straight from the browser to storage and return its public
@@ -12,7 +17,7 @@ export async function uploadImage(
   file: File,
   purpose: UploadPurpose,
 ): Promise<string> {
-  if (!ACCEPTED.includes(file.type)) {
+  if (!ACCEPTED_IMAGES.includes(file.type)) {
     throw new ApiError(400, "Choose a JPEG, PNG, WebP or GIF image.");
   }
 

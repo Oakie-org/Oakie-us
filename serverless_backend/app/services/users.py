@@ -8,7 +8,7 @@ from app.models.common import CursorPage
 from app.models.user import UserPrivate, UserPublic, UserSummary, UserUpdate
 from app.repositories import projects as projects_repo
 from app.repositories import users as users_repo
-from app.services import notifications
+from app.services import notifications, platform
 
 _SCHOOL_SUFFIXES = (
     ".edu",
@@ -79,10 +79,15 @@ def get_me(principal: Principal) -> UserPrivate:
 def update_me(principal: Principal, payload: UserUpdate) -> UserPrivate:
     profile = ensure_profile(principal)
     fields = payload.model_dump(exclude_unset=True, exclude_none=True, mode="json")
-    # Images are the one thing a member can clear by sending null.
-    for image in ("avatar_url", "banner_url"):
-        if image in payload.model_fields_set:
-            fields[image] = getattr(payload, image)
+    # Images are the one thing a member can clear by sending null. A new one
+    # must be the member's own upload, never an address on someone else's server.
+    for image, purpose in (("avatar_url", "user_avatar"), ("banner_url", "user_banner")):
+        if image not in payload.model_fields_set:
+            continue
+        url = getattr(payload, image)
+        if url and url != profile.get(image):
+            platform.require_own_upload(principal.sub, url, purpose)
+        fields[image] = url
     if "pinned_project_ids" in fields:
         mine = {m["project_id"] for m in projects_repo.memberships_of(principal.sub)}
         fields["pinned_project_ids"] = [

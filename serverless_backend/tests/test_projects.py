@@ -133,3 +133,44 @@ def test_featured_projects_are_listed_first(ada, anon, project):
     repo.update(repo.get(project["id"]), {"priority": 10})
     titles = [p["title"] for p in anon.get(f"{API}/projects").json()["items"]]
     assert titles == ["Campus Quant Lab", newer["title"]]
+
+
+def test_project_and_update_pictures_must_be_own_uploads(ada, ben, project):
+    def signed(member, purpose: str) -> str:
+        body = {"file_type": "image/png", "purpose": purpose}
+        return member.post(f"{API}/uploads/sign", json=body).json()["public_url"]
+
+    url = f"{API}/projects/{project['id']}"
+    cover = signed(ada, "project_cover")
+    assert ada.patch(url, json={"image_url": cover}).json()["image_url"] == cover
+    # Other edits keep the picture without it being checked again.
+    assert ada.patch(url, json={"image_url": cover, "city": "Oslo"}).status_code == 200
+    for foreign in (
+        "https://tracker.example.com/pixel.png",
+        signed(ben, "project_cover"),
+        signed(ada, "user_avatar"),
+    ):
+        assert ada.patch(url, json={"image_url": foreign}).status_code == 400, foreign
+        created = ada.post(f"{API}/projects", json={**PROJECT, "image_url": foreign})
+        assert created.status_code == 400, foreign
+    assert ada.get(url).json()["image_url"] == cover
+    assert ada.patch(url, json={"image_url": None}).json()["image_url"] is None
+    with_picture = ada.post(
+        f"{API}/projects", json={**PROJECT, "image_url": signed(ada, "project_cover")}
+    )
+    assert with_picture.status_code == 201
+
+    posts = f"{url}/timeline"
+    media = signed(ada, "timeline_media")
+    body = {"title": "Pilot", "content": "We shipped."}
+    refused = ada.post(posts, json={**body, "media_urls": ["https://example.com/a.png"]})
+    assert refused.status_code == 400
+    post = ada.post(posts, json={**body, "media_urls": [media]})
+    assert post.status_code == 201 and post.json()["media_urls"] == [media]
+    edit = f"{posts}/{post.json()['id']}"
+    assert ada.patch(edit, json={"media_urls": [media, cover]}).status_code == 400
+    more = signed(ada, "timeline_media")
+    assert ada.patch(edit, json={"media_urls": [media, more]}).json()["media_urls"] == [
+        media,
+        more,
+    ]

@@ -10,10 +10,15 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/auth/AuthProvider";
-import { profileStrength } from "@/lib/profile";
+import {
+  isBlankProfile,
+  nextProfileLink,
+  profileStrength,
+} from "@/lib/profile";
 import {
   useAnswerInvitation,
   useFollowedProjects,
+  useMatches,
   useMyApplications,
   useMyInvitations,
   useProjects,
@@ -150,6 +155,7 @@ export default function Dashboard() {
   const followed = useFollowedProjects(Boolean(me));
   const fresh = useProjects({ open_only: true }, 6);
   const invitations = useMyInvitations(Boolean(me));
+  const matches = useMatches(Boolean(me?.skills.length), 3);
   const [previewing, setPreviewing] = useState<string | null>(null);
 
   if (!me) return <Skeleton className="h-40 rounded-card" />;
@@ -158,8 +164,10 @@ export default function Dashboard() {
   const suggestions = (fresh.data?.pages[0]?.items ?? [])
     .filter((project) => !myIds.has(project.id))
     .slice(0, 3);
+  const matched = matches.data ?? [];
   const strength = profileStrength(me);
   const profileThin = strength.percent < 60;
+  const blank = isBlankProfile(me);
   const firstName = me.name.split(" ")[0];
 
   return (
@@ -177,18 +185,20 @@ export default function Dashboard() {
             <Sparkles className="mt-0.5 size-6 shrink-0" aria-hidden />
             <div>
               <p className="font-display text-lg font-semibold">
-                Your profile is {strength.percent}% there
+                {blank
+                  ? "Tell teams who you are"
+                  : `Your profile is ${strength.percent}% there`}
               </p>
               <p className="text-block-ink/80">
-                Next: {strength.next?.label.toLowerCase()}. {strength.next?.why}
+                {blank
+                  ? "Three quick questions, about a minute. Then we'll show you the projects that need you."
+                  : `Next: ${strength.next?.label.toLowerCase()}. ${strength
+                      .next?.why}`}
               </p>
             </div>
           </div>
-          <ButtonLink
-            to={`/settings#${strength.next?.key ?? ""}`}
-            variant="ink"
-          >
-            Continue
+          <ButtonLink to={nextProfileLink(me) ?? `/u/${me.id}`} variant="ink">
+            {blank ? "Get started" : "Continue"}
           </ButtonLink>
         </div>
       )}
@@ -248,7 +258,7 @@ export default function Dashboard() {
 
       {Boolean(applications.data?.length) && (
         <Section title="Your applications">
-          <ul className="grid gap-3 lg:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {applications.data!.map((application) => (
               <ApplicationRow
                 key={application.project_id}
@@ -265,24 +275,48 @@ export default function Dashboard() {
         </Section>
       )}
 
-      <Section
-        title="Teams with open seats"
-        action={
-          <ButtonLink to="/explore?open=1" variant="ghost" size="sm">
-            See all <ArrowRight aria-hidden />
-          </ButtonLink>
-        }
-      >
-        {fresh.isPending ? (
-          <ProjectFeedSkeleton count={3} />
-        ) : suggestions.length === 0 ? (
-          <EmptyState icon={Hourglass} title="No open teams right now">
-            Check back soon, or start one yourself.
-          </EmptyState>
-        ) : (
-          <ProjectFeed projects={suggestions} onPreview={setPreviewing} />
-        )}
-      </Section>
+      {matched.length > 0 ? (
+        <Section
+          title="Teams looking for your skills"
+          action={
+            <ButtonLink to="/explore?open=1" variant="ghost" size="sm">
+              See all open teams <ArrowRight aria-hidden />
+            </ButtonLink>
+          }
+        >
+          <ProjectFeed
+            projects={matched}
+            onPreview={setPreviewing}
+            footer={(project) => (
+              <p className="text-[0.8125rem] text-ink-soft">
+                Wants your{" "}
+                <span className="font-semibold text-ink">
+                  {project.matched_skills.join(", ")}
+                </span>
+              </p>
+            )}
+          />
+        </Section>
+      ) : (
+        <Section
+          title="Teams with open seats"
+          action={
+            <ButtonLink to="/explore?open=1" variant="ghost" size="sm">
+              See all <ArrowRight aria-hidden />
+            </ButtonLink>
+          }
+        >
+          {fresh.isPending ? (
+            <ProjectFeedSkeleton count={3} />
+          ) : suggestions.length === 0 ? (
+            <EmptyState icon={Hourglass} title="No open teams right now">
+              Check back soon, or start one yourself.
+            </EmptyState>
+          ) : (
+            <ProjectFeed projects={suggestions} onPreview={setPreviewing} />
+          )}
+        </Section>
+      )}
       <ProjectPreview id={previewing} onClose={() => setPreviewing(null)} />
     </>
   );

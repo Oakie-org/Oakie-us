@@ -88,6 +88,7 @@ class Catalog(BaseModel):
     skills: list[str]
     statuses: list[str]
     open_to: list[str]
+    availability: list[str]
 
 
 class SignRequest(BaseModel):

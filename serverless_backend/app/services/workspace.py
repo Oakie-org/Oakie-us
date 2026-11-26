@@ -18,7 +18,7 @@ from app.models.project import (
 from app.models.user import UserSummary
 from app.repositories import projects as repo
 from app.repositories import users as users_repo
-from app.services import notifications, projects, users
+from app.services import notifications, platform, projects, users
 
 # --------------------------------------------------------------- timeline
 
@@ -44,6 +44,8 @@ def create_post(
 ) -> TimelinePostPublic:
     access = projects.load(project_id, principal)
     access.require_member()
+    for url in payload.media_urls:
+        platform.require_own_upload(principal.sub, url, "timeline_media")
     now = now_iso()
     post = {
         **payload.model_dump(mode="json"),
@@ -84,6 +86,9 @@ def update_post(
 ) -> TimelinePostPublic:
     post = _editable_post(project_id, post_id, principal)
     fields = payload.model_dump(mode="json", exclude_unset=True, exclude_none=True)
+    for url in fields.get("media_urls", []):
+        if url not in (post.get("media_urls") or []):
+            platform.require_own_upload(principal.sub, url, "timeline_media")
     if fields:
         fields["updated_at"] = now_iso()
         post = repo.update_post(project_id, post_id, fields) or post

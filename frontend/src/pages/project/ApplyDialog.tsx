@@ -1,12 +1,15 @@
 import { useState } from "react";
 
-import { useApply } from "@/lib/queries";
+import { useAuth } from "@/auth/AuthProvider";
+import { useApply, useUpdateMe } from "@/lib/queries";
 import type { ProjectDetail } from "@/lib/types";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/feedback";
 import { Field, Select, Textarea } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
 import { useToast } from "@/components/ui/toast";
+import { SkillPicker } from "@/components/profile/fields";
 
 interface ApplyDialogProps {
   project: ProjectDetail;
@@ -25,10 +28,29 @@ function ApplyForm({
   onClose: () => void;
 }) {
   const apply = useApply(project.id);
+  const update = useUpdateMe();
   const toast = useToast();
-  const [roleTitle, setRoleTitle] = useState(role);
+  const { me } = useAuth();
+  // Arriving without a role in mind, start on the one their skills fit.
+  const [roleTitle, setRoleTitle] = useState(
+    () =>
+      role ||
+      (project.open_roles.find((open) =>
+        open.skills.some(
+          (skill) =>
+            me?.skills.some(
+              (mine) => mine.toLowerCase() === skill.toLowerCase(),
+            ),
+        ),
+      )?.title ??
+        ""),
+  );
   const [message, setMessage] = useState("");
   const [touched, setTouched] = useState(false);
+  // The team reads the profile next to the message. If it says nothing about
+  // what the applicant can do, this is the moment that question earns its answer.
+  const [askSkills] = useState(() => me?.skills.length === 0);
+  const [skills, setSkills] = useState<string[]>([]);
   const messageError = message.trim()
     ? undefined
     : "Tell the team a little about what you'd bring.";
@@ -41,17 +63,49 @@ function ApplyForm({
         event.preventDefault();
         setTouched(true);
         if (messageError) return;
-        apply.mutate(
-          { message: message.trim(), role_title: roleTitle },
-          {
-            onSuccess: () => {
-              toast.success("Application sent. The team will be notified.");
-              onClose();
+        const send = () =>
+          apply.mutate(
+            { message: message.trim(), role_title: roleTitle },
+            {
+              onSuccess: () => {
+                toast.success("Application sent. The team will be notified.");
+                onClose();
+              },
             },
-          },
-        );
+          );
+        if (askSkills && skills.length > 0 && me?.skills.length === 0)
+          update.mutate({ skills }, { onSuccess: send });
+        else send();
       }}
     >
+      {me && (
+        <div className="rounded-2xl bg-sunken p-3.5">
+          <p className="text-[0.8125rem] text-ink-soft">
+            The team sees this next to your message
+          </p>
+          <div className="mt-2 flex items-center gap-3">
+            <Avatar user={me} />
+            <div className="min-w-0">
+              <p className="truncate font-display font-semibold">{me.name}</p>
+              <p className="truncate text-sm text-ink-soft">
+                {[me.headline, me.skills.slice(0, 4).join(" \u00b7 ")]
+                  .filter(Boolean)
+                  .join(" \u2014 ") || "No headline or skills yet"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {askSkills && (
+        <Field
+          label="Your skills"
+          hint="Optional. Saved to your profile, so you only do this once."
+        >
+          {(control) => (
+            <SkillPicker {...control} value={skills} onChange={setSkills} />
+          )}
+        </Field>
+      )}
       {project.open_roles.length > 0 && (
         <Field label="Role">
           {(control) => (
@@ -86,8 +140,12 @@ function ApplyForm({
           />
         )}
       </Field>
-      <FormError error={apply.error} />
-      <Button type="submit" size="lg" loading={apply.isPending}>
+      <FormError error={update.error ?? apply.error} />
+      <Button
+        type="submit"
+        size="lg"
+        loading={update.isPending || apply.isPending}
+      >
         Send application
       </Button>
     </form>

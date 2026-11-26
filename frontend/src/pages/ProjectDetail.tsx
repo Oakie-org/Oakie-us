@@ -23,6 +23,7 @@ import {
 
 import { useAuth } from "@/auth/AuthProvider";
 import { ApiError } from "@/lib/api";
+import { isProjectPart, type ProjectPart } from "@/lib/project";
 import {
   useAnswerInvitation,
   useProject,
@@ -41,6 +42,7 @@ import { useTitle } from "@/components/page";
 import NotFound from "@/pages/NotFound";
 import { ApplicationsTab } from "@/pages/project/ApplicationsTab";
 import { ApplyDialog } from "@/pages/project/ApplyDialog";
+import { ProjectEditor } from "@/pages/project/editors";
 import { InviteDialog } from "@/pages/project/InviteDialog";
 import { BoardTab } from "@/pages/project/BoardTab";
 import { OverviewTab } from "@/pages/project/OverviewTab";
@@ -269,6 +271,27 @@ export default function ProjectDetail() {
     }
   }
 
+  // Which part is being edited lives in the URL, so Back closes the sheet.
+  // Only the people who manage the project can open one.
+  const requestedPart = params.get("edit");
+  const editing =
+    canManage && isProjectPart(requestedPart) ? requestedPart : null;
+  const edit = (part: ProjectPart) =>
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("edit", part);
+      return next;
+    });
+  const stopEditing = () =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("edit");
+        return next;
+      },
+      { replace: true },
+    );
+
   const dismissCreated = () =>
     setParams(
       (current) => {
@@ -388,14 +411,15 @@ export default function ProjectDetail() {
             <Share2 aria-hidden />
           </Button>
           {canManage && (
-            <ButtonLink
-              to={`/projects/${project.id}/edit`}
+            <Button
               variant="outline"
               size="icon"
-              aria-label="Edit project"
+              aria-label="Edit name and stage"
+              title="Edit name and stage"
+              onClick={() => edit("basics")}
             >
               <Pencil aria-hidden />
-            </ButtonLink>
+            </Button>
           )}
         </div>
       </header>
@@ -431,10 +455,13 @@ export default function ProjectDetail() {
           <OverviewTab
             project={project}
             onApply={(role) => requireSignIn(() => setApplyRole(role))}
+            onEdit={canManage ? edit : undefined}
           />
         )}
         {tab === "updates" && <UpdatesTab project={project} />}
-        {tab === "team" && <TeamTab project={project} />}
+        {tab === "team" && (
+          <TeamTab project={project} onEditSeats={() => edit("roles")} />
+        )}
         {tab === "board" && <BoardTab project={project} />}
         {tab === "applications" && <ApplicationsTab project={project} />}
       </div>
@@ -444,6 +471,9 @@ export default function ProjectDetail() {
         role={applyRole}
         onClose={() => setApplyRole(null)}
       />
+      {canManage && (
+        <ProjectEditor project={project} part={editing} onClose={stopEditing} />
+      )}
       {canManage && (
         <InviteDialog
           project={project}

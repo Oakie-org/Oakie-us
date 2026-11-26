@@ -165,7 +165,7 @@ def test_profile_design_fields(ada, ben, project):
         f"{API}/users/me",
         json={
             "accent": "coral",
-            "availability": "5 hrs / week",
+            "availability": "5-10 hrs / week",
             "links": [{"label": "GitHub", "url": "https://github.com/ada"}],
             # Only projects the member is actually on can be pinned.
             "pinned_project_ids": [project["id"], "not-mine", project["id"]],
@@ -173,7 +173,7 @@ def test_profile_design_fields(ada, ben, project):
     )
     assert saved.status_code == 200, saved.text
     profile = saved.json()
-    assert profile["accent"] == "coral" and profile["availability"] == "5 hrs / week"
+    assert profile["accent"] == "coral" and profile["availability"] == "5-10 hrs / week"
     assert profile["links"] == [{"label": "GitHub", "url": "https://github.com/ada"}]
     assert profile["pinned_project_ids"] == [project["id"]]
 

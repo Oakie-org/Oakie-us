@@ -33,8 +33,16 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  // Set before the session exists: the moment it does, this screen redirects,
+  // and a new member goes to the guided start rather than straight back.
+  const [joining, setJoining] = useState(false);
 
-  if (auth.status === "signedIn") return <Navigate to={returnTo} replace />;
+  if (auth.status === "signedIn")
+    return joining ? (
+      <Navigate to="/welcome" replace state={{ from: returnTo }} />
+    ) : (
+      <Navigate to={returnTo} replace />
+    );
 
   const errors = {
     name: isRegister && !name.trim() ? "Tell us what to call you." : "",
@@ -61,6 +69,7 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
     try {
       await action();
     } catch (problem) {
+      setJoining(false);
       setError(problem);
     } finally {
       setBusy(false);
@@ -77,13 +86,13 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
         navigate(returnTo, { replace: true });
         return;
       }
+      setJoining(true);
       const { needsConfirmation } = await auth.signUp(
         email,
         password,
         name.trim(),
       );
       if (needsConfirmation) setStep("confirm");
-      else navigate("/settings?welcome=1", { replace: true });
     });
   }
 
@@ -91,8 +100,8 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
     event.preventDefault();
     void run(async () => {
       await auth.confirmSignUp(email, code.trim());
+      setJoining(true);
       await auth.signIn(email, password);
-      navigate("/settings?welcome=1", { replace: true });
     });
   }
 

@@ -167,7 +167,7 @@ def run() -> None:
     users.update_me(
         people["maya"],
         UserUpdate(
-            availability="8-10 hrs / week",
+            availability="5-10 hrs / week",
             accent="coral",
             links=[
                 ProfileLink(label="Portfolio", url="https://example.com/maya"),
@@ -176,10 +176,24 @@ def run() -> None:
         ),
     )
 
+    for handle, availability in [
+        ("leo", "10-20 hrs / week"),
+        ("omar", "A few hrs / week"),
+        ("sofia", "5-10 hrs / week"),
+        ("grace", "Full-time"),
+    ]:
+        users.update_me(people[handle], UserUpdate(availability=availability))
+
     created: dict[str, str] = {}
     for owner, fields in PROJECTS:
-        project = projects.create(people[owner], ProjectCreate(**fields))
-        created[fields["title"]] = project.id
+        # Seed pictures are static files, not uploads, so they are attached
+        # below the service, which only accepts a member's own upload.
+        picture = fields.get("image_url")
+        published = projects.create(people[owner], ProjectCreate(**{**fields, "image_url": None}))
+        created[fields["title"]] = published.id
+        project = projects_repo.get(published.id)
+        if picture and project:
+            projects_repo.update(project, {"image_url": picture})
 
     # Spread the posts over the last few weeks, so the feed has a sense of time.
     for (_, fields), hours in zip(PROJECTS, POSTED_HOURS_AGO, strict=True):

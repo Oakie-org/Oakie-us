@@ -36,7 +36,18 @@ export function InviteForm({
 }) {
   const invite = useInvite(project.id);
   const toast = useToast();
-  const [role, setRole] = useState(project.open_roles[0]?.title ?? "");
+  // Start on the seat this person's skills fit; with no fit, on none.
+  const [role, setRole] = useState(
+    () =>
+      project.open_roles.find((open) =>
+        open.skills.some(
+          (skill) =>
+            person.skills?.some(
+              (theirs) => theirs.toLowerCase() === skill.toLowerCase(),
+            ),
+        ),
+      )?.title ?? "",
+  );
   const [message, setMessage] = useState("");
   const first = person.name.split(" ")[0];
 

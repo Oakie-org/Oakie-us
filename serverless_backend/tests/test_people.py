@@ -2,6 +2,8 @@
 
 import jwt
 
+from tests.conftest import Member
+
 API = "/api/v1"
 
 
@@ -16,6 +18,93 @@ def test_profile_update_cannot_touch_protected_fields(ada):
     assert profile["id"] == ada.id and profile["num_followers"] == 0
     assert profile["headline"] == "Quant researcher"
     assert profile["email"] == "ada@example.edu" and profile["roles"] == ["user"]
+
+
+def test_availability_is_a_fixed_scale(ada, anon):
+    options = anon.get(f"{API}/meta").json()["availability"]
+    assert "5-10 hrs / week" in options
+    saved = ada.patch(f"{API}/users/me", json={"availability": options[0]})
+    assert saved.status_code == 200 and saved.json()["availability"] == options[0]
+    assert ada.patch(f"{API}/users/me", json={"availability": "whenever"}).status_code == 422
+    # Clearing it is allowed: not everyone wants to say.
+    assert ada.patch(f"{API}/users/me", json={"availability": ""}).json()["availability"] == ""
+
+
+def test_profile_pictures_must_be_own_uploads(ada, ben):
+    def signed(member, purpose: str) -> str:
+        body = {"file_type": "image/png", "purpose": purpose}
+        return member.post(f"{API}/uploads/sign", json=body).json()["public_url"]
+
+    mine = signed(ada, "user_avatar")
+    saved = ada.patch(f"{API}/users/me", json={"avatar_url": mine})
+    assert saved.status_code == 200 and saved.json()["avatar_url"] == mine
+    # Saving other fields, or the same picture again, is not re-checked away.
+    assert (
+        ada.patch(f"{API}/users/me", json={"avatar_url": mine, "city": "Oslo"}).status_code == 200
+    )
+
+    for foreign in (
+        "https://tracker.example.com/pixel.png",  # someone else's server
+        signed(ben, "user_avatar"),  # another member's upload
+        signed(ada, "user_banner"),  # uploaded for a different purpose
+    ):
+        refused = ada.patch(f"{API}/users/me", json={"avatar_url": foreign})
+        assert refused.status_code == 400, foreign
+    assert ada.get(f"{API}/users/me").json()["avatar_url"] == mine
+
+    banner = signed(ada, "user_banner")
+    assert ada.patch(f"{API}/users/me", json={"banner_url": banner}).status_code == 200
+    cleared = ada.patch(f"{API}/users/me", json={"avatar_url": None, "banner_url": None}).json()
+    assert cleared["avatar_url"] is None and cleared["banner_url"] is None
+
+
+def test_matches_follow_the_members_skills(ada, ben, cy, project):
+    url = f"{API}/users/me/matches"
+    assert ben.get(url).json() == []  # no skills listed, nothing to match on
+
+    ben.patch(f"{API}/users/me", json={"skills": ["backend", "Illustration"]})
+    found = ben.get(url).json()
+    assert [(p["id"], p["matched_skills"]) for p in found] == [(project["id"], ["backend"])]
+    assert found[0]["owner"]["name"] == "Ada"
+
+    # A better overlap ranks first; a project wanting nothing they do is absent.
+    both = ada.post(
+        f"{API}/projects",
+        json={
+            "title": "Zine Engine",
+            "description": "A static site generator for illustrated zines.",
+            "category": "Design & Art",
+            "max_members": 4,
+            "open_roles": [{"title": "Maker", "skills": ["Backend", "Illustration"]}],
+        },
+    ).json()
+    ada.post(
+        f"{API}/projects",
+        json={
+            "title": "Tax Club",
+            "description": "We read tax law for fun.",
+            "category": "Finance & Quant",
+            "open_roles": [{"title": "Analyst", "skills": ["Financial Modeling"]}],
+        },
+    )
+    assert [p["id"] for p in ben.get(url).json()] == [both["id"], project["id"]]
+    assert ben.get(f"{url}?limit=1").json()[0]["id"] == both["id"]
+
+    # Their own projects, ones they applied to and full teams are left out.
+    ada.patch(f"{API}/users/me", json={"skills": ["Backend"]})
+    assert ada.get(url).json() == []
+    ben.post(f"{API}/projects/{both['id']}/applications", json={"message": "Count me in"})
+    assert [p["id"] for p in ben.get(url).json()] == [project["id"]]
+    # A team with no seat left stops being suggested.
+    cy.patch(f"{API}/users/me", json={"skills": ["Backend"]})
+    assert project["id"] in [p["id"] for p in cy.get(url).json()]
+    members = [ben, Member("Dee")]
+    for member in members:
+        base = f"{API}/projects/{project['id']}/applications"
+        assert member.post(base, json={"message": "Hi"}).status_code == 201
+        decided = ada.post(f"{base}/{member.id}/decision", json={"approve": True})
+        assert decided.status_code == 200, decided.text
+    assert project["id"] not in [p["id"] for p in cy.get(url).json()]
 
 
 def test_public_profile_hides_private_fields(ada, anon):

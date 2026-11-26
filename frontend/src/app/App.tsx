@@ -1,5 +1,12 @@
 import { Component, lazy, Suspense, useEffect, type ReactNode } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import AppShell from "@/app/AppShell";
@@ -14,11 +21,10 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Explore = lazy(() => import("@/pages/Explore"));
 const Talent = lazy(() => import("@/pages/Talent"));
 const ProjectDetail = lazy(() => import("@/pages/ProjectDetail"));
-const ProjectEditor = lazy(() => import("@/pages/ProjectEditor"));
 const ProjectWizard = lazy(() => import("@/pages/ProjectWizard"));
 const EmbedProfile = lazy(() => import("@/pages/EmbedProfile"));
 const Profile = lazy(() => import("@/pages/Profile"));
-const Settings = lazy(() => import("@/pages/Settings"));
+const Welcome = lazy(() => import("@/pages/Welcome"));
 const Messages = lazy(() => import("@/pages/Messages"));
 const Notifications = lazy(() => import("@/pages/Notifications"));
 const Verify = lazy(() => import("@/pages/Verify"));
@@ -82,6 +88,19 @@ function HomeRoute() {
   return status === "signedIn" ? <Dashboard /> : <Landing />;
 }
 
+/** The profile is edited in place; old links to the settings form land there. */
+function EditProfileRoute() {
+  const { me } = useAuth();
+  if (!me) return <PageSpinner />;
+  return <Navigate to={`/u/${me.id}?edit=intro`} replace />;
+}
+
+/** A project is edited on its own page; old links to the edit form land there. */
+function EditProjectRoute() {
+  const { id = "" } = useParams();
+  return <Navigate to={`/projects/${id}?edit=basics`} replace />;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -98,6 +117,14 @@ export default function App() {
                     element={<AuthPage mode="register" />}
                   />
                   <Route path="/embed/u/:id" element={<EmbedProfile />} />
+                  <Route
+                    path="/welcome"
+                    element={
+                      <RequireAuth>
+                        <Welcome />
+                      </RequireAuth>
+                    }
+                  />
                   <Route element={<AppShell />}>
                     <Route index element={<HomeRoute />} />
                     <Route path="explore" element={<Explore />} />
@@ -113,18 +140,14 @@ export default function App() {
                     <Route path="projects/:id" element={<ProjectDetail />} />
                     <Route
                       path="projects/:id/edit"
-                      element={
-                        <RequireAuth>
-                          <ProjectEditor />
-                        </RequireAuth>
-                      }
+                      element={<EditProjectRoute />}
                     />
                     <Route path="u/:id" element={<Profile />} />
                     <Route
                       path="settings"
                       element={
                         <RequireAuth>
-                          <Settings />
+                          <EditProfileRoute />
                         </RequireAuth>
                       }
                     />

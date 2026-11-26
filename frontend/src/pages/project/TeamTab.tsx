@@ -14,7 +14,7 @@ import { useMembers, useRemoveMember, useUpdateMember } from "@/lib/queries";
 import type { Member, ProjectDetail } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { Chip } from "@/components/ui/badge";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import {
   Menu,
@@ -32,7 +32,14 @@ const ROLE_LABEL = {
   member: "Member",
 } as const;
 
-export function TeamTab({ project }: { project: ProjectDetail }) {
+export function TeamTab({
+  project,
+  onEditSeats,
+}: {
+  project: ProjectDetail;
+  /** Opens the sheet that holds the team size. */
+  onEditSeats: () => void;
+}) {
   const { me } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -163,9 +170,9 @@ export function TeamTab({ project }: { project: ProjectDetail }) {
               <UserPlus aria-hidden /> Invite people
             </Button>
           ) : (
-            <ButtonLink to={`/projects/${project.id}/edit`} variant="outline">
+            <Button variant="outline" onClick={onEditSeats}>
               Edit team size
-            </ButtonLink>
+            </Button>
           )}
         </div>
       )}
